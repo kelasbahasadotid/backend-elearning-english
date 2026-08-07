@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+uploads/recordings/*
+!uploads/recordings/.gitkeep
+uploads/certificates/*
+!uploads/certificates/.gitkeep
+uploads/templates/*
+!uploads/templates/.gitkeep
