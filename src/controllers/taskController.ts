@@ -140,12 +140,12 @@ export const listTasks = async (req: Request, res: Response) => {
   }
 };
 
-// ─── UPDATE ASSIGNMENT (Admin only) ───────────────────────────────────────
+// ─── UPDATE ASSIGNMENT (Admin & Tutor) ───────────────────────────────────────
 export const updateTask = async (req: Request, res: Response) => {
   const { id } = req.params;
   const authReq = req as any;
   const roleId = authReq.user?.roleId;
-  if (roleId !== 1 && roleId !== 2) {
+  if (roleId !== 1 && roleId !== 2 && roleId !== 3) {
     res.status(403).json({ error: 'Forbidden' });
     return;
   }
@@ -167,12 +167,12 @@ export const updateTask = async (req: Request, res: Response) => {
   }
 };
 
-// ─── DELETE ASSIGNMENT (Admin only) ───────────────────────────────────────
+// ─── DELETE ASSIGNMENT (Admin & Tutor) ───────────────────────────────────────
 export const deleteTask = async (req: Request, res: Response) => {
   const { id } = req.params;
   const authReq = req as any;
   const roleId = authReq.user?.roleId;
-  if (roleId !== 1 && roleId !== 2) {
+  if (roleId !== 1 && roleId !== 2 && roleId !== 3) {
     res.status(403).json({ error: 'Forbidden' });
     return;
   }

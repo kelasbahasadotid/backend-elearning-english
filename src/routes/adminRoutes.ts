@@ -27,7 +27,7 @@ import {
   
   // Order Management
   getAllOrders, updateOrderStatus, importScalevOrders,
-
+  getManualPaymentProofs, verifyManualPaymentProof, directManualEnroll,
 
   // Settings, course status, tags, bulk users
   updateCourseStatus,
@@ -36,6 +36,7 @@ import {
   bulkUserAction,
   getAdminAnalytics
 } from '../controllers/adminController';
+import { updatePaymentSettings } from '../controllers/paymentController';
 import { authenticateToken, requireRole } from '../middleware/auth';
 
 const router = ExpressRouter();
@@ -47,7 +48,7 @@ router.get('/settings/public', getPublicSettings);
 router.use(authenticateToken as any);
 
 const adminOnly = requireRole([1, 2]) as any;
-const contentCreator = requireRole([1, 2, 5]) as any;
+const contentCreator = requireRole([1, 2, 3, 5]) as any;
 
 import { handleManualScalevSync } from '../controllers/paymentController';
 import { getScalevPackages, createScalevPackage, updateScalevPackage, deleteScalevPackage, convertPptxToPdf } from '../controllers/adminController';
@@ -81,6 +82,9 @@ router.get('/orders', adminOnly, getAllOrders);
 router.put('/orders/:id/status', adminOnly, updateOrderStatus);
 router.post('/orders/import-scalev', adminOnly, importScalevOrders);
 router.post('/orders/scalev-sync', adminOnly, handleManualScalevSync);
+router.get('/orders/manual-proofs', contentCreator, getManualPaymentProofs);
+router.post('/orders/manual-proofs/:id/verify', contentCreator, verifyManualPaymentProof);
+router.post('/enrollments/manual', contentCreator, directManualEnroll);
 
 // Users Management (Admin Only)
 router.get('/users', adminOnly, getAllUsers);
@@ -157,15 +161,16 @@ router.post('/speaking-tests/:testId/prompts', contentCreator, createSpeakingPro
 router.put('/speaking-tests/prompts/:promptId', contentCreator, updateSpeakingPrompt);
 router.delete('/speaking-tests/prompts/:promptId', contentCreator, deleteSpeakingPrompt);
 
-// Certificate Templates (Admin Only)
-router.get('/certificate-templates', adminOnly, getAllCertificateTemplates);
-router.post('/certificate-templates', adminOnly, createCertificateTemplate);
-router.put('/certificate-templates/:id', adminOnly, updateCertificateTemplate);
-router.delete('/certificate-templates/:id', adminOnly, deleteCertificateTemplate);
+// Certificate Templates (Admin & Content Creator)
+router.get('/certificate-templates', contentCreator, getAllCertificateTemplates);
+router.post('/certificate-templates', contentCreator, createCertificateTemplate);
+router.put('/certificate-templates/:id', contentCreator, updateCertificateTemplate);
+router.delete('/certificate-templates/:id', contentCreator, deleteCertificateTemplate);
 
 // Settings (Admin Only)
 router.get('/settings', adminOnly, getSettings);
 router.put('/settings', adminOnly, updateSettings);
+router.put('/payment/settings', adminOnly, updatePaymentSettings as any);
 
 // Course approve/reject (Content Creator)
 router.put('/courses/:id/status', contentCreator, updateCourseStatus);

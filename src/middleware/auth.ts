@@ -19,12 +19,18 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
      return;
   }
 
-  jwt.verify(token, process.env.JWT_SECRET || 'supersecret_pronunciation_ai_key', (err, decoded) => {
+  jwt.verify(token, process.env.JWT_SECRET || 'supersecret_pronunciation_ai_key', (err, decoded: any) => {
     if (err) {
        res.status(403).json({ error: 'Invalid or expired token' });
        return;
     }
-    req.user = decoded as AuthRequest['user'];
+    const userRoleId = Number(decoded?.roleId || decoded?.role_id || decoded?.role || 4);
+    req.user = {
+      id: Number(decoded?.id),
+      roleId: userRoleId,
+      email: decoded?.email || '',
+      username: decoded?.username || ''
+    };
     next();
   });
 };
@@ -35,7 +41,8 @@ export const requireRole = (allowedRoles: number[]) => {
        res.status(401).json({ error: 'Unauthorized' });
        return;
     }
-    if (!allowedRoles.includes(req.user.roleId)) {
+    const userRole = Number(req.user.roleId || (req.user as any).role_id);
+    if (!allowedRoles.includes(userRole)) {
        res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
        return;
     }

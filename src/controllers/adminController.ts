@@ -91,6 +91,7 @@ export const getAllAdminCourses = async (req: Request, res: Response) => {
 
 export const getLessonsByCourse = async (req: Request, res: Response) => {
   const { id } = req.params; // course_id
+  const { type } = req.query;
   try {
     const [versions] = await pool.query<RowDataPacket[]>(
       'SELECT id FROM course_versions WHERE course_id = ? AND is_current = 1 LIMIT 1',
@@ -104,14 +105,20 @@ export const getLessonsByCourse = async (req: Request, res: Response) => {
 
     const versionId = versions[0].id;
 
-    const [lessons] = await pool.query<RowDataPacket[]>(
-      `SELECT l.id, l.title, l.lesson_order, m.title AS module_title
+    let queryStr = `SELECT l.id, l.title, l.lesson_order, l.lesson_type, m.title AS module_title
        FROM lessons l
        JOIN modules m ON l.module_id = m.id
-       WHERE m.course_version_id = ? AND l.deleted_at IS NULL
-       ORDER BY m.module_order ASC, l.lesson_order ASC`,
-      [versionId]
-    );
+       WHERE m.course_version_id = ? AND l.deleted_at IS NULL`;
+    const params: any[] = [versionId];
+
+    if (type) {
+      queryStr += ` AND UPPER(l.lesson_type) = ?`;
+      params.push(String(type).toUpperCase());
+    }
+
+    queryStr += ` ORDER BY m.module_order ASC, l.lesson_order ASC`;
+
+    const [lessons] = await pool.query<RowDataPacket[]>(queryStr, params);
     res.json(lessons);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -1276,12 +1283,20 @@ export const getAllOrders = async (req: Request, res: Response) => {
               IF(so.id IS NOT NULL, 1, 0) as isScalev,
               so.external_order_id as scalevExternalId,
               so.sync_status as scalevSyncStatus,
-              so.synced_at as scalevSyncedAt
+              so.synced_at as scalevSyncedAt,
+              IF(mp.id IS NOT NULL, 1, 0) as isManualProof,
+              mp.status as manualProofStatus,
+              CASE 
+                WHEN so.id IS NOT NULL THEN 'SCALEV'
+                WHEN mp.id IS NOT NULL THEN 'MANUAL'
+                ELSE 'FLIP'
+              END as paymentGatewayType
        FROM orders o
        JOIN users u ON o.user_id = u.id
        LEFT JOIN order_items oi ON o.id = oi.order_id
        LEFT JOIN courses c ON oi.course_id = c.id
        LEFT JOIN scalev_orders so ON o.id = so.order_id
+       LEFT JOIN manual_payment_proofs mp ON o.id = mp.order_id
        GROUP BY o.id
        ORDER BY o.id DESC`
     );
@@ -2008,5 +2023,168 @@ export const convertPptxToPdf = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Gagal mengonversi presentasi PPTX' });
+  }
+};
+
+/** GET /api/admin/orders/manual-proofs */
+export const getManualPaymentProofs = async (req: Request, res: Response) => {
+  try {
+    const { ensureManualPaymentProofsTable } = require('./paymentController');
+    await ensureManualPaymentProofsTable();
+
+    const [rows] = await pool.query<RowDataPacket[]>(
+      `SELECT mp.id, mp.order_id, mp.user_id, mp.bank_name, mp.sender_name, mp.amount, mp.proof_image, mp.notes, mp.status, mp.rejection_reason, mp.created_at,
+              u.full_name as studentName, u.email as studentEmail,
+              o.order_number,
+              GROUP_CONCAT(c.title SEPARATOR ', ') as courseNames,
+              MAX(c.id) as courseId
+       FROM manual_payment_proofs mp
+       JOIN users u ON mp.user_id = u.id
+       JOIN orders o ON mp.order_id = o.id
+       LEFT JOIN order_items oi ON o.id = oi.order_id
+       LEFT JOIN courses c ON oi.course_id = c.id
+       GROUP BY mp.id
+       ORDER BY mp.id DESC`
+    );
+    res.json(rows);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/** POST /api/admin/orders/manual-proofs/:id/verify */
+export const verifyManualPaymentProof = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { status, rejectionReason } = req.body;
+
+  if (!status || !['APPROVED', 'REJECTED'].includes(status)) {
+    res.status(400).json({ error: 'Valid status (APPROVED or REJECTED) is required' });
+    return;
+  }
+
+  try {
+    const [proofs] = await pool.query<RowDataPacket[]>(
+      'SELECT id, order_id, user_id, status FROM manual_payment_proofs WHERE id = ?',
+      [id]
+    );
+
+    if (proofs.length === 0) {
+      res.status(404).json({ error: 'Manual payment proof record not found' });
+      return;
+    }
+
+    const proof = proofs[0];
+
+    if (status === 'APPROVED') {
+      await pool.query(
+        "UPDATE manual_payment_proofs SET status = 'APPROVED', updated_at = NOW() WHERE id = ?",
+        [id]
+      );
+      const mockReq = { params: { id: String(proof.order_id) }, body: { orderStatus: 'SUCCESS', paymentStatus: 'PAID' }, user: (req as any).user } as any;
+      const mockRes = { json: () => {}, status: () => ({ json: () => {} }) } as any;
+      await updateOrderStatus(mockReq, mockRes);
+      res.json({ message: 'Bukti transfer disetujui. Siswa telah terdaftar secara otomatis di kelas!' });
+    } else {
+      await pool.query(
+        "UPDATE manual_payment_proofs SET status = 'REJECTED', rejection_reason = ?, updated_at = NOW() WHERE id = ?",
+        [rejectionReason || 'Bukti transfer tidak valid atau dana belum diterima', id]
+      );
+      res.json({ message: 'Bukti transfer ditolak.' });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/** POST /api/admin/enrollments/manual — Direct Manual Student Enrollment by Admin */
+export const directManualEnroll = async (req: Request, res: Response) => {
+  const { userEmail, userId, courseId, accessDays } = req.body;
+  if ((!userEmail && !userId) || !courseId) {
+    res.status(400).json({ error: 'Email / User ID and Course ID are required' });
+    return;
+  }
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    let targetUserId = userId;
+    if (!targetUserId && userEmail) {
+      const [users] = await connection.query<RowDataPacket[]>(
+        'SELECT id FROM users WHERE email = ?',
+        [userEmail.trim()]
+      );
+      if (users.length === 0) {
+        res.status(404).json({ error: `Pengguna dengan email "${userEmail}" tidak ditemukan` });
+        connection.release();
+        return;
+      }
+      targetUserId = users[0].id;
+    }
+
+    const [existing] = await connection.query<RowDataPacket[]>(
+      "SELECT id FROM enrollments WHERE user_id = ? AND course_id = ? AND status = 'ACTIVE'",
+      [targetUserId, courseId]
+    );
+
+    if (existing.length > 0) {
+      res.status(400).json({ error: 'Siswa sudah terdaftar dan aktif di kelas ini' });
+      connection.release();
+      return;
+    }
+
+    const [courses] = await connection.query<RowDataPacket[]>(
+      'SELECT title, price, discount_price, access_days FROM courses WHERE id = ?',
+      [courseId]
+    );
+
+    if (courses.length === 0) {
+      res.status(404).json({ error: 'Kelas tidak ditemukan' });
+      connection.release();
+      return;
+    }
+
+    const course = courses[0];
+    const durationDays = Number(accessDays || course.access_days || 365);
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const orderNumber = `MANUAL-ENROLL-${dateStr}-${targetUserId}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const [orderResult] = await connection.query<ResultSetHeader>(
+      'INSERT INTO orders (order_number, user_id, subtotal, discount, tax, grand_total, payment_status, order_status) VALUES (?, ?, ?, 0, 0, ?, "PAID", "SUCCESS")',
+      [orderNumber, targetUserId, Number(course.price || 0), Number(course.discount_price || course.price || 0)]
+    );
+
+    const orderId = orderResult.insertId;
+    await connection.query(
+      'INSERT INTO order_items (order_id, course_id, price, discount, total) VALUES (?, ?, ?, 0, ?)',
+      [orderId, courseId, Number(course.price || 0), Number(course.discount_price || course.price || 0)]
+    );
+
+    const [enrollResult] = await connection.query<ResultSetHeader>(
+      'INSERT INTO enrollments (user_id, course_id, source_id, order_id, enrolled_at, expired_at, access_days, status) VALUES (?, ?, 1, ?, NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), ?, ?)',
+      [targetUserId, courseId, orderId, durationDays, durationDays, 'ACTIVE']
+    );
+
+    await connection.query(
+      "INSERT INTO enrollment_histories (enrollment_id, action, description, created_by) VALUES (?, 'CREATE', 'Direct enrollment by administrator', ?)",
+      [enrollResult.insertId, (req as any).user?.id || 1]
+    );
+
+    await connection.query(
+      'INSERT INTO course_progress (user_id, course_id, enrollment_id, completed_module, total_module, overall_progress, average_score) VALUES (?, ?, ?, 0, 1, 0.00, 0.00)',
+      [targetUserId, courseId, enrollResult.insertId]
+    );
+
+    await connection.commit();
+    res.status(201).json({
+      message: `Berhasil mendaftarkan siswa ke kelas "${course.title}"!`,
+      enrollmentId: enrollResult.insertId,
+      orderNumber
+    });
+  } catch (error: any) {
+    await connection.rollback();
+    res.status(500).json({ error: error.message });
+  } finally {
+    connection.release();
   }
 };

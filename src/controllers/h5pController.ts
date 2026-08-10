@@ -91,16 +91,59 @@ export const getH5PById = async (req: Request, res: Response) => {
 };
 
 // 3. Create New H5P Interactive Material
+// Helper to sync H5P material directly into lesson_contents table
+const syncH5PToLessonContents = async (h5pId: number, lessonId: number, title: string, paramsJson: string) => {
+  try {
+    const contentTitle = `H5P: ${title}`;
+    const attachmentMeta = JSON.stringify([{ type: 'h5p', h5p_id: h5pId }]);
+
+    // Query for existing lesson_content matching this SPECIFIC h5pId
+    const [existing] = await pool.query<RowDataPacket[]>(`
+      SELECT id FROM lesson_contents 
+      WHERE lesson_id = ? AND content_type = 'H5P' AND (attachments LIKE ? OR title = ?)
+    `, [lessonId, `%"h5p_id":${h5pId}%`, contentTitle]);
+
+    if (existing.length === 0) {
+      const [maxOrderRow] = await pool.query<RowDataPacket[]>(
+        'SELECT COALESCE(MAX(content_order), 0) as max_order FROM lesson_contents WHERE lesson_id = ?',
+        [lessonId]
+      );
+      const nextOrder = (maxOrderRow[0]?.max_order || 0) + 1;
+
+      await pool.query(`
+        INSERT INTO lesson_contents (lesson_id, content_type, title, description, content_order, is_required, estimated_minutes, status, attachments)
+        VALUES (?, 'H5P', ?, ?, ?, 1, 15, 'ACTIVE', ?)
+      `, [lessonId, contentTitle, paramsJson, nextOrder, attachmentMeta]);
+    } else {
+      await pool.query(`
+        UPDATE lesson_contents
+        SET title = ?, description = ?, attachments = ?
+        WHERE id = ?
+      `, [contentTitle, paramsJson, attachmentMeta, existing[0].id]);
+    }
+  } catch (err) {
+    console.error('Failed to sync H5P to lesson_contents:', err);
+  }
+};
+
+// 3. Create New H5P Interactive Material
 export const createH5P = async (req: Request, res: Response) => {
   const { title, content_type, course_id, lesson_id, params_json, custom_css, theme_color, status } = req.body;
   const authorId = (req as any).user?.id || null;
 
-  if (!title || !title.trim()) {
+  if (!title || !String(title).trim()) {
     return res.status(400).json({ error: 'Judul materi H5P wajib diisi' });
   }
 
   try {
     await ensureH5PTables();
+
+    if (lesson_id) {
+      const [lRows] = await pool.query<RowDataPacket[]>('SELECT lesson_type FROM lessons WHERE id = ?', [lesson_id]);
+      if (lRows.length > 0 && lRows[0].lesson_type?.toUpperCase() !== 'READING') {
+        return res.status(400).json({ error: 'Materi H5P hanya dapat ditautkan ke sub lesson bertipe READING' });
+      }
+    }
 
     const defaultParams = params_json ? (typeof params_json === 'string' ? params_json : JSON.stringify(params_json)) : JSON.stringify({
       slides: [
@@ -118,7 +161,7 @@ export const createH5P = async (req: Request, res: Response) => {
       INSERT INTO h5p_contents (title, content_type, course_id, lesson_id, params_json, custom_css, theme_color, author_id, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
-      title.trim(),
+      String(title).trim(),
       content_type || 'INTERACTIVE_PRESENTATION',
       course_id ? Number(course_id) : null,
       lesson_id ? Number(lesson_id) : null,
@@ -129,11 +172,16 @@ export const createH5P = async (req: Request, res: Response) => {
       status || 'PUBLISHED'
     ]);
 
+    if (lesson_id) {
+      await syncH5PToLessonContents(result.insertId, Number(lesson_id), String(title).trim(), defaultParams);
+    }
+
     res.status(201).json({
       message: 'Materi H5P Interaktif berhasil dibuat',
       id: result.insertId
     });
   } catch (error: any) {
+    console.error('Error in createH5P:', error);
     res.status(500).json({ error: error.message || 'Failed to create H5P material' });
   }
 };
@@ -146,7 +194,35 @@ export const updateH5P = async (req: Request, res: Response) => {
   try {
     await ensureH5PTables();
 
-    const formattedParams = typeof params_json === 'object' ? JSON.stringify(params_json) : params_json;
+    const [existing] = await pool.query<RowDataPacket[]>('SELECT * FROM h5p_contents WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ error: 'Materi H5P tidak ditemukan' });
+    }
+    const current = existing[0];
+
+    const finalTitle = (title !== undefined && title !== null && String(title).trim() !== '')
+      ? String(title).trim()
+      : current.title;
+
+    const finalContentType = content_type || current.content_type || 'INTERACTIVE_PRESENTATION';
+    const finalCourseId = course_id !== undefined ? (course_id ? Number(course_id) : null) : current.course_id;
+    const finalLessonId = lesson_id !== undefined ? (lesson_id ? Number(lesson_id) : null) : current.lesson_id;
+
+    if (finalLessonId) {
+      const [lRows] = await pool.query<RowDataPacket[]>('SELECT lesson_type FROM lessons WHERE id = ?', [finalLessonId]);
+      if (lRows.length > 0 && lRows[0].lesson_type?.toUpperCase() !== 'READING') {
+        return res.status(400).json({ error: 'Materi H5P hanya dapat ditautkan ke sub lesson bertipe READING' });
+      }
+    }
+
+    let formattedParams = current.params_json;
+    if (params_json !== undefined && params_json !== null) {
+      formattedParams = typeof params_json === 'object' ? JSON.stringify(params_json) : String(params_json);
+    }
+
+    const finalCustomCss = custom_css !== undefined ? String(custom_css) : (current.custom_css || '');
+    const finalThemeColor = theme_color || current.theme_color || '#EAB308';
+    const finalStatus = status || current.status || 'PUBLISHED';
 
     await pool.query(`
       UPDATE h5p_contents
@@ -161,19 +237,24 @@ export const updateH5P = async (req: Request, res: Response) => {
         status = ?
       WHERE id = ?
     `, [
-      title.trim(),
-      content_type,
-      course_id ? Number(course_id) : null,
-      lesson_id ? Number(lesson_id) : null,
+      finalTitle,
+      finalContentType,
+      finalCourseId,
+      finalLessonId,
       formattedParams,
-      custom_css || '',
-      theme_color || '#EAB308',
-      status || 'PUBLISHED',
+      finalCustomCss,
+      finalThemeColor,
+      finalStatus,
       id
     ]);
 
+    if (finalLessonId) {
+      await syncH5PToLessonContents(Number(id), Number(finalLessonId), finalTitle, formattedParams);
+    }
+
     res.json({ message: 'Materi H5P Interaktif berhasil diperbarui' });
   } catch (error: any) {
+    console.error('Error in updateH5P:', error);
     res.status(500).json({ error: error.message || 'Failed to update H5P material' });
   }
 };
@@ -202,6 +283,11 @@ export const attachH5PToLesson = async (req: Request, res: Response) => {
   try {
     await ensureH5PTables();
 
+    const [lRows] = await pool.query<RowDataPacket[]>('SELECT lesson_type FROM lessons WHERE id = ?', [lesson_id]);
+    if (lRows.length > 0 && lRows[0].lesson_type?.toUpperCase() !== 'READING') {
+      return res.status(400).json({ error: 'Materi H5P hanya dapat ditautkan ke sub lesson bertipe READING' });
+    }
+
     // 1. Update H5P record
     await pool.query(`
       UPDATE h5p_contents
@@ -212,26 +298,7 @@ export const attachH5PToLesson = async (req: Request, res: Response) => {
     // 2. Insert or Update lesson_contents record of type 'H5P'
     const [h5pRow] = await pool.query<RowDataPacket[]>('SELECT title, params_json FROM h5p_contents WHERE id = ?', [id]);
     if (h5pRow.length > 0) {
-      const contentTitle = `H5P: ${h5pRow[0].title}`;
-      const payloadUrl = `/api/students/h5p/${id}`;
-
-      // Check if lesson_content already attached
-      const [existing] = await pool.query<RowDataPacket[]>(`
-        SELECT id FROM lesson_contents WHERE lesson_id = ? AND content_type = 'H5P' AND content_url = ?
-      `, [lesson_id, payloadUrl]);
-
-      if (existing.length === 0) {
-        await pool.query(`
-          INSERT INTO lesson_contents (lesson_id, content_type, title, body_content, content_url, sort_order, status)
-          VALUES (?, 'H5P', ?, ?, ?, 1, 'PUBLISHED')
-        `, [lesson_id, contentTitle, h5pRow[0].params_json, payloadUrl]);
-      } else {
-        await pool.query(`
-          UPDATE lesson_contents
-          SET title = ?, body_content = ?
-          WHERE id = ?
-        `, [contentTitle, h5pRow[0].params_json, existing[0].id]);
-      }
+      await syncH5PToLessonContents(Number(id), Number(lesson_id), h5pRow[0].title, h5pRow[0].params_json);
     }
 
     res.json({ message: 'Materi H5P berhasil ditautkan ke silabus pelajaran' });

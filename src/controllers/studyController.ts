@@ -47,14 +47,43 @@ export const getLesson = async (req: AuthRequest, res: Response) => {
 
     // 2. Fetch lesson contents (including parsed attachments for student view)
     const [contentsRaw] = await pool.query<RowDataPacket[]>(
-      'SELECT id, content_type, title, description, content_order, estimated_minutes, attachments FROM lesson_contents WHERE lesson_id = ? AND status = "ACTIVE" ORDER BY content_order ASC',
+      'SELECT id, content_type, title, description, content_order, estimated_minutes, attachments FROM lesson_contents WHERE lesson_id = ? AND status IN ("ACTIVE", "PUBLISHED") ORDER BY content_order ASC',
       [lesson.id]
     );
     // Parse attachments JSON; strip raw base64 data (send full data for inline view)
-    const contents = (contentsRaw as any[]).map((c: any) => ({
+    const parsedContents = (contentsRaw as any[]).map((c: any) => ({
       ...c,
       attachments: c.attachments ? (() => { try { return JSON.parse(c.attachments); } catch(_) { return []; } })() : []
     }));
+
+    // Fetch exact H5P materials attached to this lesson from h5p_contents (source of truth)
+    const [h5pRows] = await pool.query<RowDataPacket[]>(
+      'SELECT id, title, params_json FROM h5p_contents WHERE lesson_id = ? AND status = "PUBLISHED" ORDER BY id ASC',
+      [lesson.id]
+    );
+
+    let contents: any[] = [];
+    if (h5pRows.length > 0) {
+      // Exclude any previous H5P or slide JSON entries from lesson_contents to avoid duplicates
+      const nonH5pContents = parsedContents.filter((c: any) => 
+        c.content_type !== 'H5P' && 
+        !c.title?.startsWith('H5P:') && 
+        !(typeof c.description === 'string' && c.description.includes('"slides"'))
+      );
+      
+      const formattedH5p = (h5pRows as any[]).map((h5p: any, idx: number) => ({
+        id: 90000 + h5p.id,
+        content_type: 'H5P',
+        title: `H5P: ${h5p.title}`,
+        description: h5p.params_json,
+        content_order: nonH5pContents.length + idx + 1,
+        estimated_minutes: 15,
+        attachments: [{ type: 'h5p', h5p_id: h5p.id }]
+      }));
+      contents = [...nonH5pContents, ...formattedH5p];
+    } else {
+      contents = parsedContents;
+    }
 
 
     // 3. Fetch user progress for this lesson

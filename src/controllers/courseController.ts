@@ -36,7 +36,8 @@ export const getCourses = async (req: Request, res: Response) => {
   if (token) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecret_pronunciation_ai_key') as any;
-      if (decoded.roleId === 1 || decoded.roleId === 2 || decoded.roleId === 5) {
+      const userRole = Number(decoded?.roleId || decoded?.role_id || decoded?.role);
+      if (userRole === 1 || userRole === 2 || userRole === 3 || userRole === 5) {
         showAll = true;
       }
     } catch (err) {
@@ -74,13 +75,13 @@ export const getCourseDetails = async (req: Request, res: Response) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'supersecret_pronunciation_ai_key') as any;
       userId = decoded.id;
-      userRoleId = decoded.roleId;
+      userRoleId = Number(decoded.roleId || decoded.role_id || decoded.role);
     } catch (err) {
       // Ignore invalid token and treat as public guest
     }
   }
 
-  const isAdminOrTutor = userRoleId === 1 || userRoleId === 2 || userRoleId === 5;
+  const isAdminOrTutor = userRoleId === 1 || userRoleId === 2 || userRoleId === 3 || userRoleId === 5;
   const isNumericId = !isNaN(Number(slug));
 
   try {

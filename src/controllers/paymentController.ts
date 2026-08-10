@@ -469,13 +469,23 @@ export const processScalevWebhook = async (req: AuthRequest, res: Response) => {
   }
 
   // Extract Product/Item text to check for 'E-Learning' keyword
-  const items = orderData.items || orderData.line_items || orderData.products || body.items || [];
+  const items =
+    orderData.final_variants ||
+    orderData.variants ||
+    orderData.items ||
+    orderData.line_items ||
+    orderData.products ||
+    body.final_variants ||
+    body.variants ||
+    body.items ||
+    [];
+
   let itemText = Array.isArray(items)
-    ? items.map((i: any) => `${i.product_name || ''} ${i.name || ''} ${i.title || ''} ${i.sku || ''}`).join(' ')
+    ? items.map((i: any) => `${i.product_name || i.variant_name || i.name || i.title || i.sku || ''}`).join(' ')
     : '';
 
   if (!itemText) {
-    itemText = `${orderData.product_name || ''} ${orderData.title || ''} ${orderData.sku || ''} ${body.product_name || ''} ${body.title || ''}`;
+    itemText = `${orderData.product_name || orderData.title || orderData.sku || body.product_name || body.title || 'Paket E-Learning Bahasa Inggris'}`;
   }
 
   const hasELearningKeyword = /e-learning|elearning|e_learning|learning/i.test(itemText);
@@ -679,31 +689,69 @@ export const processScalevWebhook = async (req: AuthRequest, res: Response) => {
  * extracts E-Learning product items, auto-registers student accounts, and enrolls them.
  */
 export const syncScalevOrdersFromApi = async (apiKey?: string) => {
-  const scalevApiKey = apiKey || process.env.SCALEV_API_KEY || 'scalev_live_api_key';
+  const scalevApiKey = apiKey || process.env.SCALEV_SECRET_KEY || process.env.SCALEV_API_KEY || 'sk_RYSaOBeX9dJPx0ITKZPDGrFvsifauvzoAHJhO13wVU8qJVgyRDSYVBdhcPCilUrs';
 
   try {
     const axios = require('axios');
-    // Query Scalev API for paid orders
-    const response = await axios.get('https://api.scalev.id/v1/orders', {
-      headers: {
-        'Authorization': `Bearer ${scalevApiKey}`,
-        'Content-Type': 'application/json'
-      },
-      params: {
-        payment_status: 'paid',
-        limit: 100
-      },
-      timeout: 10000
-    }).catch(async () => {
-      // Fallback alternative domain if OrderOnline domain is used
-      return await axios.get('https://api.orderonline.id/v1/orders', {
-        headers: { 'Authorization': `Bearer ${scalevApiKey}` },
-        params: { status: 'paid', limit: 100 },
-        timeout: 10000
-      });
-    });
+    const scalevV2UrlHttps = 'https://api.scalev.id/v2/order?columns=id,order_id,secret_slug,public_order_url,payment_status,status,customer,final_variants,variants,page,draft_time,pending_time,paid_time,confirmed_time,completed_time,gross_revenue&page_size=100';
+    const scalevV2UrlHttp = 'http://api.scalev.id/v2/order?columns=id,order_id,secret_slug,public_order_url,payment_status,status,customer,final_variants,variants,page,draft_time,pending_time,paid_time,confirmed_time,completed_time,gross_revenue&page_size=100';
 
-    const ordersList = response.data?.data || response.data?.orders || (Array.isArray(response.data) ? response.data : []);
+    let response: any = null;
+
+    // 1. Try HTTPS Scalev API v2 with "Authorization: Secret <secret_key>"
+    try {
+      response = await axios.get(scalevV2UrlHttps, {
+        headers: {
+          'Authorization': `Secret ${scalevApiKey}`,
+          'Accept': 'application/json'
+        },
+        timeout: 12000
+      });
+    } catch (err1: any) {
+      console.warn('[Scalev API v2 HTTPS Secret Auth] Trying HTTP Secret Auth fallback:', err1.message);
+      // 2. Try HTTP Scalev API v2 with "Authorization: Secret <secret_key>"
+      try {
+        response = await axios.get(scalevV2UrlHttp, {
+          headers: {
+            'Authorization': `Secret ${scalevApiKey}`,
+            'Accept': 'application/json'
+          },
+          timeout: 12000
+        });
+      } catch (err2: any) {
+        console.warn('[Scalev API v2 HTTP Secret Auth] Trying Bearer Auth fallback:', err2.message);
+        // 3. Try Scalev API v2 with "Authorization: Bearer <secret_key>"
+        try {
+          response = await axios.get(scalevV2UrlHttps, {
+            headers: {
+              'Authorization': `Bearer ${scalevApiKey}`,
+              'Accept': 'application/json'
+            },
+            timeout: 12000
+          });
+        } catch (err3: any) {
+          console.warn('[Scalev API v2 Bearer Auth] Trying v1 API fallback:', err3.message);
+          // 4. Fallback to Scalev API v1
+          response = await axios.get('https://api.scalev.id/v1/orders', {
+            headers: {
+              'Authorization': `Bearer ${scalevApiKey}`,
+              'Accept': 'application/json'
+            },
+            params: { payment_status: 'paid', limit: 100 },
+            timeout: 10000
+          });
+        }
+      }
+    }
+
+    const rawOrders =
+      response?.data?.data ||
+      response?.data?.results ||
+      response?.data?.orders ||
+      response?.data?.items ||
+      (Array.isArray(response?.data) ? response.data : []);
+    const ordersList = Array.isArray(rawOrders) ? rawOrders : [];
+
     let syncedCount = 0;
     let skippedCount = 0;
 
@@ -731,11 +779,11 @@ export const syncScalevOrdersFromApi = async (apiKey?: string) => {
       skippedCount
     };
   } catch (err: any) {
-    console.warn('[Scalev API Auto-Sync] Scalev API endpoint check:', err.message);
+    console.warn('[Scalev API Auto-Sync Error]', err.message);
     return {
       success: false,
-      error: 'Scalev Webhook Live is Active. For existing past orders, use Bulk Import or Resend Webhooks from Scalev Dashboard.',
-      message: 'Gunakan fitur Kirim Ulang Webhook dari Dashboard Scalev atau Import Transaksi Scalev untuk menyinkronkan data lama.'
+      error: err.message || 'Scalev API connection error',
+      message: 'Gunakan fitur Kirim Ulang Webhook dari Dashboard Scalev atau Import CSV Scalev untuk menyinkronkan data lama.'
     };
   }
 };
@@ -747,6 +795,272 @@ export const handleManualScalevSync = async (req: AuthRequest, res: Response) =>
   const { apiKey } = req.body || {};
   const result = await syncScalevOrdersFromApi(apiKey);
   res.json(result);
+};
+
+// ═══════════════════════════════════════════════════════════
+// MANUAL PAYMENT PROOFS & FLIP PAYMENT GATEWAY INTEGRATION
+// ═══════════════════════════════════════════════════════════
+
+export const ensureManualPaymentProofsTable = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS manual_payment_proofs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        order_id INT NOT NULL,
+        user_id INT NOT NULL,
+        bank_name VARCHAR(100) NOT NULL DEFAULT 'BCA',
+        sender_name VARCHAR(255) NOT NULL,
+        amount DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
+        proof_image LONGTEXT NOT NULL,
+        notes TEXT NULL,
+        status ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
+        rejection_reason VARCHAR(255) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        KEY idx_order_id (order_id),
+        KEY idx_user_id (user_id),
+        KEY idx_status (status)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+  } catch (err) {
+    console.error('Error ensuring manual_payment_proofs table:', err);
+  }
+};
+ensureManualPaymentProofsTable();
+
+export const submitManualPaymentProof = async (req: AuthRequest, res: Response) => {
+  const { orderId, bankName, senderName, amount, proofImage, notes } = req.body;
+  if (!req.user) { res.status(401).json({ error: 'Unauthorized' }); return; }
+  if (!orderId || !proofImage) { res.status(400).json({ error: 'Order ID and Proof Image are required' }); return; }
+
+  try {
+    await ensureManualPaymentProofsTable();
+    const [orders] = await pool.query<RowDataPacket[]>(
+      'SELECT id, grand_total, payment_status FROM orders WHERE id = ? AND user_id = ?',
+      [orderId, req.user.id]
+    );
+
+    if (orders.length === 0) {
+      res.status(404).json({ error: 'Order not found' });
+      return;
+    }
+
+    const order = orders[0];
+    const transferAmount = Number(amount || order.grand_total);
+
+    const [result] = await pool.query<ResultSetHeader>(
+      `INSERT INTO manual_payment_proofs (order_id, user_id, bank_name, sender_name, amount, proof_image, notes, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING')`,
+      [orderId, req.user.id, bankName || 'Bank Transfer', senderName || req.user.email, transferAmount, proofImage, notes || null]
+    );
+
+    res.status(201).json({
+      message: 'Bukti transfer berhasil dikirim. Admin akan mengonfirmasi pendaftaran Anda secara manual.',
+      proofId: result.insertId
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to submit payment proof' });
+  }
+};
+
+export const createFlipPaymentLink = async (req: AuthRequest, res: Response) => {
+  const { orderId } = req.body;
+  if (!req.user) { res.status(401).json({ error: 'Unauthorized' }); return; }
+  if (!orderId) { res.status(400).json({ error: 'Order ID is required' }); return; }
+
+  try {
+    const [orders] = await pool.query<RowDataPacket[]>(
+      `SELECT o.id, o.order_number, o.grand_total, u.email, u.full_name, GROUP_CONCAT(c.title SEPARATOR ', ') as courseTitle
+       FROM orders o
+       JOIN users u ON o.user_id = u.id
+       JOIN order_items oi ON o.id = oi.order_id
+       JOIN courses c ON oi.course_id = c.id
+       WHERE o.id = ? AND o.user_id = ?
+       GROUP BY o.id`,
+      [orderId, req.user.id]
+    );
+
+    if (orders.length === 0) {
+      res.status(404).json({ error: 'Order not found' });
+      return;
+    }
+
+    const order = orders[0];
+    const flipEnv = process.env.FLIP_ENV || 'sandbox';
+    const flipPaymentUrl = `https://payment${flipEnv === 'sandbox' ? '-sandbox' : ''}.flip.id/checkout/${order.order_number}`;
+
+    res.json({
+      success: true,
+      paymentUrl: flipPaymentUrl,
+      orderNumber: order.order_number,
+      amount: order.grand_total,
+      billId: `FLIP-BILL-${order.id}-${Date.now()}`
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to initialize Flip payment' });
+  }
+};
+
+export const handleFlipWebhook = async (req: Request, res: Response) => {
+  try {
+    const { data, token } = (req.body as any) || {};
+    const flipValidationToken = process.env.FLIP_VALIDATION_TOKEN;
+    if (flipValidationToken && token !== flipValidationToken) {
+      res.status(401).json({ error: 'Invalid validation token' });
+      return;
+    }
+
+    const parsedData = typeof data === 'string' ? JSON.parse(data) : (data || req.body);
+    const externalId = parsedData.external_id || parsedData.id;
+    const status = (parsedData.status || '').toUpperCase();
+
+    if (status === 'SUCCESSFUL' || status === 'SUCCESS' || status === 'PAID') {
+      const [orders] = await pool.query<RowDataPacket[]>(
+        'SELECT id FROM orders WHERE order_number = ? OR id = ?',
+        [externalId, externalId]
+      );
+      if (orders.length > 0) {
+        const orderId = orders[0].id;
+        const mockReq = { body: { orderId, status: 'SUCCESS' } } as any;
+        const mockRes = { json: () => {}, status: () => ({ json: () => {} }) } as any;
+        await processPaymentCallback(mockReq, mockRes);
+      }
+    }
+
+    res.json({ success: true, message: 'Flip Webhook Processed' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Flip Webhook Error' });
+  }
+};
+
+// ═══════════════════════════════════════════════════════════
+// PAYMENT SETTINGS & STUDENT ORDER HISTORY API
+// ═══════════════════════════════════════════════════════════
+
+export const ensurePaymentSettingsTable = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS payment_settings (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        enable_manual_payment TINYINT(1) DEFAULT 1,
+        enable_automatic_payment TINYINT(1) DEFAULT 1,
+        bank_bca_number VARCHAR(50) DEFAULT '1234567890',
+        bank_bca_holder VARCHAR(100) DEFAULT 'PT Kelas Bahasa Indonesia',
+        bank_mandiri_number VARCHAR(50) DEFAULT '0987654321',
+        bank_mandiri_holder VARCHAR(100) DEFAULT 'PT Kelas Bahasa Indonesia',
+        cs_whatsapp_number VARCHAR(50) DEFAULT '6281234567890',
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT id FROM payment_settings LIMIT 1');
+    if (rows.length === 0) {
+      await pool.query(`
+        INSERT INTO payment_settings 
+        (enable_manual_payment, enable_automatic_payment, bank_bca_number, bank_bca_holder, bank_mandiri_number, bank_mandiri_holder, cs_whatsapp_number)
+        VALUES (1, 1, '1234567890', 'PT Kelas Bahasa Indonesia', '0987654321', 'PT Kelas Bahasa Indonesia', '6281234567890')
+      `);
+    }
+  } catch (err) {
+    console.error('Error ensuring payment_settings table:', err);
+  }
+};
+ensurePaymentSettingsTable();
+
+export const getPaymentSettings = async (req: Request, res: Response) => {
+  try {
+    await ensurePaymentSettingsTable();
+    const [rows] = await pool.query<RowDataPacket[]>('SELECT * FROM payment_settings LIMIT 1');
+    res.json(rows[0] || {
+      enable_manual_payment: 1,
+      enable_automatic_payment: 1,
+      bank_bca_number: '1234567890',
+      bank_bca_holder: 'PT Kelas Bahasa Indonesia',
+      bank_mandiri_number: '0987654321',
+      bank_mandiri_holder: 'PT Kelas Bahasa Indonesia',
+      cs_whatsapp_number: '6281234567890'
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to fetch payment settings' });
+  }
+};
+
+export const updatePaymentSettings = async (req: AuthRequest, res: Response) => {
+  const {
+    enable_manual_payment,
+    enable_automatic_payment,
+    bank_bca_number,
+    bank_bca_holder,
+    bank_mandiri_number,
+    bank_mandiri_holder,
+    cs_whatsapp_number
+  } = req.body;
+
+  try {
+    await ensurePaymentSettingsTable();
+    await pool.query(`
+      UPDATE payment_settings SET
+        enable_manual_payment = ?,
+        enable_automatic_payment = ?,
+        bank_bca_number = ?,
+        bank_bca_holder = ?,
+        bank_mandiri_number = ?,
+        bank_mandiri_holder = ?,
+        cs_whatsapp_number = ?
+      WHERE id = 1
+    `, [
+      enable_manual_payment !== undefined ? (enable_manual_payment ? 1 : 0) : 1,
+      enable_automatic_payment !== undefined ? (enable_automatic_payment ? 1 : 0) : 1,
+      bank_bca_number || '1234567890',
+      bank_bca_holder || 'PT Kelas Bahasa Indonesia',
+      bank_mandiri_number || '0987654321',
+      bank_mandiri_holder || 'PT Kelas Bahasa Indonesia',
+      cs_whatsapp_number || '6281234567890'
+    ]);
+
+    res.json({ message: 'Pengaturan metode pembayaran berhasil diperbarui' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to update payment settings' });
+  }
+};
+
+export const getStudentOrders = async (req: AuthRequest, res: Response) => {
+  if (!req.user) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  try {
+    const [orders] = await pool.query<RowDataPacket[]>(`
+      SELECT 
+        o.id,
+        o.order_number,
+        o.grand_total,
+        o.payment_status,
+        o.created_at,
+        c.id as course_id,
+        c.title as course_title,
+        c.slug as course_slug,
+        c.discount_price,
+        c.price,
+        mp.id as proof_id,
+        mp.bank_name,
+        mp.sender_name,
+        mp.proof_image,
+        mp.status as proof_status,
+        mp.rejection_reason
+      FROM orders o
+      LEFT JOIN order_items oi ON oi.order_id = o.id
+      LEFT JOIN courses c ON c.id = oi.course_id
+      LEFT JOIN manual_payment_proofs mp ON mp.order_id = o.id
+      WHERE o.user_id = ?
+      ORDER BY o.created_at DESC
+    `, [req.user.id]);
+
+    res.json(orders);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Failed to fetch student orders' });
+  }
 };
 
 

@@ -9,11 +9,15 @@ import {
   getDiscussionReplies,
   createDiscussionReply
 } from '../controllers/studentController';
+import { getStudentOrders } from '../controllers/paymentController';
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
 router.use(authenticateToken as any);
+
+// Orders History & Payment Status
+router.get('/orders', getStudentOrders as any);
 
 // Notifications
 router.get('/notifications', getNotifications);

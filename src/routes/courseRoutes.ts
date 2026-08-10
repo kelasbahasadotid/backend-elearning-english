@@ -16,8 +16,8 @@ router.get('/:slug', getCourseDetails);
 
 // Reviews & Announcements Actions
 router.post('/:id/reviews', authenticateToken as any, createCourseReview);
-router.post('/reviews/:id/reply', authenticateToken as any, requireRole([1, 2]) as any, replyCourseReview);
-router.post('/:id/announcements', authenticateToken as any, requireRole([1, 2]) as any, createCourseAnnouncement);
-router.delete('/announcements/:id', authenticateToken as any, requireRole([1, 2]) as any, deleteCourseAnnouncement);
+router.post('/reviews/:id/reply', authenticateToken as any, requireRole([1, 2, 3, 5]) as any, replyCourseReview);
+router.post('/:id/announcements', authenticateToken as any, requireRole([1, 2, 3, 5]) as any, createCourseAnnouncement);
+router.delete('/announcements/:id', authenticateToken as any, requireRole([1, 2, 3, 5]) as any, deleteCourseAnnouncement);
 
 export default router;

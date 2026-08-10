@@ -15,7 +15,7 @@ import { uploadMedia } from '../middleware/upload';
 const router = ExpressRouter();
 
 // Admin / Content Creator Middleware
-const contentCreator = requireRole([1, 2, 5]) as any;
+const contentCreator = requireRole([1, 2, 3, 5]) as any;
 
 // Admin Routes
 router.get('/admin/h5p', authenticateToken as any, contentCreator, getAllH5P);
