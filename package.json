@@ -7,7 +7,8 @@
     "dev": "tsx watch src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
-    "seed": "tsx src/seeders/dbSeeder.ts"
+    "seed": "tsx src/seeders/dbSeeder.ts",
+    "seed:media": "tsx src/seeders/mediaSeeder.ts"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +30,7 @@
     "mysql2": "^3.23.0",
     "nodemailer": "^9.0.3",
     "openai": "^6.49.0",
+    "phonemize": "^2.0.0",
     "sherpa-onnx-node": "^1.13.4"
   },
   "devDependencies": {

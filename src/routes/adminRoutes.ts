@@ -20,14 +20,16 @@ import {
   // Lesson Content Management
   getLessonContents, getLessonContentAttachments,
   createLessonContent, updateLessonContent, deleteLessonContent,
+  reorderLessonContents,
   
   // Speaking Tests & Prompts
   getAllSpeakingTests, createSpeakingTest, updateSpeakingTest, deleteSpeakingTest,
   createSpeakingPrompt, updateSpeakingPrompt, deleteSpeakingPrompt,
   
-  // Order Management
+  // Order Management & Enrollments
   getAllOrders, updateOrderStatus, importScalevOrders,
   getManualPaymentProofs, verifyManualPaymentProof, directManualEnroll,
+  getAllEnrollments, deleteEnrollment,
 
   // Settings, course status, tags, bulk users
   updateCourseStatus,
@@ -36,7 +38,7 @@ import {
   bulkUserAction,
   getAdminAnalytics
 } from '../controllers/adminController';
-import { updatePaymentSettings } from '../controllers/paymentController';
+import { getPaymentSettings, updatePaymentSettings } from '../controllers/paymentController';
 import { authenticateToken, requireRole } from '../middleware/auth';
 
 const router = ExpressRouter();
@@ -77,7 +79,7 @@ router.post('/scalev-packages', adminOnly, createScalevPackage);
 router.put('/scalev-packages/:id', adminOnly, updateScalevPackage);
 router.delete('/scalev-packages/:id', adminOnly, deleteScalevPackage);
 
-// Orders Management (Admin Only)
+// Orders & Enrollments Management (Admin Only)
 router.get('/orders', adminOnly, getAllOrders);
 router.put('/orders/:id/status', adminOnly, updateOrderStatus);
 router.post('/orders/import-scalev', adminOnly, importScalevOrders);
@@ -85,6 +87,8 @@ router.post('/orders/scalev-sync', adminOnly, handleManualScalevSync);
 router.get('/orders/manual-proofs', contentCreator, getManualPaymentProofs);
 router.post('/orders/manual-proofs/:id/verify', contentCreator, verifyManualPaymentProof);
 router.post('/enrollments/manual', contentCreator, directManualEnroll);
+router.get('/enrollments', adminOnly, getAllEnrollments);
+router.delete('/enrollments/:id', adminOnly, deleteEnrollment);
 
 // Users Management (Admin Only)
 router.get('/users', adminOnly, getAllUsers);
@@ -149,6 +153,7 @@ router.put('/quizzes/questions/options/:optionId/image', contentCreator, updateQ
 router.get('/lessons/:lessonId/contents', contentCreator, getLessonContents);
 router.get('/lessons/contents/:id/attachments', contentCreator, getLessonContentAttachments);
 router.post('/lessons/:lessonId/contents', contentCreator, createLessonContent);
+router.post('/lessons/:lessonId/contents/reorder', contentCreator, reorderLessonContents);
 router.put('/lessons/contents/:id', contentCreator, updateLessonContent);
 router.delete('/lessons/contents/:id', contentCreator, deleteLessonContent);
 
@@ -170,6 +175,7 @@ router.delete('/certificate-templates/:id', contentCreator, deleteCertificateTem
 // Settings (Admin Only)
 router.get('/settings', adminOnly, getSettings);
 router.put('/settings', adminOnly, updateSettings);
+router.get('/payment/settings', adminOnly, getPaymentSettings as any);
 router.put('/payment/settings', adminOnly, updatePaymentSettings as any);
 
 // Course approve/reject (Content Creator)

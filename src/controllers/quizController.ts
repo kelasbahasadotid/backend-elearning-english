@@ -3,7 +3,7 @@ import pool from '../config/db';
 import { AuthRequest } from '../middleware/auth';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { addXpTransaction } from '../utils/xp';
-import { updateProgressHelper } from '../utils/progress';
+import { updateProgressHelper, checkSequentialLessonLock } from '../utils/progress';
 
 export const getQuiz = async (req: AuthRequest, res: Response) => {
   const { id } = req.params; // Assessment ID
@@ -29,17 +29,42 @@ export const getQuiz = async (req: AuthRequest, res: Response) => {
 
     const quiz = assessments[0];
 
-    // Verify student is enrolled in the parent course
-    const [enrollments] = await pool.query<RowDataPacket[]>(
-      `SELECT id FROM enrollments WHERE course_id = ? AND user_id = ? AND status = 'ACTIVE'`,
-      [quiz.course_id, req.user.id]
-    );
-    if (enrollments.length === 0) {
-       res.status(403).json({ error: 'You are not enrolled in this course' });
-       return;
+    // Verify student is enrolled in the parent course (or bypass if Admin/Tutor/Manager)
+    const userRoleNum = Number(req.user.roleId || (req.user as any).role_id || (req.user as any).role || 4);
+    const isAdminOrTutor = userRoleNum === 1 || userRoleNum === 2 || userRoleNum === 3 || userRoleNum === 5;
+
+    if (!isAdminOrTutor) {
+      const [enrollments] = await pool.query<RowDataPacket[]>(
+        `SELECT e.id FROM enrollments e 
+         LEFT JOIN course_versions cv ON e.course_id = cv.course_id
+         LEFT JOIN modules m ON cv.id = m.course_version_id
+         LEFT JOIN lessons l ON m.id = l.module_id
+         WHERE (e.course_id = ? OR l.id = ?) AND e.user_id = ? AND (e.status = 'ACTIVE' OR LOWER(e.status) = 'active') AND (e.expired_at IS NULL OR e.expired_at >= NOW())`,
+        [quiz.course_id || 0, quiz.lesson_id || 0, req.user.id]
+      );
+      if (enrollments.length === 0) {
+         res.status(403).json({ error: 'You are not enrolled in this course' });
+         return;
+      }
+
+      // Sequential lesson lock check
+      if (quiz.lesson_id) {
+        const lockCheck = await checkSequentialLessonLock(pool, req.user.id, quiz.lesson_id);
+        if (lockCheck.isLocked) {
+          res.status(403).json({
+            error: `Kuis "${quiz.title}" masih terkunci. Anda harus menyelesaikan materi "${lockCheck.requiredLessonTitle}" terlebih dahulu sesuai urutan pembelajaran.`,
+            isLocked: true,
+            requiredLessonId: lockCheck.requiredLessonId,
+            requiredLessonTitle: lockCheck.requiredLessonTitle
+          });
+          return;
+        }
+      }
     }
 
     // Verify attempt limit if student role
+    let isAttemptExceeded = false;
+    let latestAttempt: any = null;
     if (req.user.roleId === 4) {
       const [attempts] = await pool.query<RowDataPacket[]>(
         'SELECT COUNT(*) as count FROM assessment_attempts WHERE user_id = ? AND assessment_id = ?',
@@ -47,8 +72,12 @@ export const getQuiz = async (req: AuthRequest, res: Response) => {
       );
       const attemptCount = attempts[0]?.count || 0;
       if (quiz.max_attempt !== null && quiz.max_attempt > 0 && attemptCount >= quiz.max_attempt) {
-        res.status(403).json({ error: `You have reached the maximum number of attempts allowed for this assessment (${quiz.max_attempt})` });
-        return;
+        isAttemptExceeded = true;
+        const [lastAttRows] = await pool.query<RowDataPacket[]>(
+          'SELECT * FROM assessment_attempts WHERE user_id = ? AND assessment_id = ? ORDER BY id DESC LIMIT 1',
+          [req.user.id, quiz.id]
+        );
+        latestAttempt = lastAttRows[0] || null;
       }
     }
 
@@ -76,9 +105,9 @@ export const getQuiz = async (req: AuthRequest, res: Response) => {
       if (questions.length > 0) {
         const questionIds = questions.map(q => q.id);
 
-        // 4. Fetch options (hide 'is_correct' and 'score' to prevent cheating)
+        // 4. Fetch options (if isAttemptExceeded, include is_correct for evaluation view)
         const [optionRows] = await pool.query<RowDataPacket[]>(
-          `SELECT id, question_id, option_label, option_text, option_order, option_image 
+          `SELECT id, question_id, option_label, option_text, option_order, option_image${isAttemptExceeded ? ', is_correct' : ''} 
            FROM question_options 
            WHERE question_id IN (${questionIds.map(() => '?').join(',')}) 
            ORDER BY option_order ASC`,
@@ -95,7 +124,9 @@ export const getQuiz = async (req: AuthRequest, res: Response) => {
     res.json({
       quiz,
       sections,
-      questions
+      questions,
+      isAttemptExceeded,
+      latestAttempt
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Internal server error' });
@@ -135,16 +166,41 @@ export const submitAttempt = async (req: AuthRequest, res: Response) => {
 
     const quiz = assessments[0];
 
-    // Verify student is enrolled in the parent course
-    const [enrollments] = await connection.query<RowDataPacket[]>(
-      `SELECT id FROM enrollments WHERE course_id = ? AND user_id = ? AND status = 'ACTIVE'`,
-      [quiz.course_id, req.user.id]
-    );
-    if (enrollments.length === 0) {
-       res.status(403).json({ error: 'You are not enrolled in this course' });
-       await connection.rollback();
-       connection.release();
-       return;
+    // Verify student is enrolled in the parent course (or bypass if Admin/Tutor/Manager)
+    const userRoleNum = Number(req.user.roleId || (req.user as any).role_id || (req.user as any).role || 4);
+    const isAdminOrTutor = userRoleNum === 1 || userRoleNum === 2 || userRoleNum === 3 || userRoleNum === 5;
+
+    if (!isAdminOrTutor) {
+      const [enrollments] = await connection.query<RowDataPacket[]>(
+        `SELECT e.id FROM enrollments e 
+         LEFT JOIN course_versions cv ON e.course_id = cv.course_id
+         LEFT JOIN modules m ON cv.id = m.course_version_id
+         LEFT JOIN lessons l ON m.id = l.module_id
+         WHERE (e.course_id = ? OR l.id = ?) AND e.user_id = ? AND (e.status = 'ACTIVE' OR LOWER(e.status) = 'active') AND (e.expired_at IS NULL OR e.expired_at >= NOW())`,
+        [quiz.course_id || 0, quiz.lesson_id || 0, req.user.id]
+      );
+      if (enrollments.length === 0) {
+         res.status(403).json({ error: 'You are not enrolled in this course' });
+         await connection.rollback();
+         connection.release();
+         return;
+      }
+
+      // Sequential lock check
+      if (quiz.lesson_id) {
+        const lockCheck = await checkSequentialLessonLock(connection, req.user.id, quiz.lesson_id);
+        if (lockCheck.isLocked) {
+          res.status(403).json({
+            error: `Kuis "${quiz.title}" masih terkunci. Anda harus menyelesaikan materi "${lockCheck.requiredLessonTitle}" terlebih dahulu.`,
+            isLocked: true,
+            requiredLessonId: lockCheck.requiredLessonId,
+            requiredLessonTitle: lockCheck.requiredLessonTitle
+          });
+          await connection.rollback();
+          connection.release();
+          return;
+        }
+      }
     }
 
     // Verify attempt limit if student role
@@ -178,66 +234,93 @@ export const submitAttempt = async (req: AuthRequest, res: Response) => {
 
     // Find all questions
     const [questions] = await connection.query<RowDataPacket[]>(
-      `SELECT id, question_type_id, point FROM questions WHERE assessment_section_id IN (${sectionIds.map(() => '?').join(',')}) AND status = 'ACTIVE'`,
+      `SELECT id, assessment_section_id, question_type_id, title, question_text, explanation, point, question_image, question_order 
+       FROM questions 
+       WHERE assessment_section_id IN (${sectionIds.map(() => '?').join(',')}) AND status = 'ACTIVE'
+       ORDER BY question_order ASC, id ASC`,
       sectionIds
     );
-    const questionMap = new Map<number, { point: number; typeId: number }>(); // questionId -> { point, typeId }
-    questions.forEach(q => questionMap.set(q.id, { point: Number(q.point), typeId: q.question_type_id }));
 
     const questionIds = questions.map(q => q.id);
 
-    // Find correct options
-    const [correctOptions] = await connection.query<RowDataPacket[]>(
-      `SELECT id, question_id, is_correct, score, option_text 
+    // Find all options including correct status
+    const [allOptions] = await connection.query<RowDataPacket[]>(
+      `SELECT id, question_id, option_label, option_text, is_correct, score, option_image, option_order 
        FROM question_options 
-       WHERE question_id IN (${questionIds.map(() => '?').join(',')})`,
+       WHERE question_id IN (${questionIds.map(() => '?').join(',')})
+       ORDER BY option_order ASC, id ASC`,
       questionIds
     );
 
-    // 3. Grade the user's answers
+    // 3. Grade the user's answers and build detailed question-by-question evaluations
     let totalCorrect = 0;
     let totalWrong = 0;
-    let totalUnanswered = questions.length - answers.length;
+    let totalUnanswered = 0;
     let score = 0;
 
-    answers.forEach(ans => {
-      const { questionId, selectedOptionId, answerText } = ans;
-      const qInfo = questionMap.get(questionId);
-      if (!qInfo) return;
-
-      const qCorrectOptions = correctOptions.filter(opt => opt.question_id === questionId);
-      const firstCorrectOption = qCorrectOptions.find(opt => opt.is_correct === 1);
+    const evaluations = questions.map((q, qIdx) => {
+      const userAnsObj = answers.find((a: any) => Number(a.questionId) === q.id);
+      const qOptions = allOptions.filter((opt: any) => opt.question_id === q.id);
+      const correctOpt = qOptions.find((opt: any) => opt.is_correct === 1);
 
       let isAnswerCorrect = false;
+      let studentAnswerText = '-';
+      let correctAnswerText = correctOpt ? `${correctOpt.option_label ? correctOpt.option_label + '. ' : ''}${correctOpt.option_text}` : '-';
 
-      if (qInfo.typeId === 4) { // FILL_BLANK
-        // Compare answerText case-insensitive and trimmed with first correct option text
-        if (firstCorrectOption && answerText) {
-          const studentAns = String(answerText).trim().toLowerCase();
-          const correctAns = String(firstCorrectOption.option_text).trim().toLowerCase();
-          isAnswerCorrect = studentAns === correctAns;
+      if (!userAnsObj || (userAnsObj.selectedOptionId === undefined && !userAnsObj.answerText)) {
+        studentAnswerText = '(Tidak dijawab)';
+        totalUnanswered++;
+      } else if (q.question_type_id === 4) { // FILL_BLANK
+        const studentText = userAnsObj?.answerText ? String(userAnsObj.answerText).trim() : '';
+        studentAnswerText = studentText || '(Tidak dijawab)';
+        if (correctOpt && studentText) {
+          isAnswerCorrect = studentText.toLowerCase() === String(correctOpt.option_text).trim().toLowerCase();
         }
-      } else if (qInfo.typeId === 6) { // ORDERING
-        // For ordering, student might send the full sentence in answerText or option IDs
-        if (firstCorrectOption && answerText) {
-          const studentAns = String(answerText).trim().toLowerCase().replace(/\s+/g, ' ');
-          const correctAns = String(firstCorrectOption.option_text).trim().toLowerCase().replace(/\s+/g, ' ');
-          isAnswerCorrect = studentAns === correctAns;
-        } else if (firstCorrectOption && selectedOptionId) {
-          isAnswerCorrect = Number(selectedOptionId) === firstCorrectOption.id;
+      } else if (q.question_type_id === 6) { // ORDERING
+        const studentText = userAnsObj?.answerText ? String(userAnsObj.answerText).trim() : '';
+        studentAnswerText = studentText || '(Tidak dijawab)';
+        if (correctOpt && studentText) {
+          isAnswerCorrect = studentText.toLowerCase().replace(/\s+/g, ' ') === String(correctOpt.option_text).trim().toLowerCase().replace(/\s+/g, ' ');
         }
       } else { // MULTIPLE_CHOICE (1), TRUE_FALSE (3), etc.
-        if (firstCorrectOption && selectedOptionId) {
-          isAnswerCorrect = Number(selectedOptionId) === firstCorrectOption.id;
+        const chosenOpt = qOptions.find((opt: any) => opt.id === Number(userAnsObj?.selectedOptionId));
+        if (chosenOpt) {
+          studentAnswerText = `${chosenOpt.option_label ? chosenOpt.option_label + '. ' : ''}${chosenOpt.option_text}`;
+          isAnswerCorrect = chosenOpt.is_correct === 1;
+        } else {
+          studentAnswerText = '(Tidak dijawab)';
         }
       }
 
       if (isAnswerCorrect) {
         totalCorrect++;
-        score += qInfo.point;
-      } else {
+        score += Number(q.point);
+      } else if (studentAnswerText !== '(Tidak dijawab)') {
         totalWrong++;
       }
+
+      return {
+        questionId: q.id,
+        questionIndex: qIdx + 1,
+        questionTitle: q.title || `Soal #${qIdx + 1}`,
+        questionText: q.question_text,
+        questionImage: q.question_image || null,
+        questionTypeId: q.question_type_id,
+        point: Number(q.point),
+        earnedPoint: isAnswerCorrect ? Number(q.point) : 0,
+        isCorrect: isAnswerCorrect,
+        studentAnswer: studentAnswerText,
+        correctAnswer: correctAnswerText,
+        explanation: q.explanation || null,
+        options: qOptions.map((opt: any) => ({
+          id: opt.id,
+          label: opt.option_label,
+          text: opt.option_text,
+          image: opt.option_image || null,
+          isCorrect: opt.is_correct === 1,
+          isChosen: userAnsObj && (Number(userAnsObj.selectedOptionId) === opt.id || (q.question_type_id === 4 && String(userAnsObj.answerText).trim().toLowerCase() === String(opt.option_text).trim().toLowerCase()))
+        }))
+      };
     });
 
     // Scale score to 100 or standard total_score
@@ -311,12 +394,13 @@ export const submitAttempt = async (req: AuthRequest, res: Response) => {
       message: 'Quiz attempt graded successfully',
       attemptId,
       score,
-      percentage,
+      percentage: Number(percentage.toFixed(1)),
       totalCorrect,
       totalWrong,
       totalUnanswered,
       passed: passed === 1,
-      awardXp
+      awardXp,
+      evaluations
     });
   } catch (error: any) {
     await connection.rollback();

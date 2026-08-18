@@ -4,7 +4,7 @@ import { AuthRequest } from '../middleware/auth';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { addXpTransaction } from '../utils/xp';
 import { transcribeAndAnalyze } from '../utils/speechEngine';
-import { updateProgressHelper } from '../utils/progress';
+import { updateProgressHelper, checkSequentialLessonLock } from '../utils/progress';
 
 export const getPrompts = async (req: AuthRequest, res: Response) => {
   const { testId } = req.params;
@@ -14,44 +14,66 @@ export const getPrompts = async (req: AuthRequest, res: Response) => {
   }
 
   try {
-    // Verify student is enrolled in the parent course
-    const [testRows] = await pool.query<RowDataPacket[]>(
-      `SELECT a.course_id, l.max_attempt 
-       FROM speaking_tests st
-       JOIN assessments a ON st.assessment_id = a.id
-       LEFT JOIN lessons l ON a.lesson_id = l.id
-       WHERE st.id = ?`,
-      [testId]
-    );
-    if (testRows.length === 0) {
-      res.status(404).json({ error: 'Speaking test not found' });
-      return;
-    }
-    const courseId = testRows[0].course_id;
-    const maxAttempt = testRows[0].max_attempt;
+    const userRoleNum = Number(req.user.roleId || (req.user as any).role_id || (req.user as any).role || 4);
+    const isAdminOrTutor = userRoleNum === 1 || userRoleNum === 2 || userRoleNum === 3 || userRoleNum === 5;
 
-    const isAdminOrTutor = req.user.roleId === 1 || req.user.roleId === 2 || req.user.roleId === 3 || req.user.roleId === 5;
     if (!isAdminOrTutor) {
+      // Verify student is enrolled in the parent course
+      const [testRows] = await pool.query<RowDataPacket[]>(
+        `SELECT a.course_id, a.id as assessment_id, a.title as test_title, l.id as lesson_id, l.title as lesson_title, l.max_attempt 
+         FROM speaking_tests st
+         JOIN assessments a ON st.assessment_id = a.id
+         LEFT JOIN lessons l ON a.lesson_id = l.id
+         WHERE st.id = ?`,
+        [testId]
+      );
+      if (testRows.length === 0) {
+        res.status(404).json({ error: 'Speaking test not found' });
+        return;
+      }
+      const courseId = testRows[0].course_id;
+      const maxAttempt = testRows[0].max_attempt;
+      const lessonId = testRows[0].lesson_id;
+
       const [enrollments] = await pool.query<RowDataPacket[]>(
-        `SELECT id FROM enrollments WHERE course_id = ? AND user_id = ? AND status = 'ACTIVE'`,
-        [courseId, req.user.id]
+        `SELECT e.id FROM enrollments e 
+         LEFT JOIN course_versions cv ON e.course_id = cv.course_id
+         JOIN modules m ON cv.id = m.course_version_id
+         LEFT JOIN lessons l ON m.id = l.module_id
+         LEFT JOIN assessments a ON l.id = a.lesson_id
+         WHERE (e.course_id = ? OR a.id = ?) AND e.user_id = ? AND (e.status = 'ACTIVE' OR LOWER(e.status) = 'active') AND (e.expired_at IS NULL OR e.expired_at >= NOW())`,
+        [courseId || 0, testRows[0].assessment_id || 0, req.user.id]
       );
       if (enrollments.length === 0) {
         res.status(403).json({ error: 'You are not enrolled in this course' });
         return;
       }
-    }
 
-    // Verify attempt limit if student role
-    if (req.user.roleId === 4) {
-      const [attempts] = await pool.query<RowDataPacket[]>(
-        'SELECT COUNT(*) as count FROM speaking_attempts WHERE user_id = ? AND speaking_test_id = ?',
-        [req.user.id, testId]
-      );
-      const attemptCount = attempts[0]?.count || 0;
-      if (maxAttempt !== null && maxAttempt > 0 && attemptCount >= maxAttempt) {
-        res.status(403).json({ error: `You have reached the maximum number of attempts allowed for this speaking test (${maxAttempt})` });
-        return;
+      // Sequential lock check
+      if (lessonId) {
+        const lockCheck = await checkSequentialLessonLock(pool, req.user.id, lessonId);
+        if (lockCheck.isLocked) {
+          res.status(403).json({
+            error: `Tes Speaking "${testRows[0].lesson_title || testRows[0].test_title}" masih terkunci. Anda harus menyelesaikan materi "${lockCheck.requiredLessonTitle}" terlebih dahulu.`,
+            isLocked: true,
+            requiredLessonId: lockCheck.requiredLessonId,
+            requiredLessonTitle: lockCheck.requiredLessonTitle
+          });
+          return;
+        }
+      }
+
+      // Verify attempt limit if student role
+      let isAttemptExceeded = false;
+      if (req.user.roleId === 4) {
+        const [attempts] = await pool.query<RowDataPacket[]>(
+          'SELECT COUNT(*) as count FROM speaking_attempts WHERE user_id = ? AND speaking_test_id = ?',
+          [req.user.id, testId]
+        );
+        const attemptCount = attempts[0]?.count || 0;
+        if (maxAttempt !== null && maxAttempt > 0 && attemptCount >= maxAttempt) {
+          isAttemptExceeded = true;
+        }
       }
     }
 
@@ -86,7 +108,7 @@ export const submitAttempt = async (req: AuthRequest, res: Response) => {
 
     // Verify student is enrolled in the parent course
     const [testRows] = await connection.query<RowDataPacket[]>(
-      `SELECT a.course_id, l.max_attempt 
+      `SELECT a.course_id, a.assessment_id, a.title as test_title, l.id as lesson_id, l.title as lesson_title, l.max_attempt 
        FROM speaking_tests st
        JOIN assessments a ON st.assessment_id = a.id
        LEFT JOIN lessons l ON a.lesson_id = l.id
@@ -101,16 +123,42 @@ export const submitAttempt = async (req: AuthRequest, res: Response) => {
     }
     const courseId = testRows[0].course_id;
     const maxAttempt = testRows[0].max_attempt;
+    const lessonId = testRows[0].lesson_id;
 
-    const [enrollments] = await connection.query<RowDataPacket[]>(
-      `SELECT id FROM enrollments WHERE course_id = ? AND user_id = ? AND status = 'ACTIVE'`,
-      [courseId, req.user.id]
-    );
-    if (enrollments.length === 0) {
-      res.status(403).json({ error: 'You are not enrolled in this course' });
-      await connection.rollback();
-      connection.release();
-      return;
+    const userRoleNum = Number(req.user.roleId || (req.user as any).role_id || (req.user as any).role || 4);
+    const isAdminOrTutor = userRoleNum === 1 || userRoleNum === 2 || userRoleNum === 3 || userRoleNum === 5;
+    if (!isAdminOrTutor) {
+      const [enrollments] = await connection.query<RowDataPacket[]>(
+        `SELECT e.id FROM enrollments e 
+         LEFT JOIN course_versions cv ON e.course_id = cv.course_id
+         JOIN modules m ON cv.id = m.course_version_id
+         LEFT JOIN lessons l ON m.id = l.module_id
+         LEFT JOIN assessments a ON l.id = a.lesson_id
+         WHERE (e.course_id = ? OR a.id = ?) AND e.user_id = ? AND (e.status = 'ACTIVE' OR LOWER(e.status) = 'active') AND (e.expired_at IS NULL OR e.expired_at >= NOW())`,
+        [courseId || 0, testRows[0].assessment_id || 0, req.user.id]
+      );
+      if (enrollments.length === 0) {
+        res.status(403).json({ error: 'You are not enrolled in this course' });
+        await connection.rollback();
+        connection.release();
+        return;
+      }
+
+      // Sequential lock check
+      if (lessonId) {
+        const lockCheck = await checkSequentialLessonLock(connection, req.user.id, lessonId);
+        if (lockCheck.isLocked) {
+          res.status(403).json({
+            error: `Tes Speaking "${testRows[0].lesson_title || testRows[0].test_title}" masih terkunci. Anda harus menyelesaikan materi "${lockCheck.requiredLessonTitle}" terlebih dahulu.`,
+            isLocked: true,
+            requiredLessonId: lockCheck.requiredLessonId,
+            requiredLessonTitle: lockCheck.requiredLessonTitle
+          });
+          await connection.rollback();
+          connection.release();
+          return;
+        }
+      }
     }
 
     // Verify attempt limit if student role
@@ -211,11 +259,11 @@ export const submitAttempt = async (req: AuthRequest, res: Response) => {
        WHERE st.id = ?`,
       [speakingTestId]
     );
-    let lessonId: number | null = null;
+    let targetLessonId: number | null = lessonId || null;
     let passingScore = 60;
     let passed = 0;
     if (testMetaRows.length > 0) {
-      lessonId = testMetaRows[0].lesson_id;
+      targetLessonId = testMetaRows[0].lesson_id || lessonId || null;
       passingScore = Number(testMetaRows[0].passing_score || 60);
       passed = Number(analysis.overallScore) >= passingScore ? 1 : 0;
     }
@@ -249,8 +297,8 @@ export const submitAttempt = async (req: AuthRequest, res: Response) => {
       [req.user.id]
     );
 
-    if (lessonId) {
-      await updateProgressHelper(connection, req.user.id, lessonId, true, 100.00);
+    if (targetLessonId) {
+      await updateProgressHelper(connection, req.user.id, targetLessonId, true, 100.00);
     }
 
     await connection.commit();

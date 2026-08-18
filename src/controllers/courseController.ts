@@ -171,6 +171,27 @@ export const getCourseDetails = async (req: Request, res: Response) => {
       }));
     }
 
+    // 4.5 Compute sequential is_locked flag across all lessons for enrolled student
+    let foundActiveIncomplete = false;
+    for (const mod of modules) {
+      if (Array.isArray(mod.lessons)) {
+        for (const les of mod.lessons) {
+          if (isAdminOrTutor || !userId) {
+            les.is_locked = false;
+          } else {
+            if (foundActiveIncomplete) {
+              les.is_locked = true;
+            } else {
+              les.is_locked = false;
+              if (!les.completed) {
+                foundActiveIncomplete = true;
+              }
+            }
+          }
+        }
+      }
+    }
+
     let quizScores: any[] = [];
     let speakingScores: any[] = [];
     if (userId) {
@@ -223,11 +244,33 @@ export const getCourseDetails = async (req: Request, res: Response) => {
       [course.id]
     );
 
+    // Check if user is enrolled in this course
+    let isEnrolled = false;
+    let enrollmentData: any = null;
+
+    if (userId) {
+      const [enrollments] = await pool.query<RowDataPacket[]>(
+        `SELECT id, user_id, course_id, enrolled_at, expired_at, access_days, status
+         FROM enrollments
+         WHERE user_id = ? AND course_id = ? AND (status = 'ACTIVE' OR LOWER(status) = 'active') AND (expired_at IS NULL OR expired_at >= NOW())
+         ORDER BY id DESC LIMIT 1`,
+        [userId, course.id]
+      );
+
+      if (enrollments.length > 0) {
+        isEnrolled = true;
+        enrollmentData = enrollments[0];
+      }
+    }
+
     res.json({
       course: {
         ...course,
         course_version_id: versionId
       },
+      enrolled: isEnrolled || isAdminOrTutor,
+      isEnrolled: isEnrolled || isAdminOrTutor,
+      enrollment: enrollmentData,
       modules,
       quizScores,
       speakingScores,

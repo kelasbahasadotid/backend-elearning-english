@@ -54,3 +54,27 @@ export const uploadMedia = multer({
     fileSize: 50 * 1024 * 1024 // 50MB
   }
 });
+
+const libraryMediaDir = path.join(__dirname, '../../uploads/media');
+if (!fs.existsSync(libraryMediaDir)) {
+  fs.mkdirSync(libraryMediaDir, { recursive: true });
+}
+
+const libraryMediaStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, libraryMediaDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e6);
+    const sanitizedName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+    cb(null, 'media-' + uniqueSuffix + '-' + sanitizedName);
+  }
+});
+
+export const uploadLibraryMedia = multer({
+  storage: libraryMediaStorage,
+  limits: {
+    fileSize: 100 * 1024 * 1024 // 100MB max
+  }
+});
+

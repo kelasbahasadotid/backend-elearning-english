@@ -891,7 +891,7 @@ export const getQuizQuestions = async (req: Request, res: Response) => {
 
     // 2. Fetch questions
     const [questions] = await pool.query<RowDataPacket[]>(
-      `SELECT id, assessment_section_id, question_type_id, question_code, question_text, explanation, point, question_order, status 
+      `SELECT id, assessment_section_id, question_type_id, question_code, question_text, explanation, point, question_order, status, question_image 
        FROM questions 
        WHERE assessment_section_id IN (${sectionIds.map(() => '?').join(',')}) AND status = 'ACTIVE' 
        ORDER BY question_order ASC`,
@@ -907,7 +907,7 @@ export const getQuizQuestions = async (req: Request, res: Response) => {
 
     // 3. Fetch options (include is_correct and score for admin editing)
     const [options] = await pool.query<RowDataPacket[]>(
-      `SELECT id, question_id, option_label, option_text, is_correct, score, option_order 
+      `SELECT id, question_id, option_label, option_text, is_correct, score, option_order, option_image 
        FROM question_options 
        WHERE question_id IN (${questionIds.map(() => '?').join(',')}) 
        ORDER BY option_order ASC`,
@@ -928,7 +928,17 @@ export const getQuizQuestions = async (req: Request, res: Response) => {
 
 export const createQuizQuestion = async (req: Request, res: Response) => {
   const { quizId } = req.params; // assessment_id
-  const { questionTypeId, questionCode, questionText, explanation, point, questionOrder, status } = req.body;
+  const {
+    questionTypeId,
+    questionCode,
+    questionText,
+    explanation,
+    point,
+    questionOrder,
+    status,
+    questionImage,
+    question_image
+  } = req.body;
   try {
     // Check if assessment section exists for this quiz, otherwise create default section
     let [sections] = await pool.query<RowDataPacket[]>(
@@ -946,10 +956,12 @@ export const createQuizQuestion = async (req: Request, res: Response) => {
       sectionId = secRes.insertId;
     }
 
+    const img = questionImage !== undefined ? questionImage : question_image || null;
+
     const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO questions (assessment_section_id, question_type_id, question_code, question_text, explanation, point, question_order, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [sectionId, questionTypeId || 1, questionCode || 'Q_CODE', questionText, explanation || '', point || 10.00, questionOrder || 1, status || 'ACTIVE']
+      `INSERT INTO questions (assessment_section_id, question_type_id, question_code, question_text, explanation, point, question_order, status, question_image) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [sectionId, questionTypeId || 1, questionCode || 'Q_CODE', questionText, explanation || '', point || 10.00, questionOrder || 1, status || 'ACTIVE', img]
     );
     
     res.status(201).json({ message: 'Quiz question created successfully', questionId: result.insertId });
@@ -960,7 +972,17 @@ export const createQuizQuestion = async (req: Request, res: Response) => {
 
 export const updateQuizQuestion = async (req: Request, res: Response) => {
   const { questionId } = req.params;
-  const { questionTypeId, questionCode, questionText, explanation, point, questionOrder, status } = req.body;
+  const {
+    questionTypeId,
+    questionCode,
+    questionText,
+    explanation,
+    point,
+    questionOrder,
+    status,
+    questionImage,
+    question_image
+  } = req.body;
   try {
     const updates: string[] = [];
     const values: any[] = [];
@@ -979,6 +1001,11 @@ export const updateQuizQuestion = async (req: Request, res: Response) => {
     addUpdate('point', point);
     addUpdate('question_order', questionOrder);
     addUpdate('status', status);
+    if (questionImage !== undefined) {
+      addUpdate('question_image', questionImage);
+    } else if (question_image !== undefined) {
+      addUpdate('question_image', question_image);
+    }
     
     if (updates.length === 0) {
       res.status(400).json({ error: 'No fields provided for update' });
@@ -1020,11 +1047,12 @@ export const deleteQuizQuestion = async (req: Request, res: Response) => {
 // ==========================================
 export const createQuestionOption = async (req: Request, res: Response) => {
   const { questionId } = req.params;
-  const { optionLabel, optionText, isCorrect, score, optionOrder } = req.body;
+  const { optionLabel, optionText, isCorrect, score, optionOrder, optionImage, option_image } = req.body;
   try {
+    const img = optionImage !== undefined ? optionImage : option_image || null;
     const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO question_options (question_id, option_label, option_text, is_correct, score, option_order) VALUES (?, ?, ?, ?, ?, ?)',
-      [questionId, optionLabel || 'A', optionText, isCorrect ? 1 : 0, score || 0.00, optionOrder || 1]
+      'INSERT INTO question_options (question_id, option_label, option_text, is_correct, score, option_order, option_image) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [questionId, optionLabel || 'A', optionText, isCorrect ? 1 : 0, score || 0.00, optionOrder || 1, img]
     );
     res.status(201).json({ message: 'Question option created successfully', optionId: result.insertId });
   } catch (error: any) {
@@ -1034,7 +1062,7 @@ export const createQuestionOption = async (req: Request, res: Response) => {
 
 export const updateQuestionOption = async (req: Request, res: Response) => {
   const { optionId } = req.params;
-  const { optionLabel, optionText, isCorrect, score, optionOrder } = req.body;
+  const { optionLabel, optionText, isCorrect, score, optionOrder, optionImage, option_image } = req.body;
   try {
     const updates: string[] = [];
     const values: any[] = [];
@@ -1051,6 +1079,11 @@ export const updateQuestionOption = async (req: Request, res: Response) => {
     addUpdate('is_correct', isCorrect !== undefined ? (isCorrect ? 1 : 0) : undefined);
     addUpdate('score', score);
     addUpdate('option_order', optionOrder);
+    if (optionImage !== undefined) {
+      addUpdate('option_image', optionImage);
+    } else if (option_image !== undefined) {
+      addUpdate('option_image', option_image);
+    }
     
     if (updates.length === 0) {
       res.status(400).json({ error: 'No fields provided for update' });
@@ -1945,6 +1978,37 @@ export const deleteLessonContent = async (req: Request, res: Response) => {
   }
 };
 
+/** POST /admin/lessons/:lessonId/contents/reorder */
+export const reorderLessonContents = async (req: Request, res: Response) => {
+  const { lessonId } = req.params;
+  const { items } = req.body;
+
+  if (!Array.isArray(items) || items.length === 0) {
+    res.status(400).json({ error: 'items array is required' });
+    return;
+  }
+
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    for (const item of items) {
+      if (item.id && typeof item.content_order === 'number') {
+        await conn.query(
+          'UPDATE lesson_contents SET content_order = ? WHERE id = ? AND lesson_id = ?',
+          [item.content_order, item.id, lessonId]
+        );
+      }
+    }
+    await conn.commit();
+    res.json({ success: true, message: 'Urutan konten berhasil diperbarui' });
+  } catch (error: any) {
+    await conn.rollback();
+    res.status(500).json({ error: error.message });
+  } finally {
+    conn.release();
+  }
+};
+
 // ═══════════════════════════════════════════════════════════
 // QUESTION & OPTION IMAGE UPLOAD
 // ═══════════════════════════════════════════════════════════
@@ -2098,7 +2162,11 @@ export const verifyManualPaymentProof = async (req: Request, res: Response) => {
 
 /** POST /api/admin/enrollments/manual — Direct Manual Student Enrollment by Admin */
 export const directManualEnroll = async (req: Request, res: Response) => {
-  const { userEmail, userId, courseId, accessDays } = req.body;
+  const userEmail = req.body.userEmail || req.body.email || req.body.studentEmail;
+  const userId = req.body.userId || req.body.user_id;
+  const courseId = req.body.courseId || req.body.course_id;
+  const accessDays = req.body.accessDays || req.body.access_days;
+
   if ((!userEmail && !userId) || !courseId) {
     res.status(400).json({ error: 'Email / User ID and Course ID are required' });
     return;
@@ -2188,3 +2256,101 @@ export const directManualEnroll = async (req: Request, res: Response) => {
     connection.release();
   }
 };
+
+/** GET /api/admin/enrollments — List all student enrollments (Super Admin & Admin) */
+export const getAllEnrollments = async (req: Request, res: Response) => {
+  const { search, courseId, status } = req.query;
+  try {
+    let query = `
+      SELECT e.id, e.user_id, e.course_id, e.source_id, e.order_id, e.enrolled_at, e.expired_at, e.access_days, e.status,
+             u.full_name as student_name, u.email as student_email, u.username as student_username,
+             c.title as course_title, c.code as course_code, c.slug as course_slug, c.price as course_price,
+             COALESCE(MAX(cp.overall_progress), 0) as progress_percent,
+             o.order_number
+      FROM enrollments e
+      JOIN users u ON e.user_id = u.id
+      JOIN courses c ON e.course_id = c.id
+      LEFT JOIN course_progress cp ON (e.id = cp.enrollment_id OR (e.user_id = cp.user_id AND e.course_id = cp.course_id))
+      LEFT JOIN orders o ON e.order_id = o.id
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+    if (search) {
+      query += ` AND (u.full_name LIKE ? OR u.email LIKE ? OR u.username LIKE ? OR c.title LIKE ? OR o.order_number LIKE ?)`;
+      const term = `%${search}%`;
+      params.push(term, term, term, term, term);
+    }
+    if (courseId) {
+      query += ` AND e.course_id = ?`;
+      params.push(courseId);
+    }
+    if (status && status !== 'ALL') {
+      query += ` AND UPPER(e.status) = ?`;
+      params.push(String(status).toUpperCase());
+    }
+    query += ` GROUP BY e.id, e.user_id, e.course_id, e.source_id, e.order_id, e.enrolled_at, e.expired_at, e.access_days, e.status, u.full_name, u.email, u.username, c.title, c.code, c.slug, c.price, o.order_number`;
+    query += ` ORDER BY e.id DESC`;
+
+    const [enrollments] = await pool.query<RowDataPacket[]>(query, params);
+    res.json(enrollments);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+/** DELETE /api/admin/enrollments/:id — Delete/Cancel a student course enrollment (Super Admin & Admin only) */
+export const deleteEnrollment = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const authReq = req as AuthRequest;
+  const currentUserId = authReq.user?.id || 1;
+  const userRoleId = Number(authReq.user?.roleId || (authReq.user as any)?.role_id || 4);
+
+  // Restrict to Super Admin (1) and Admin (2)
+  if (userRoleId !== 1 && userRoleId !== 2) {
+    res.status(403).json({ error: 'Akses ditolak: Hanya Super Admin dan Admin yang dapat menghapus enrollment siswa' });
+    return;
+  }
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const [enrollments] = await connection.query<RowDataPacket[]>(
+      `SELECT e.id, e.user_id, e.course_id, e.order_id, u.full_name, u.email, c.title as course_title
+       FROM enrollments e
+       JOIN users u ON e.user_id = u.id
+       JOIN courses c ON e.course_id = c.id
+       WHERE e.id = ?`,
+      [id]
+    );
+
+    if (enrollments.length === 0) {
+      res.status(404).json({ error: 'Data enrollment tidak ditemukan' });
+      connection.release();
+      return;
+    }
+
+    const enrollment = enrollments[0];
+
+    // Delete associated course_progress
+    await connection.query(
+      'DELETE FROM course_progress WHERE enrollment_id = ? OR (user_id = ? AND course_id = ?)',
+      [id, enrollment.user_id, enrollment.course_id]
+    );
+
+    // Delete enrollment record (enrollment_histories cascade deletes)
+    await connection.query('DELETE FROM enrollments WHERE id = ?', [id]);
+
+    await connection.commit();
+    res.json({
+      message: `Enrollment siswa "${enrollment.full_name}" (${enrollment.email}) di kelas "${enrollment.course_title}" berhasil dihapus.`,
+      deletedId: id
+    });
+  } catch (error: any) {
+    await connection.rollback();
+    res.status(500).json({ error: error.message });
+  } finally {
+    connection.release();
+  }
+};
+

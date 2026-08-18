@@ -351,7 +351,10 @@ export const uploadH5PMedia = async (req: Request, res: Response) => {
     if (!req.file) {
       return res.status(400).json({ error: 'Tidak ada file media yang diunggah' });
     }
-    const mediaUrl = `http://localhost:5000/uploads/h5p/${req.file.filename}`;
+    const host = req.get('host') || 'localhost:5000';
+    const protocol = req.protocol || 'http';
+    const baseUrl = process.env.APP_URL || `${protocol}://${host}`;
+    const mediaUrl = `${baseUrl}/uploads/h5p/${req.file.filename}`;
     res.json({
       message: 'File media berhasil diunggah!',
       url: mediaUrl,

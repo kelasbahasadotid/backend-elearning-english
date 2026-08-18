@@ -64,6 +64,26 @@ export const claimCertificate = async (req: AuthRequest, res: Response) => {
       [req.user.id, courseId]
     );
 
+    // Fetch quiz and speaking grades for the certificate transcript
+    const [quizAttempts] = await connection.query<RowDataPacket[]>(
+      `SELECT a.title, MAX(ap.highest_score) as bestScore, MAX(ap.passed) as passed
+       FROM assessments a
+       LEFT JOIN assessment_progress ap ON ap.assessment_id = a.id AND ap.user_id = ?
+       WHERE a.course_id = ?
+       GROUP BY a.id, a.title`,
+      [req.user.id, courseId]
+    );
+
+    const [speakingAttempts] = await connection.query<RowDataPacket[]>(
+      `SELECT st.title, MAX(sa.overall_score) as bestScore
+       FROM speaking_tests st
+       JOIN assessments a ON st.assessment_id = a.id
+       LEFT JOIN speaking_attempts sa ON sa.speaking_test_id = st.id AND sa.user_id = ?
+       WHERE a.course_id = ?
+       GROUP BY st.id, st.title`,
+      [req.user.id, courseId]
+    );
+
     if (existingCert.length > 0) {
       res.json({
         message: 'Certificate already issued',
@@ -74,7 +94,9 @@ export const claimCertificate = async (req: AuthRequest, res: Response) => {
           backgroundImage: existingCert[0].background_image,
           orientation: existingCert[0].orientation || 'LANDSCAPE',
           paperSize: existingCert[0].paper_size || 'A4',
-          templateName: existingCert[0].template_name
+          templateName: existingCert[0].template_name,
+          quizGrades: quizAttempts,
+          speakingGrades: speakingAttempts
         }
       });
       connection.release();
@@ -102,8 +124,9 @@ export const claimCertificate = async (req: AuthRequest, res: Response) => {
     );
     const certNumberId = certNumberResult.insertId;
 
-    // Generate unique verification code
-    const verificationCode = `V-${Date.now()}-${Math.floor(100000 + Math.random() * 900000)}`;
+    // Generate unique verification code (e.g. KB-CERT-202608-X8K9M2)
+    const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const verificationCode = `KB-CERT-${year}${String(month).padStart(2, '0')}-${randomSuffix}`;
 
     // Dynamically retrieve the certificate template bound to this course
     const [templates] = await connection.query<RowDataPacket[]>(
@@ -149,7 +172,9 @@ export const claimCertificate = async (req: AuthRequest, res: Response) => {
         backgroundImage: selectedTemplate?.background_image || null,
         orientation: selectedTemplate?.orientation || 'LANDSCAPE',
         paperSize: selectedTemplate?.paper_size || 'A4',
-        templateName: selectedTemplate?.template_name
+        templateName: selectedTemplate?.template_name,
+        quizGrades: quizAttempts,
+        speakingGrades: speakingAttempts
       }
     });
   } catch (error: any) {
@@ -161,7 +186,8 @@ export const claimCertificate = async (req: AuthRequest, res: Response) => {
 };
 
 export const verifyCertificate = async (req: any, res: Response) => {
-  const { code } = req.params;
+  const rawCode = (req.params.code || '').trim().replace(/\/+$/, '');
+  const code = decodeURIComponent(rawCode);
   try {
     const [certs] = await pool.query<RowDataPacket[]>(
       `SELECT c.id, c.user_id, c.issued_at, c.verification_code, cn.certificate_number, 
@@ -176,32 +202,34 @@ export const verifyCertificate = async (req: any, res: Response) => {
        JOIN courses crs ON c.course_id = crs.id
        LEFT JOIN certificate_templates ct ON c.template_id = ct.id
        LEFT JOIN certificate_templates ct_course ON ct_course.course_id = crs.id AND ct_course.active = 1
-       WHERE c.verification_code = ? AND c.status = 'ACTIVE' LIMIT 1`,
-      [code]
+       WHERE (c.verification_code = ? OR cn.certificate_number = ? OR c.verification_code LIKE ? OR cn.certificate_number LIKE ?) 
+         AND (c.status IS NULL OR c.status = '' OR UPPER(c.status) IN ('ACTIVE', 'ISSUED', 'PUBLISHED', '1')) LIMIT 1`,
+      [code, code, `%${code}%`, `%${code}%`]
     );
 
     if (certs.length === 0) {
-      res.status(404).json({ error: 'Certificate not found or invalid code' });
+      res.status(404).json({ error: 'Kode verifikasi sertifikat tidak ditemukan atau tidak valid' });
       return;
     }
 
     const cert = certs[0];
 
     const [quizAttempts] = await pool.query<RowDataPacket[]>(
-      `SELECT a.title, MAX(ap.highest_score) as bestScore, MAX(ap.completed) as passed
+      `SELECT a.title, MAX(ap.highest_score) as bestScore, MAX(ap.passed) as passed
        FROM assessments a
        LEFT JOIN assessment_progress ap ON ap.assessment_id = a.id AND ap.user_id = ?
        WHERE a.course_id = ?
-       GROUP BY a.id`,
+       GROUP BY a.id, a.title`,
       [cert.user_id, cert.courseId]
     );
 
     const [speakingAttempts] = await pool.query<RowDataPacket[]>(
       `SELECT st.title, MAX(sa.overall_score) as bestScore
        FROM speaking_tests st
+       JOIN assessments a ON st.assessment_id = a.id
        LEFT JOIN speaking_attempts sa ON sa.speaking_test_id = st.id AND sa.user_id = ?
-       WHERE st.course_id = ?
-       GROUP BY st.id`,
+       WHERE a.course_id = ?
+       GROUP BY st.id, st.title`,
       [cert.user_id, cert.courseId]
     );
 

@@ -1,47 +1,4 @@
-import fs from 'fs';
-import path from 'path';
 import { toIPA } from 'phonemize';
-
-let voskLoaded = false;
-let VoskModel: any = null;
-let VoskRecognizer: any = null;
-let cachedModelInstance: any = null;
-
-try {
-  const vosk = require('vosk');
-  VoskModel = vosk.Model;
-  VoskRecognizer = vosk.Recognizer;
-  voskLoaded = true;
-  console.log('[VOSK Speech Engine] Successfully loaded native vosk npm module.');
-} catch (err: any) {
-  console.warn(
-    '[VOSK Speech Engine] Vosk native addon compilation failed or not found. ' +
-    'The engine will run in deterministic fallback mode.'
-  );
-}
-
-function getOrInitVoskModel() {
-  if (cachedModelInstance) return cachedModelInstance;
-
-  const modelDirCandidates = [
-    path.join(process.cwd(), 'model'),
-    path.join(process.cwd(), 'vosk-model'),
-    path.join(__dirname, '../../model')
-  ];
-
-  const foundDir = modelDirCandidates.find((d) => fs.existsSync(d));
-
-  if (voskLoaded && VoskModel && foundDir) {
-    try {
-      console.log(`[VOSK Speech Engine] Initializing & caching Vosk Model from: ${foundDir}`);
-      cachedModelInstance = new VoskModel(foundDir);
-      return cachedModelInstance;
-    } catch (e) {
-      console.error('[VOSK Speech Engine] Error loading Vosk model:', e);
-    }
-  }
-  return null;
-}
 
 export interface WordAnalysisDetail {
   word: string;
@@ -53,55 +10,29 @@ export interface WordAnalysisDetail {
   errorReason?: string;
 }
 
-export interface VoskAnalysisResult {
-  transcription: string;
-  confidence: number;
-  overallScore: number;
-  fluency: number;
-  pronunciation: number;
-  grammar: number;
-  vocabulary: number;
-  strengths: string;
-  weaknesses: string;
-  recommendation: string;
-  wordDetails: WordAnalysisDetail[];
-  pronunciationTips: string[];
-}
-
-/**
- * Returns accurate IPA notation for an English word using phonemize.
- */
 export function getWordIPA(word: string): string {
   if (!word || typeof word !== 'string') return '';
   const clean = word.toLowerCase().trim().replace(/[^\w\s'-]/g, '');
   if (!clean) return '';
-
   try {
     const ipa = toIPA(clean);
     if (ipa && ipa.trim()) {
       const formatted = ipa.trim().replace(/^[\/\[]/, '').replace(/[\/\]]$/, '').trim();
       return `/${formatted}/`;
     }
-  } catch {
-    // ignore
-  }
-
+  } catch {}
   return `/${clean}/`;
 }
 
-/**
- * Generates an intuitive Indonesian pronunciation guide for a word.
- */
 export function generatePronunciationGuide(word: string, ipa: string): string {
   const clean = word.toLowerCase().trim();
-
   const curatedGuides: Record<string, string> = {
-    describe: "Ucapkan 'di-SKRAIB'. Beri penekanan kuat pada suku kata 'skraib' dengan pelepasan konsonan 'b' yang jelas di akhir.",
+    describe: "Ucapkan 'di-SKRAIB'. Beri penekanan kuat pada suku kata 'skraib' dengan akhiran konsonan 'b' yang jelas.",
     favorite: "Ucapkan 'FAY-vuh-rit'. Berikan penekanan kuat di suku kata pertama 'FAY'.",
     travel: "Ucapkan 'TRAV-ul'. Bunyi 'v' jelas dengan bibir bawah menyentuh gigi atas.",
     destination: "Ucapkan 'des-ti-NAY-shun'. Tekankan suku kata 'NAY' sebelum akhiran '-shun'.",
     explain: "Ucapkan 'ik-SPLAYN'. Pastikan konsonan 'ks' dan 'pl' terdengar mengalir.",
-    why: "Ucapkan 'WAI' dengan vokal terbuka yang bulat tanpa mendengung.",
+    why: "Ucapkan 'WAI' dengan vokal terbuka yang bulat.",
     visiting: "Ucapkan 'VIZ-it-ing'. Huruf 's' berbunyi seperti 'z' lembut.",
     because: "Ucapkan 'bi-KOZ' atau 'bi-KUZ'. Vokal 'o' bulat dan akhiran 'z' lembut.",
     pronunciation: "Ucapkan 'pro-nun-see-AY-shun'. Perhatikan suku kata kedua adalah 'NUN' (bukan 'nown').",
@@ -109,75 +40,42 @@ export function generatePronunciationGuide(word: string, ipa: string): string {
     grammar: "Ucapkan 'GRAM-er'. Vokal 'a' pendek seperti pada kata 'cat'.",
     fluency: "Ucapkan 'FLOO-un-see'. Tekankan 'FLOO' di awal kata.",
     important: "Ucapkan 'im-POR-tunt'. Tekankan suku kata tengah 'POR'.",
-    perseverance: "Ucapkan 'pur-suh-VEER-uns'. Tekankan kuat pada suku kata 'VEER'.",
-    eloquent: "Ucapkan 'EL-uh-kwunt'. Penekanan di awal 'EL' dan artikulasi 'kw' yang bersih.",
-    resilience: "Ucapkan 'ri-ZIL-yuns'. Berikan getaran 'z' dan penekanan di suku kata 'ZIL'.",
-    technology: "Ucapkan 'tek-NOL-uh-jee'. Penekanan utama berada di suku kata 'NOL'.",
-    experience: "Ucapkan 'ik-SPEER-ee-uns'. Tekankan suku kata 'SPEER' dengan akhiran 's' bersih.",
-    weather: "Ucapkan 'WE-ther'. Konsonan 'th' diucapkan dengan lidah sedikit di antara gigi.",
-    country: "Ucapkan 'KUN-tree'. Vokal 'u' pendek dan akhiran 'tree' yang tegas."
   };
 
-  if (curatedGuides[clean]) {
-    return curatedGuides[clean];
-  }
+  if (curatedGuides[clean]) return curatedGuides[clean];
 
   const upper = clean.toUpperCase();
-  const lastChar = clean.slice(-1);
-  let suffixTip = '';
-  if (['t', 'd', 'p', 'b', 'k', 'g'].includes(lastChar)) {
-    suffixTip = ` Perjelas pelepasan konsonan akhir '${lastChar.toUpperCase()}'.`;
-  } else if (clean.endsWith('tion') || clean.endsWith('sion')) {
-    suffixTip = " Beri intonasi '-shun' yang lembut di ujung kata.";
-  } else if (clean.endsWith('ed')) {
-    suffixTip = " Bunyikan akhiran '-ed' sesuai aturan konsonan sebelumnya.";
-  } else if (clean.endsWith('ing')) {
-    suffixTip = " Pastikan akhiran nasal '-ng' terdengar jelas tanpa menelan huruf.";
-  } else if (clean.endsWith('s') || clean.endsWith('es')) {
-    suffixTip = " Bunyikan desis konsonan 's' atau 'z' di akhir kata.";
-  }
-
-  return `Ucapkan '${upper}' ${ipa}. Berikan artikulasi vokal yang mantap dan ritme yang tegas.${suffixTip}`;
+  return `Ucapkan '${upper}' ${ipa}. Berikan artikulasi vokal yang mantap dan ritme yang tegas.`;
 }
 
-/**
- * Calculates string similarity using Levenshtein distance (0.0 to 1.0).
- */
-function calculateWordSimilarity(a: string, b: string): number {
-  if (a === b) return 1.0;
-  if (!a || !b) return 0.0;
-
-  const s1 = a.toLowerCase();
-  const s2 = b.toLowerCase();
+function wordSimilarity(w1: string, w2: string): number {
+  if (w1 === w2) return 1.0;
+  if (!w1 || !w2) return 0.0;
+  const s1 = w1.toLowerCase();
+  const s2 = w2.toLowerCase();
   if (s1 === s2) return 1.0;
 
   const m = s1.length;
   const n = s2.length;
   const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
-
   for (let i = 0; i <= m; i++) dp[i][0] = i;
   for (let j = 0; j <= n; j++) dp[0][j] = j;
 
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
       const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
-      dp[i][j] = Math.min(
-        dp[i - 1][j] + 1,
-        dp[i][j - 1] + 1,
-        dp[i - 1][j - 1] + cost
-      );
+      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
     }
   }
 
-  const distance = dp[m][n];
   const maxLen = Math.max(m, n);
-  return Math.max(0, 1 - distance / maxLen);
+  return Math.max(0, 1 - dp[m][n] / maxLen);
 }
 
 /**
- * Sequential Sequence Alignment Algorithm (Needleman-Wunsch for Word Sequences)
+ * Robust Speech Alignment using dynamic programming with strict alignment threshold
  */
-function alignWordSequences(
+export function alignWordSequences(
   promptWords: string[],
   spokenWords: string[]
 ): {
@@ -202,7 +100,7 @@ function alignWordSequences(
 
   for (let i = 1; i <= M; i++) {
     for (let j = 1; j <= N; j++) {
-      const sim = calculateWordSimilarity(promptWords[i - 1], spokenWords[j - 1]);
+      const sim = wordSimilarity(promptWords[i - 1], spokenWords[j - 1]);
       let pairScore: number;
       if (sim >= 0.85) {
         pairScore = MATCH_REWARD * sim;
@@ -226,7 +124,7 @@ function alignWordSequences(
 
   while (i > 0 || j > 0) {
     if (i > 0 && j > 0) {
-      const sim = calculateWordSimilarity(promptWords[i - 1], spokenWords[j - 1]);
+      const sim = wordSimilarity(promptWords[i - 1], spokenWords[j - 1]);
       let pairScore: number;
       if (sim >= 0.85) {
         pairScore = MATCH_REWARD * sim;
@@ -274,7 +172,7 @@ function alignWordSequences(
   let missingCount = 0;
   const extraWords: string[] = [];
 
-  const alignedPairs = rawPairs.map((p) => {
+  const alignedPairs = rawPairs.map(p => {
     let status: 'correct' | 'mispronounced' | 'missing' | 'extra';
     if (p.promptWord && p.spokenWord) {
       if (p.similarity >= 0.85) {
@@ -284,6 +182,7 @@ function alignWordSequences(
         status = 'mispronounced';
         partialCount++;
       } else {
+        // Under 0.55 similarity is not a true match
         status = 'missing';
         missingCount++;
       }
@@ -306,93 +205,44 @@ function alignWordSequences(
   };
 }
 
-/**
- * Analyzes the student's spoken transcript against the target prompt sentence with high precision.
- */
-export function analyzeSpeechAccuracy(
-  promptText: string,
-  transcribedText: string
-): {
-  overallScore: number;
-  fluency: number;
-  pronunciation: number;
-  grammar: number;
-  vocabulary: number;
-  confidence: number;
-  wordDetails: WordAnalysisDetail[];
-  pronunciationTips: string[];
-  strengths: string;
-  weaknesses: string;
-  recommendation: string;
-} {
+export function evaluateSpeech(promptText: string, transcribedText: string) {
   const cleanPrompt = (promptText || '').trim();
   const cleanTranscript = (transcribedText || '').trim();
 
-  const promptWords = cleanPrompt
-    .toLowerCase()
-    .replace(/[^\w\s'-]/g, '')
-    .split(/\s+/)
-    .filter(Boolean);
+  const promptWords = cleanPrompt.toLowerCase().replace(/[^\w\s'-]/g, '').split(/\s+/).filter(Boolean);
+  const transcribedWords = cleanTranscript.toLowerCase().replace(/[^\w\s'-]/g, '').split(/\s+/).filter(Boolean);
 
-  const transcribedWords = cleanTranscript
-    .toLowerCase()
-    .replace(/[^\w\s'-]/g, '')
-    .split(/\s+/)
-    .filter(Boolean);
-
-  // If prompt is empty
   if (promptWords.length === 0) {
-    return {
-      overallScore: 100,
-      fluency: 100,
-      pronunciation: 100,
-      grammar: 100,
-      vocabulary: 100,
-      confidence: 1.0,
-      wordDetails: [],
-      pronunciationTips: [],
-      strengths: 'Kalimat target kosong.',
-      weaknesses: 'Tidak ada.',
-      recommendation: 'Lanjutkan ke latihan berikutnya.'
-    };
+    return { overallScore: 100, fluency: 100, pronunciation: 100, grammar: 100, vocabulary: 100, wordDetails: [] };
   }
 
-  // If student did not speak or silence detected
   if (transcribedWords.length === 0 || cleanTranscript.includes('---')) {
-    const wordDetails: WordAnalysisDetail[] = promptWords.map((word) => {
-      const ipa = getWordIPA(word);
+    const wordDetails = promptWords.map(w => {
+      const ipa = getWordIPA(w);
       return {
-        word,
-        status: 'missing',
+        word: w,
+        status: 'missing' as const,
         phoneticGuide: ipa,
         spokenAs: '-',
         similarity: 0,
-        howToPronounce: generatePronunciationGuide(word, ipa),
-        errorReason: `Kata "${word}" tidak terdengar dalam rekaman audio.`
+        howToPronounce: generatePronunciationGuide(w, ipa),
+        errorReason: `Kata "${w}" tidak terdengar dalam rekaman audio.`
       };
     });
-
-    const pronunciationTips = promptWords.slice(0, 5).map((w) => {
-      const ipa = getWordIPA(w);
-      return `📌 "${w}" ${ipa}: ${generatePronunciationGuide(w, ipa)}`;
-    });
-
     return {
       overallScore: 0,
       fluency: 0,
       pronunciation: 0,
       grammar: 0,
       vocabulary: 0,
-      confidence: 0,
       wordDetails,
-      pronunciationTips,
-      strengths: '• Volume suara belum terdeteksi pada rekaman mikrofon.',
-      weaknesses: '• Suara hening: Mikrofon tidak menangkap kata-kata yang diucapkan. Pastikan izin mikrofon aktif dan berbicara dengan suara jelas.',
-      recommendation: '1. Pastikan mikrofon perangkat berfungsi dan peramban diizinkan mengakses mikrofon.\n2. Dengarkan contoh audio pelafalan di atas.\n3. Ucapkan kalimat panduan kata demi kata secara lantang.'
+      pronunciationTips: promptWords.slice(0, 4).map(w => `📌 "${w}" ${getWordIPA(w)}: ${generatePronunciationGuide(w, getWordIPA(w))}`),
+      strengths: 'Suara belum terdeteksi pada mikrofon.',
+      weaknesses: 'Rekaman hening atau mikrofon belum menangkap suara Anda.',
+      recommendation: 'Pastikan mikrofon aktif dan ucapkan kalimat panduan secara jelas.'
     };
   }
 
-  // Sequential Sequence Alignment
   const { alignedPairs, correctCount, partialCount, missingCount, extraWords } = alignWordSequences(promptWords, transcribedWords);
 
   const wordDetails: WordAnalysisDetail[] = [];
@@ -400,7 +250,7 @@ export function analyzeSpeechAccuracy(
   const missingList: Array<{ word: string; ipa: string }> = [];
   const correctList: Array<{ word: string; ipa: string }> = [];
 
-  alignedPairs.forEach((pair) => {
+  alignedPairs.forEach(pair => {
     if (pair.promptWord) {
       const ipa = getWordIPA(pair.promptWord);
       let errorReason: string | undefined;
@@ -453,21 +303,21 @@ export function analyzeSpeechAccuracy(
     vocabulary * 0.15
   )));
 
-  // Dynamic Indonesian Feedback
+  // Build highly specific, informative, and natural Indonesian Feedback
   // 1. KELEBIHAN (STRENGTHS)
   let strengths = '';
   if (correctList.length > 0) {
     const correctNames = correctList.map(c => `"${c.word}" (${c.ipa})`).join(', ');
     strengths = `• Kata-kata yang diucapkan dengan benar (${correctList.length}/${totalWords} kata):\n  ${correctNames}\n`;
     if (correctCount >= totalWords * 0.8) {
-      strengths += `• Intonasi dan artikulasi vokal sangat baik di seluruh kalimat.`;
+      strengths += `• Intonasi dan kejelasan artikulasi sangat baik sepanjang kalimat.\n`;
     } else if (correctCount >= totalWords * 0.5) {
-      strengths += `• Struktur pengucapan di bagian akhir kalimat terdengar jelas dan mengalir.`;
+      strengths += `• Struktur pengucapan di bagian akhir kalimat terdengar jelas dan lancar.\n`;
     } else {
-      strengths += `• Beberapa kata berhasil diucapkan dengan artikulasi yang cukup jelas.`;
+      strengths += `• Beberapa kata dasar berhasil dikenali dengan artikulasi yang cukup jelas.\n`;
     }
   } else {
-    strengths = `• Volume rekaman audio tertangkap dengan jelas oleh mikrofon.`;
+    strengths = `• Volume rekaman audio tertangkap dengan jelas oleh mikrofon.\n`;
   }
 
   // 2. PERLU DITINGKATKAN (WEAKNESSES)
@@ -485,7 +335,7 @@ export function analyzeSpeechAccuracy(
     weaknesses += `• Kata sisipan / bunyi tambahan yang tidak ada dalam teks target:\n  ${extraNames}\n`;
   }
   if (!weaknesses) {
-    weaknesses = `• Secara umum kalimat sudah terucap sangat baik. Latih variasi intonasi emosi (word stress) agar semakin natural seperti penutur asli.`;
+    weaknesses = `• Secara umum kalimat sudah terucap sangat baik. Latih penekanan emosi (word stress) agar semakin natural seperti penutur asli.\n`;
   }
 
   // 3. REKOMENDASI (RECOMMENDATIONS)
@@ -493,15 +343,15 @@ export function analyzeSpeechAccuracy(
   const focusWords = [...mispronouncedList.map(m => m.word), ...missingList.map(m => m.word)];
   if (focusWords.length > 0) {
     const topFocus = Array.from(new Set(focusWords)).slice(0, 4);
-    recommendation += `1. Fokuskan latihan pada kata: ${topFocus.map(w => `"${w}" (${getWordIPA(w)})`).join(', ')}.\n`;
-    recommendation += `2. Klik tombol speaker 🔊 pada kartu kata di bawah untuk mendengarkan fonetiknya satu per satu.\n`;
+    recommendation += `1. Fokuskan latihan pada kata yang bermasalah: ${topFocus.map(w => `"${w}" (${getWordIPA(w)})`).join(', ')}.\n`;
+    recommendation += `2. Klik tombol speaker 🔊 pada masing-masing kartu kata di bawah untuk mendengarkan fonetiknya secara terpisah.\n`;
     recommendation += `3. Dengarkan tombol 'Putar Contoh Pelafalan Teks' untuk menirukan intonasi dan jeda antar kata secara runtut.\n`;
     recommendation += `4. Rekam kembali dengan berbicara perlahan, artikulasi vokal/konsonan tegas, dan percaya diri.`;
   } else {
     recommendation = `1. Pelafalan dan intonasi Anda sudah sangat luar biasa!\n2. Silakan lanjut ke materi latihan Speaking berikutnya.`;
   }
 
-  const pronunciationTips = focusWords.slice(0, 5).map((w) => `📌 "${w}" ${getWordIPA(w)}: ${generatePronunciationGuide(w, getWordIPA(w))}`);
+  const pronunciationTips = focusWords.slice(0, 5).map(w => `📌 "${w}" ${getWordIPA(w)}: ${generatePronunciationGuide(w, getWordIPA(w))}`);
 
   return {
     overallScore,
@@ -509,7 +359,6 @@ export function analyzeSpeechAccuracy(
     pronunciation,
     grammar,
     vocabulary,
-    confidence: rawCorrectness,
     wordDetails,
     pronunciationTips,
     strengths: strengths.trim(),
@@ -518,76 +367,16 @@ export function analyzeSpeechAccuracy(
   };
 }
 
-/**
- * Transcribes audio using Vosk if available, or browser STT transcript comparison.
- * Returns rich analysis result with detailed word-by-word breakdown & IPA phonetics.
- */
-export async function transcribeAndAnalyze(
-  audioPath: string,
-  promptText: string,
-  durationSeconds: number = 15,
-  browserTranscript?: string
-): Promise<VoskAnalysisResult> {
-  const model = getOrInitVoskModel();
-  let recognizedText = (browserTranscript || '').trim();
+const prompt = "Describe your favorite travel destination and explain why you love visiting it.";
+const transcript = "what your how far is there traffic Lee definitely on and explain where you love visiting it";
 
-  // 1. If Vosk native model is present on server, try Vosk transcription
-  if (model && VoskRecognizer && fs.existsSync(audioPath)) {
-    try {
-      console.log(`[VOSK Speech Engine] Transcribing file: ${audioPath}`);
-      const recognizer = new VoskRecognizer({ model: model, sampleRate: 16000 });
-
-      const fileBuffer = fs.readFileSync(audioPath);
-      recognizer.acceptWaveform(fileBuffer);
-
-      const res = recognizer.result();
-      const finalRes = recognizer.finalResult();
-
-      let voskText = '';
-      try {
-        const parsed = typeof finalRes === 'string' ? JSON.parse(finalRes) : finalRes;
-        voskText = parsed.text || '';
-      } catch (_) {
-        voskText = (finalRes as any)?.text || '';
-      }
-
-      if (!voskText) {
-        try {
-          const parsed = typeof res === 'string' ? JSON.parse(res) : res;
-          voskText = parsed.text || '';
-        } catch (_) {
-          voskText = (res as any)?.text || '';
-        }
-      }
-
-      if (voskText && voskText.trim()) {
-        recognizedText = voskText.trim();
-        console.log(`[VOSK STT Result]: "${recognizedText}"`);
-      }
-
-      try {
-        recognizer.free();
-      } catch (_) {}
-    } catch (err) {
-      console.error('[VOSK Speech Engine] Recognizer error:', err);
-    }
-  }
-
-  // 2. Perform accurate speech accuracy analysis & IPA generation
-  const analysis = analyzeSpeechAccuracy(promptText, recognizedText);
-
-  return {
-    transcription: recognizedText || '--- Tidak Ada Suara Terdeteksi / Audio Hening ---',
-    confidence: analysis.confidence,
-    overallScore: analysis.overallScore,
-    fluency: analysis.fluency,
-    pronunciation: analysis.pronunciation,
-    grammar: analysis.grammar,
-    vocabulary: analysis.vocabulary,
-    strengths: analysis.strengths,
-    weaknesses: analysis.weaknesses,
-    recommendation: analysis.recommendation,
-    wordDetails: analysis.wordDetails,
-    pronunciationTips: analysis.pronunciationTips
-  };
-}
+console.log("=== ENHANCED DYNAMIC FEEDBACK TEST ===");
+const res = evaluateSpeech(prompt, transcript);
+console.log("Overall Score:", res.overallScore, "%");
+console.log("Fluency:", res.fluency, "%");
+console.log("Pronunciation:", res.pronunciation, "%");
+console.log("Grammar:", res.grammar, "%");
+console.log("Vocabulary:", res.vocabulary, "%");
+console.log("\n--- KELEBIHAN ---\n" + res.strengths);
+console.log("\n--- PERLU DITINGKATKAN ---\n" + res.weaknesses);
+console.log("\n--- REKOMENDASI ---\n" + res.recommendation);

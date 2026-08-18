@@ -3,7 +3,7 @@ import pool from '../config/db';
 import { AuthRequest } from '../middleware/auth';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { addXpTransaction } from '../utils/xp';
-import { updateProgressHelper } from '../utils/progress';
+import { updateProgressHelper, checkSequentialLessonLock } from '../utils/progress';
 
 export const getLesson = async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
@@ -30,24 +30,41 @@ export const getLesson = async (req: AuthRequest, res: Response) => {
 
     const lesson = lessons[0];
 
-    // Verify user is enrolled in the course containing this module/lesson
-    const [enrollments] = await pool.query<RowDataPacket[]>(
-      `SELECT e.id 
-       FROM enrollments e
-       JOIN course_versions cv ON e.course_id = cv.course_id
-       JOIN modules m ON cv.id = m.course_version_id
-       WHERE m.id = ? AND e.user_id = ? AND e.status = 'ACTIVE'`,
-      [lesson.module_id, req.user.id]
-    );
+    // Verify user is enrolled in the course containing this module/lesson (or bypass if Admin/Tutor/Manager)
+    const userRoleNum = Number(req.user.roleId || (req.user as any).role_id || (req.user as any).role || 4);
+    const isAdminOrTutor = userRoleNum === 1 || userRoleNum === 2 || userRoleNum === 3 || userRoleNum === 5;
 
-    if (enrollments.length === 0) {
-       res.status(403).json({ error: 'You are not enrolled in this course' });
-       return;
+    if (!isAdminOrTutor) {
+      const [enrollments] = await pool.query<RowDataPacket[]>(
+        `SELECT e.id 
+         FROM enrollments e
+         JOIN course_versions cv ON e.course_id = cv.course_id
+         JOIN modules m ON cv.id = m.course_version_id
+         WHERE m.id = ? AND e.user_id = ? AND (e.status = 'ACTIVE' OR LOWER(e.status) = 'active') AND (e.expired_at IS NULL OR e.expired_at >= NOW())`,
+        [lesson.module_id, req.user.id]
+      );
+
+      if (enrollments.length === 0) {
+         res.status(403).json({ error: 'You are not enrolled in this course' });
+         return;
+      }
+
+      // Sequential lock check: lessons must be learned and completed in order
+      const lockCheck = await checkSequentialLessonLock(pool, req.user.id, lesson.id);
+      if (lockCheck.isLocked) {
+        res.status(403).json({
+          error: `Materi "${lesson.title}" masih terkunci. Anda harus menyelesaikan materi "${lockCheck.requiredLessonTitle}" terlebih dahulu sesuai urutan.`,
+          isLocked: true,
+          requiredLessonId: lockCheck.requiredLessonId,
+          requiredLessonTitle: lockCheck.requiredLessonTitle
+        });
+        return;
+      }
     }
 
     // 2. Fetch lesson contents (including parsed attachments for student view)
     const [contentsRaw] = await pool.query<RowDataPacket[]>(
-      'SELECT id, content_type, title, description, content_order, estimated_minutes, attachments FROM lesson_contents WHERE lesson_id = ? AND status IN ("ACTIVE", "PUBLISHED") ORDER BY content_order ASC',
+      'SELECT id, content_type, title, description, content_order, estimated_minutes, attachments FROM lesson_contents WHERE lesson_id = ? AND (status IS NULL OR status = "" OR status IN ("ACTIVE", "PUBLISHED")) ORDER BY content_order ASC',
       [lesson.id]
     );
     // Parse attachments JSON; strip raw base64 data (send full data for inline view)

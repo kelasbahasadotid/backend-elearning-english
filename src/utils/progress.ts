@@ -165,6 +165,65 @@ export const updateProgressHelper = async (
     moduleProgressPercent,
     courseId,
     courseProgressPercent,
-    awardXp
+    awardXp,
+    completed: isCompleted === 1
   };
+};
+
+export const checkSequentialLessonLock = async (
+  poolOrConn: any,
+  userId: number,
+  lessonId: number
+): Promise<{ isLocked: boolean; requiredLessonId?: number; requiredLessonTitle?: string; currentLessonTitle?: string }> => {
+  try {
+    // 1. Fetch lesson and module info
+    const [lessonRows]: any = await poolOrConn.query(
+      `SELECT l.id, l.title, l.module_id, cv.id as course_version_id
+       FROM lessons l
+       JOIN modules m ON l.module_id = m.id
+       JOIN course_versions cv ON m.course_version_id = cv.id
+       WHERE l.id = ?`,
+      [lessonId]
+    );
+
+    if (!lessonRows || lessonRows.length === 0) {
+      return { isLocked: false };
+    }
+
+    const { title: currentLessonTitle, course_version_id } = lessonRows[0];
+
+    // 2. Fetch all published lessons in this course version in chronological order
+    const [allLessons]: any = await poolOrConn.query(
+      `SELECT l.id, l.title, m.module_order, l.lesson_order,
+              COALESCE(lp.completed, 0) as completed
+       FROM lessons l
+       JOIN modules m ON l.module_id = m.id
+       LEFT JOIN lesson_progress lp ON l.id = lp.lesson_id AND lp.user_id = ?
+       WHERE m.course_version_id = ? AND m.status = 'PUBLISHED' AND l.status = 'PUBLISHED' AND l.deleted_at IS NULL
+       ORDER BY m.module_order ASC, l.lesson_order ASC, l.id ASC`,
+      [userId, course_version_id]
+    );
+
+    const targetIdx = allLessons.findIndex((cl: any) => cl.id === lessonId);
+    if (targetIdx <= 0) {
+      // First lesson in course is always unlocked
+      return { isLocked: false, currentLessonTitle };
+    }
+
+    // Check if any prior lesson is not completed
+    const priorIncomplete = allLessons.slice(0, targetIdx).find((cl: any) => !cl.completed);
+    if (priorIncomplete) {
+      return {
+        isLocked: true,
+        requiredLessonId: priorIncomplete.id,
+        requiredLessonTitle: priorIncomplete.title,
+        currentLessonTitle
+      };
+    }
+
+    return { isLocked: false, currentLessonTitle };
+  } catch (err) {
+    console.error('Error in checkSequentialLessonLock:', err);
+    return { isLocked: false };
+  }
 };

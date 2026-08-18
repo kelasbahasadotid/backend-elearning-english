@@ -18,6 +18,7 @@ import notificationRoutes from './routes/notificationRoutes';
 import taskRoutes from './routes/taskRoutes';
 import discussionRoutes from './routes/discussionRoutes';
 import h5pRoutes from './routes/h5pRoutes';
+import mediaRoutes from './routes/mediaRoutes';
 
 dotenv.config();
 
@@ -41,7 +42,9 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // Mount routes
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/payment', paymentRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/orders', paymentRoutes);
 app.use('/api/study', studyRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/speaking', speakingRoutes);
@@ -52,7 +55,9 @@ app.use('/api/students', studentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/discussions', discussionRoutes);
+app.use('/api/media', mediaRoutes);
 app.use('/api', h5pRoutes);
+
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
