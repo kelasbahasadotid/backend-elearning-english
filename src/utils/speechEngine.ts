@@ -96,16 +96,16 @@ export function generatePronunciationGuide(word: string, ipa: string): string {
   const clean = word.toLowerCase().trim();
 
   const curatedGuides: Record<string, string> = {
-    describe: "Ucapkan 'di-SKRAIB'. Beri penekanan kuat pada suku kata 'skraib' dengan pelepasan konsonan 'b' yang jelas di akhir.",
-    favorite: "Ucapkan 'FAY-vuh-rit'. Berikan penekanan kuat di suku kata pertama 'FAY'.",
-    travel: "Ucapkan 'TRAV-ul'. Bunyi 'v' jelas dengan bibir bawah menyentuh gigi atas.",
-    destination: "Ucapkan 'des-ti-NAY-shun'. Tekankan suku kata 'NAY' sebelum akhiran '-shun'.",
-    explain: "Ucapkan 'ik-SPLAYN'. Pastikan konsonan 'ks' dan 'pl' terdengar mengalir.",
-    why: "Ucapkan 'WAI' dengan vokal terbuka yang bulat tanpa mendengung.",
-    visiting: "Ucapkan 'VIZ-it-ing'. Huruf 's' berbunyi seperti 'z' lembut.",
-    because: "Ucapkan 'bi-KOZ' atau 'bi-KUZ'. Vokal 'o' bulat dan akhiran 'z' lembut.",
-    pronunciation: "Ucapkan 'pro-nun-see-AY-shun'. Perhatikan suku kata kedua adalah 'NUN' (bukan 'nown').",
-    vocabulary: "Ucapkan 'vuh-KAB-yuh-ler-ee'. Penekanan utama berada di suku kata 'KAB'.",
+    describe: "Ucapkan 'di-SKRAIB'. Tekankan suku kata 'SKRAIB' dengan artikulasi vokal 'ai' dan lepaskan konsonan 'b' tegas di akhir.",
+    favorite: "Ucapkan 'FAY-vuh-rit'. Tekankan suku kata pertama 'FAY' dan bunyikan 'v' dengan bibir bawah pada gigi atas.",
+    travel: "Ucapkan 'TRAV-ul'. Bunyi 'v' diucapkan jelas dengan getaran vokal bulat.",
+    destination: "Ucapkan 'des-ti-NAY-shun'. Tekankan suku kata 'NAY' sebelum akhiran '-shun' yang mengalir.",
+    explain: "Ucapkan 'ik-SPLAYN'. Pastikan bunyi konsonan 'ks' dan 'pl' terdengar runtut tanpa terputus.",
+    why: "Ucapkan 'WAI' dengan vokal terbuka bulat tanpa mendengung.",
+    visiting: "Ucapkan 'VIZ-it-ing'. Huruf 's' berbunyi seperti 'z' lembut dan akhiran '-ing' terdengar jelas.",
+    because: "Ucapkan 'bi-KOZ' atau 'bi-KUZ'. Vokal 'o' bulat dan akhiran 'z' lembut di ujung kata.",
+    pronunciation: "Ucapkan 'pro-nun-see-AY-shun'. Suku kata kedua adalah 'NUN' (bukan 'nown') dengan penekanan di 'AY'.",
+    vocabulary: "Ucapkan 'vuh-KAB-yuh-ler-ee'. Penekanan utama pada 'KAB' dengan artikulasi vokal yang jelas.",
     grammar: "Ucapkan 'GRAM-er'. Vokal 'a' pendek seperti pada kata 'cat'.",
     fluency: "Ucapkan 'FLOO-un-see'. Tekankan 'FLOO' di awal kata.",
     important: "Ucapkan 'im-POR-tunt'. Tekankan suku kata tengah 'POR'.",
@@ -114,8 +114,16 @@ export function generatePronunciationGuide(word: string, ipa: string): string {
     resilience: "Ucapkan 'ri-ZIL-yuns'. Berikan getaran 'z' dan penekanan di suku kata 'ZIL'.",
     technology: "Ucapkan 'tek-NOL-uh-jee'. Penekanan utama berada di suku kata 'NOL'.",
     experience: "Ucapkan 'ik-SPEER-ee-uns'. Tekankan suku kata 'SPEER' dengan akhiran 's' bersih.",
-    weather: "Ucapkan 'WE-ther'. Konsonan 'th' diucapkan dengan lidah sedikit di antara gigi.",
-    country: "Ucapkan 'KUN-tree'. Vokal 'u' pendek dan akhiran 'tree' yang tegas."
+    weather: "Ucapkan 'WE-ther'. Konsonan 'th' diucapkan dengan ujung lidah di antara gigi atas dan bawah.",
+    country: "Ucapkan 'KUN-tree'. Vokal 'u' pendek dan akhiran 'tree' yang tegas.",
+    english: "Ucapkan 'ING-glish'. Tekankan 'ING' dan akhiran desis '-sh' yang mengalir.",
+    speaking: "Ucapkan 'SPEEK-ing'. Vokal 'ee' panjang dan akhiran nasal '-ng' terdengar bersih.",
+    practice: "Ucapkan 'PRAK-tis'. Penekanan di suku kata pertama 'PRAK' dan akhiran 's' tipis.",
+    student: "Ucapkan 'STOO-dunt' atau 'STYOO-dunt'. Tekankan suku kata pertama 'STOO'.",
+    teacher: "Ucapkan 'TEE-cher'. Tekankan suku kata pertama 'TEE' dengan konsonan '-cher' yang mengalir.",
+    learning: "Ucapkan 'LUR-ning'. Tekankan 'LUR' dengan bunyi vokal bulat.",
+    language: "Ucapkan 'LANG-gwij'. Penekanan di 'LANG' dan akhiran konsonan 'j' tajam.",
+    confidence: "Ucapkan 'KON-fi-duns'. Tekankan suku kata awal 'KON'."
   };
 
   if (curatedGuides[clean]) {
@@ -130,14 +138,16 @@ export function generatePronunciationGuide(word: string, ipa: string): string {
   } else if (clean.endsWith('tion') || clean.endsWith('sion')) {
     suffixTip = " Beri intonasi '-shun' yang lembut di ujung kata.";
   } else if (clean.endsWith('ed')) {
-    suffixTip = " Bunyikan akhiran '-ed' sesuai aturan konsonan sebelumnya.";
+    suffixTip = " Bunyikan akhiran '-ed' sesuai aturan fonetik konsonan sebelumnya.";
   } else if (clean.endsWith('ing')) {
     suffixTip = " Pastikan akhiran nasal '-ng' terdengar jelas tanpa menelan huruf.";
   } else if (clean.endsWith('s') || clean.endsWith('es')) {
     suffixTip = " Bunyikan desis konsonan 's' atau 'z' di akhir kata.";
+  } else if (clean.endsWith('th')) {
+    suffixTip = " Tempatkan ujung lidah di antara gigi untuk membunyikan konsonan 'th'.";
   }
 
-  return `Ucapkan '${upper}' ${ipa}. Berikan artikulasi vokal yang mantap dan ritme yang tegas.${suffixTip}`;
+  return `Ucapkan '${upper}' ${ipa}. Artikulasikan vokal secara tegas dan perhatikan ritme kata.${suffixTip}`;
 }
 
 /**

@@ -178,14 +178,16 @@ export const getCourseDetails = async (req: Request, res: Response) => {
         for (const les of mod.lessons) {
           if (isAdminOrTutor || !userId) {
             les.is_locked = false;
+          } else if (les.completed) {
+            // Already completed lessons are ALWAYS unlocked
+            les.is_locked = false;
           } else {
+            // Uncompleted lessons: only the first uncompleted lesson is unlocked (active step)
             if (foundActiveIncomplete) {
               les.is_locked = true;
             } else {
               les.is_locked = false;
-              if (!les.completed) {
-                foundActiveIncomplete = true;
-              }
+              foundActiveIncomplete = true;
             }
           }
         }

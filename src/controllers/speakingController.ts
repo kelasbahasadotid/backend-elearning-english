@@ -108,7 +108,7 @@ export const submitAttempt = async (req: AuthRequest, res: Response) => {
 
     // Verify student is enrolled in the parent course
     const [testRows] = await connection.query<RowDataPacket[]>(
-      `SELECT a.course_id, a.assessment_id, a.title as test_title, l.id as lesson_id, l.title as lesson_title, l.max_attempt 
+      `SELECT a.course_id, a.id as assessment_id, a.title as test_title, l.id as lesson_id, l.title as lesson_title, l.max_attempt 
        FROM speaking_tests st
        JOIN assessments a ON st.assessment_id = a.id
        LEFT JOIN lessons l ON a.lesson_id = l.id

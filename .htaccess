@@ -1,0 +1,77 @@
+# ==============================================================================
+# .HTACCESS CONFIGURATION FOR NODE.JS BACKEND (EXPRESS LMS API)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. CPANEL NODE.JS SELECTOR / PHUSION PASSENGER (DEFAULT HOSTING MODE)
+# ------------------------------------------------------------------------------
+<IfModule mod_passenger.c>
+    PassengerEnabled On
+    PassengerAppType node
+    PassengerStartupFile app.js
+    PassengerAppRoot /home/username/path-to-backend
+    PassengerNodejs /home/username/nodevenv/path-to-backend/XX/bin/node
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# 2. APACHE REWRITE & REVERSE PROXY (IF RUNNING VIA PORT / PM2)
+# ------------------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Ensure Authorization header is passed to Node.js / Express
+    RewriteCond %{HTTP:Authorization} ^(.*)
+    RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
+
+    # Handle HTTPS redirection (Optional - enable if not handled by Cloudflare/cPanel)
+    # RewriteCond %{HTTPS} off
+    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # If running with Reverse Proxy (e.g., PM2 on port 5000 / 3000), uncomment lines below:
+    # RewriteCond %{REQUEST_FILENAME} !-f
+    # RewriteCond %{REQUEST_FILENAME} !-d
+    # RewriteRule ^(.*)$ http://127.0.0.1:5000/$1 [P,L]
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# 3. INCREASE FILE UPLOAD & REQUEST BODY LIMIT (100 MB FOR AUDIO/MEDIA/DOCS)
+# ------------------------------------------------------------------------------
+<IfModule mod_core.c>
+    LimitRequestBody 104857600
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# 4. CORS & SECURITY HEADERS
+# ------------------------------------------------------------------------------
+<IfModule mod_headers.c>
+    # Pass Authorization and Content-Type headers
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control"
+    Header always set Access-Control-Allow-Credentials "true"
+
+    # Security Headers
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "no-referrer-when-downgrade"
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# 5. GZIP / DEFLATE COMPRESSION FOR HIGH PERFORMANCE
+# ------------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# 6. DISABLE DIRECTORY BROWSING
+# ------------------------------------------------------------------------------
+Options -Indexes

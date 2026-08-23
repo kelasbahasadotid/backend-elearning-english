@@ -10,7 +10,7 @@ import {
   createCertificateTemplate, updateCertificateTemplate, deleteCertificateTemplate, getAllCertificateTemplates,
   
   // User Management
-  getAllUsers, createUser, updateUser, deleteUser,
+  getAllUsers, createUser, updateUser, deleteUser, getUserProgressSummary, resetUserLessonProgress,
   
   // Quiz Questions & Options
   getQuizQuestions, createQuizQuestion, updateQuizQuestion, deleteQuizQuestion,
@@ -95,6 +95,8 @@ router.get('/users', adminOnly, getAllUsers);
 router.post('/users', adminOnly, createUser);
 router.put('/users/:id', adminOnly, updateUser);
 router.delete('/users/:id', adminOnly, deleteUser);
+router.get('/users/:id/progress-summary', adminOnly, getUserProgressSummary);
+router.post('/users/:id/reset-progress', adminOnly, resetUserLessonProgress);
 
 // Banners (Admin Only)
 router.get('/banners', adminOnly, getAllBanners);

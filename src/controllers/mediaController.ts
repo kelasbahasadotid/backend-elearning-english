@@ -9,7 +9,7 @@ function determineFileType(mimeType: string, filename: string): 'AUDIO' | 'VIDEO
   const lowerMime = (mimeType || '').toLowerCase();
   const ext = path.extname(filename || '').toLowerCase();
 
-  if (lowerMime.startsWith('audio/') || ['.mp3', '.wav', '.ogg', '.m4a', '.aac', '.flac'].includes(ext)) {
+  if (lowerMime.startsWith('audio/') || ['.aac', '.wav'].includes(ext)) {
     return 'AUDIO';
   }
   if (lowerMime.startsWith('video/') || ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'].includes(ext)) {
@@ -156,6 +156,18 @@ export const uploadMediaFile = async (req: AuthRequest, res: Response) => {
     const file = req.file;
     if (!file) {
       res.status(400).json({ error: 'No file uploaded' });
+      return;
+    }
+
+    const ext = path.extname(file.originalname).toLowerCase();
+    const isAudioFile = (file.mimetype && file.mimetype.startsWith('audio/')) || ['.mp3', '.wav', '.aac', '.ogg', '.m4a', '.flac', '.wma'].includes(ext);
+
+    if (isAudioFile && ext !== '.aac' && ext !== '.wav') {
+      const localPath = path.join(process.cwd(), 'uploads/media', file.filename);
+      if (fs.existsSync(localPath)) {
+        try { fs.unlinkSync(localPath); } catch (_) {}
+      }
+      res.status(400).json({ error: 'Format berkas audio tidak didukung. Berkas audio wajib ber-ekstensi .aac atau .wav.' });
       return;
     }
 
@@ -357,7 +369,7 @@ export const generateAiAudio = async (req: AuthRequest, res: Response) => {
     }
 
     const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1e5);
-    const filename = `ai-audio-${uniqueId}.mp3`;
+    const filename = `ai-audio-${uniqueId}.wav`;
     const fullPath = path.join(mediaDir, filename);
     fs.writeFileSync(fullPath, audioBuffer);
 
@@ -371,7 +383,7 @@ export const generateAiAudio = async (req: AuthRequest, res: Response) => {
     const [result]: any = await pool.query(`
       INSERT INTO media_files
       (title, filename, file_url, file_type, mime_type, file_size, duration_seconds, source_type, ai_prompt_text, ai_voice_code, ai_speed, target_placement, created_by)
-      VALUES (?, ?, ?, 'AUDIO', 'audio/mpeg', ?, ?, 'AI_TTS', ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, 'AUDIO', 'audio/wav', ?, ?, 'AI_TTS', ?, ?, ?, ?, ?)
     `, [
       title,
       filename,
@@ -464,7 +476,7 @@ export const generateAiDialogue = async (req: AuthRequest, res: Response) => {
     }
 
     const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1e5);
-    const filename = `ai-dialogue-${uniqueId}.mp3`;
+    const filename = `ai-dialogue-${uniqueId}.wav`;
     const fullPath = path.join(mediaDir, filename);
     fs.writeFileSync(fullPath, combinedBuffer);
 
@@ -479,7 +491,7 @@ export const generateAiDialogue = async (req: AuthRequest, res: Response) => {
     const [result]: any = await pool.query(`
       INSERT INTO media_files
       (title, filename, file_url, file_type, mime_type, file_size, duration_seconds, source_type, ai_prompt_text, ai_voice_code, ai_speed, target_placement, created_by)
-      VALUES (?, ?, ?, 'AUDIO', 'audio/mpeg', ?, ?, 'AI_TTS', ?, 'MULTI_SPEAKER', 1.00, ?, ?)
+      VALUES (?, ?, ?, 'AUDIO', 'audio/wav', ?, ?, 'AI_TTS', ?, 'MULTI_SPEAKER', 1.0, ?, ?)
     `, [
       autoTitle,
       filename,
@@ -624,7 +636,7 @@ export const updateMedia = async (req: AuthRequest, res: Response) => {
 export const deleteMedia = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const [rows]: any = await pool.query('SELECT * FROM media_files WHERE id = ?', [id]);
+    const [rows]: any = await pool.query('SELECT * FROM media_files WHERE id = ? AND deleted_at IS NULL', [id]);
 
     if (!rows || rows.length === 0) {
       res.status(404).json({ error: 'Media not found' });
@@ -635,7 +647,8 @@ export const deleteMedia = async (req: AuthRequest, res: Response) => {
 
     // Delete local file if it's stored on disk and was an upload / AI generated
     if (item.file_url && item.file_url.startsWith('/uploads/media/')) {
-      const localPath = path.join(__dirname, '../../', item.file_url);
+      const relativePath = item.file_url.replace(/^\//, '');
+      const localPath = path.join(process.cwd(), relativePath);
       if (fs.existsSync(localPath)) {
         try {
           fs.unlinkSync(localPath);
@@ -644,6 +657,9 @@ export const deleteMedia = async (req: AuthRequest, res: Response) => {
         }
       }
     }
+
+    // Soft delete the media_files record in the database
+    await pool.query('UPDATE media_files SET deleted_at = NOW() WHERE id = ?', [id]);
 
     res.json({
       success: true,

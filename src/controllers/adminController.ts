@@ -526,15 +526,55 @@ export const updateLesson = async (req: Request, res: Response) => {
 
 export const deleteLesson = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const connection = await pool.getConnection();
   try {
-    const [result] = await pool.query<ResultSetHeader>('DELETE FROM lessons WHERE id = ?', [id]);
+    await connection.beginTransaction();
+
+    // 1. Delete associated assessments & their questions/options/attempts
+    const [assessments]: any = await connection.query('SELECT id FROM assessments WHERE lesson_id = ?', [id]);
+    if (Array.isArray(assessments)) {
+      for (const quiz of assessments) {
+        await connection.query('DELETE FROM user_assessment_attempts WHERE assessment_id = ?', [quiz.id]).catch(() => {});
+        await connection.query(
+          'DELETE FROM assessment_options WHERE question_id IN (SELECT id FROM assessment_questions WHERE assessment_id = ?)',
+          [quiz.id]
+        ).catch(() => {});
+        await connection.query('DELETE FROM assessment_questions WHERE assessment_id = ?', [quiz.id]).catch(() => {});
+      }
+    }
+    await connection.query('DELETE FROM assessments WHERE lesson_id = ?', [id]);
+
+    // 2. Delete lesson_contents & attachments
+    const [contents]: any = await connection.query('SELECT id FROM lesson_contents WHERE lesson_id = ?', [id]);
+    if (Array.isArray(contents)) {
+      for (const cnt of contents) {
+        await connection.query('DELETE FROM lesson_content_attachments WHERE content_id = ?', [cnt.id]).catch(() => {});
+      }
+    }
+    await connection.query('DELETE FROM lesson_contents WHERE lesson_id = ?', [id]);
+
+    // 3. Delete progress, bookmarks, h5p, assignments
+    await connection.query('DELETE FROM lesson_progress WHERE lesson_id = ?', [id]).catch(() => {});
+    await connection.query('DELETE FROM h5p_contents WHERE lesson_id = ?', [id]).catch(() => {});
+    await connection.query('DELETE FROM lesson_bookmarks WHERE lesson_id = ?', [id]).catch(() => {});
+    await connection.query('UPDATE assignments SET lesson_id = NULL WHERE lesson_id = ?', [id]).catch(() => {});
+    await connection.query('UPDATE speaking_practices SET lesson_id = NULL WHERE lesson_id = ?', [id]).catch(() => {});
+
+    // 4. Finally delete the lesson record itself
+    const [result] = await connection.query<ResultSetHeader>('DELETE FROM lessons WHERE id = ?', [id]);
+
+    await connection.commit();
+
     if (result.affectedRows === 0) {
-       res.status(404).json({ error: 'Lesson not found' });
-       return;
+      res.status(404).json({ error: 'Lesson not found' });
+      return;
     }
     res.json({ message: 'Lesson deleted successfully' });
   } catch (error: any) {
+    await connection.rollback();
     res.status(500).json({ error: error.message });
+  } finally {
+    connection.release();
   }
 };
 
@@ -867,6 +907,136 @@ export const deleteUser = async (req: Request, res: Response) => {
     res.json({ message: 'User deleted successfully' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const getUserProgressSummary = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    const userId = Number(id);
+    const [courses] = await pool.query<RowDataPacket[]>(
+      `SELECT c.id as course_id, c.title as course_title, c.slug as course_slug,
+              COALESCE(cp.overall_progress, 0) as overall_progress
+       FROM enrollments e
+       JOIN courses c ON e.course_id = c.id
+       LEFT JOIN course_progress cp ON c.id = cp.course_id AND cp.user_id = ?
+       WHERE e.user_id = ? AND (e.status = 'ACTIVE' OR LOWER(e.status) = 'active')`,
+      [userId, userId]
+    );
+
+    const result = [];
+    for (const crs of courses as any[]) {
+      const [modules] = await pool.query<RowDataPacket[]>(
+        `SELECT m.id as module_id, m.title as module_title, m.module_order,
+                COALESCE(mp.completed_lesson, 0) as completed_lesson,
+                COALESCE(mp.total_lesson, 0) as total_lesson,
+                COALESCE(mp.progress_percent, 0) as progress_percent
+         FROM modules m
+         JOIN course_versions cv ON m.course_version_id = cv.id
+         LEFT JOIN module_progress mp ON m.id = mp.module_id AND mp.user_id = ?
+         WHERE cv.course_id = ? AND m.status = 'PUBLISHED'
+         ORDER BY m.module_order ASC`,
+        [userId, crs.course_id]
+      );
+      result.push({
+        ...crs,
+        modules
+      });
+    }
+
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const resetUserLessonProgress = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { scope, moduleId } = req.body; // scope: 'ALL' | 'MODULE'
+
+  try {
+    const userId = Number(id);
+    if (!userId) {
+      res.status(400).json({ error: 'User ID valid diperlukan' });
+      return;
+    }
+
+    if (scope === 'MODULE') {
+      if (!moduleId) {
+        res.status(400).json({ error: 'Module ID diperlukan untuk reset per modul' });
+        return;
+      }
+
+      // 1. Delete lesson_progress records for all lessons in this module
+      await pool.query(
+        `DELETE lp FROM lesson_progress lp
+         JOIN lessons l ON lp.lesson_id = l.id
+         WHERE l.module_id = ? AND lp.user_id = ?`,
+        [moduleId, userId]
+      );
+
+      // 2. Reset or delete module_progress record
+      await pool.query(
+        'DELETE FROM module_progress WHERE module_id = ? AND user_id = ?',
+        [moduleId, userId]
+      );
+
+      // 3. Recalculate course_progress if course_version_id can be found
+      const [modRows]: any = await pool.query(
+        'SELECT course_version_id FROM modules WHERE id = ?',
+        [moduleId]
+      );
+      if (modRows.length > 0) {
+        const courseVersionId = modRows[0].course_version_id;
+        const [cvRows]: any = await pool.query(
+          'SELECT course_id FROM course_versions WHERE id = ?',
+          [courseVersionId]
+        );
+        if (cvRows.length > 0) {
+          const cId = cvRows[0].course_id;
+
+          const [totalLessonsRows]: any = await pool.query(
+            `SELECT COUNT(l.id) as count 
+             FROM lessons l
+             JOIN modules m ON l.module_id = m.id
+             WHERE m.course_version_id = ? AND l.status = 'PUBLISHED' AND m.status = 'PUBLISHED'`,
+            [courseVersionId]
+          );
+          const totalCourseLessons = totalLessonsRows[0]?.count || 0;
+
+          const [completedLessonsRows]: any = await pool.query(
+            `SELECT COUNT(l.id) as count 
+             FROM lessons l
+             JOIN modules m ON l.module_id = m.id
+             JOIN lesson_progress lp ON l.id = lp.lesson_id
+             WHERE m.course_version_id = ? AND lp.user_id = ? AND lp.completed = 1 AND l.status = 'PUBLISHED' AND m.status = 'PUBLISHED'`,
+            [courseVersionId, userId]
+          );
+          const completedCourseLessons = completedLessonsRows[0]?.count || 0;
+
+          const courseProgressPercent = totalCourseLessons > 0 ? (completedCourseLessons / totalCourseLessons) * 100.00 : 0.00;
+
+          await pool.query(
+            `UPDATE course_progress SET overall_progress = ?, certificate_ready = ? WHERE user_id = ? AND course_id = ?`,
+            [courseProgressPercent, courseProgressPercent >= 100 ? 1 : 0, userId, cId]
+          );
+        }
+      }
+
+      res.json({ message: 'Progress modul berhasil di-reset untuk pengguna ini' });
+      return;
+    } else {
+      // RESET ALL PROGRESS FOR USER
+      await pool.query('DELETE FROM lesson_progress WHERE user_id = ?', [userId]);
+      await pool.query('DELETE FROM module_progress WHERE user_id = ?', [userId]);
+      await pool.query('UPDATE course_progress SET overall_progress = 0, completed_module = 0, certificate_ready = 0 WHERE user_id = ?', [userId]);
+
+      res.json({ message: 'Seluruh progress belajar pengguna berhasil di-reset' });
+      return;
+    }
+  } catch (error: any) {
+    console.error('Failed to reset user progress:', error);
+    res.status(500).json({ error: error.message || 'Gagal mereset progress belajar pengguna' });
   }
 };
 

@@ -204,19 +204,23 @@ export const checkSequentialLessonLock = async (
       [userId, course_version_id]
     );
 
-    const targetIdx = allLessons.findIndex((cl: any) => cl.id === lessonId);
-    if (targetIdx <= 0) {
-      // First lesson in course is always unlocked
+    const targetLesson = allLessons.find((cl: any) => cl.id === lessonId);
+    if (!targetLesson) {
       return { isLocked: false, currentLessonTitle };
     }
 
-    // Check if any prior lesson is not completed
-    const priorIncomplete = allLessons.slice(0, targetIdx).find((cl: any) => !cl.completed);
-    if (priorIncomplete) {
+    // 1. If user has ALREADY completed this lesson, it is ALWAYS UNLOCKED!
+    if (targetLesson.completed) {
+      return { isLocked: false, currentLessonTitle };
+    }
+
+    // 2. If target lesson is uncompleted, find the FIRST uncompleted lesson in the entire course sequence
+    const firstIncomplete = allLessons.find((cl: any) => !cl.completed);
+    if (firstIncomplete && firstIncomplete.id !== lessonId) {
       return {
         isLocked: true,
-        requiredLessonId: priorIncomplete.id,
-        requiredLessonTitle: priorIncomplete.title,
+        requiredLessonId: firstIncomplete.id,
+        requiredLessonTitle: firstIncomplete.title,
         currentLessonTitle
       };
     }
