@@ -39,7 +39,15 @@ export const updateProgressHelper = async (
   }
 
   if (awardXp) {
-    await addXpTransaction(connection, userId, 'LESSON', 15, lessonId, `Completed Lesson #${lessonId}`);
+    const [rewardRows]: any = await connection.query(
+      `SELECT l.xp_reward,
+         EXISTS(SELECT 1 FROM h5p_contents h WHERE h.lesson_id = l.id AND h.status = 'PUBLISHED') AS has_h5p
+       FROM lessons l WHERE l.id = ?`,
+      [lessonId]
+    );
+    const hasH5P = Number(rewardRows[0]?.has_h5p || 0) === 1;
+    const xpReward = hasH5P ? 20 : Number(rewardRows[0]?.xp_reward ?? 15);
+    await addXpTransaction(connection, userId, 'LESSON', xpReward, lessonId, `Completed Lesson #${lessonId}`);
     
     // Update learning statistics
     await connection.query(

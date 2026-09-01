@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import pool from '../config/db';
 import { RowDataPacket, ResultSetHeader } from 'mysql2';
+import { updateProgressHelper } from '../utils/progress';
 
 const slugify = (text: string) => text
   .toLowerCase()
@@ -367,7 +368,7 @@ export const attachH5PToLesson = async (req: Request, res: Response) => {
           targetLessonId = Number(h5p.lesson_id);
           await pool.query(
             `UPDATE lessons
-             SET module_id = ?, lesson_type = 'READING', title = ?, slug = ?, duration_minutes = 15, status = 'PUBLISHED'
+             SET module_id = ?, lesson_type = 'READING', title = ?, slug = ?, duration_minutes = 15, xp_reward = 20, status = 'PUBLISHED'
              WHERE id = ?`,
             [targetModuleId, finalTitle, slugify(finalTitle), targetLessonId]
           );
@@ -382,7 +383,7 @@ export const attachH5PToLesson = async (req: Request, res: Response) => {
         const [lessonResult] = await pool.query<ResultSetHeader>(
           `INSERT INTO lessons
            (module_id, lesson_type, title, slug, lesson_order, duration_minutes, is_preview, is_required, passing_score, xp_reward, max_attempt, status)
-           VALUES (?, 'READING', ?, ?, ?, 15, 0, 1, 70, 10, NULL, 'PUBLISHED')`,
+           VALUES (?, 'READING', ?, ?, ?, 15, 0, 1, 70, 20, NULL, 'PUBLISHED')`,
           [targetModuleId, finalTitle, slugify(finalTitle), Number(maxOrderRows[0]?.max_order || 0) + 1]
         );
         targetLessonId = lessonResult.insertId;
@@ -416,7 +417,7 @@ export const attachH5PToLesson = async (req: Request, res: Response) => {
 // 7. Student Submit Attempt / Interaction
 export const submitH5PAttempt = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { score, max_score, interaction_data } = req.body;
+  const { score } = req.body;
   const userId = (req as any).user?.id;
 
   if (!userId) {
@@ -425,27 +426,31 @@ export const submitH5PAttempt = async (req: Request, res: Response) => {
 
   try {
     await ensureH5PTables();
+    const [h5pRows] = await pool.query<RowDataPacket[]>('SELECT lesson_id FROM h5p_contents WHERE id = ?', [id]);
+    const lessonId = Number(h5pRows[0]?.lesson_id || 0);
+    if (!lessonId) {
+      return res.status(400).json({ error: 'Materi H5P belum ditautkan ke lesson' });
+    }
 
-    const finalScore = Number(score) || 0;
-    const finalMaxScore = Number(max_score) || 100;
-    const dataString = typeof interaction_data === 'object' ? JSON.stringify(interaction_data) : String(interaction_data || '');
-
-    await pool.query(`
-      INSERT INTO h5p_student_attempts (h5p_id, user_id, score, max_score, interaction_data, status)
-      VALUES (?, ?, ?, ?, ?, 'COMPLETED')
-    `, [id, userId, finalScore, finalMaxScore, dataString]);
-
-    // Award XP (e.g. 20 XP for completing H5P interactive material)
-    const xpReward = 20;
-    await pool.query(`
-      UPDATE users SET xp = xp + ? WHERE id = ?
-    `, [xpReward, userId]);
-
-    res.json({
-      message: 'Hasil interaktif H5P berhasil disimpan!',
-      score: finalScore,
-      xp_gained: xpReward
-    });
+    // Kompatibilitas untuk frontend lama: tombol submit lama tidak lagi
+    // menyimpan attempt/menilai H5P. Ia diarahkan ke completion lesson yang
+    // idempoten, sama seperti mencapai slide terakhir di frontend baru.
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      const result = await updateProgressHelper(connection, userId, lessonId, true, 100);
+      await connection.commit();
+      res.json({
+        message: 'Pelajaran H5P berhasil diselesaikan',
+        score: Number(score) || 0,
+        xp_gained: result?.awardXp ? 20 : 0
+      });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Failed to submit H5P attempt' });
   }
