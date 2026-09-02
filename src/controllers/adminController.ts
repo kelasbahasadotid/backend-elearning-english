@@ -1099,19 +1099,31 @@ export const getQuizQuestions = async (req: Request, res: Response) => {
 export const createQuizQuestion = async (req: Request, res: Response) => {
   const { quizId } = req.params; // assessment_id
   const {
-    questionTypeId,
-    questionCode,
-    questionText,
+    questionTypeId, question_type_id,
+    questionCode, question_code,
+    questionText, question_text,
     explanation,
     point,
-    questionOrder,
+    questionOrder, question_order,
     status,
-    questionImage,
-    question_image
+    questionImage, question_image,
+    options, pairs, matchingPairs, matching_pairs
   } = req.body;
+
+  const finalTypeId = questionTypeId ?? question_type_id ?? 1;
+  const finalCode = questionCode ?? question_code ?? 'Q_CODE';
+  const finalText = questionText ?? question_text ?? '';
+  const finalPoint = point !== undefined ? Number(point) : 10.00;
+  const finalOrder = questionOrder ?? question_order ?? 1;
+  const finalStatus = status || 'ACTIVE';
+  const img = questionImage !== undefined ? questionImage : question_image || null;
+
+  const connection = await pool.getConnection();
   try {
+    await connection.beginTransaction();
+
     // Check if assessment section exists for this quiz, otherwise create default section
-    let [sections] = await pool.query<RowDataPacket[]>(
+    let [sections] = await connection.query<RowDataPacket[]>(
       'SELECT id FROM assessment_sections WHERE assessment_id = ? LIMIT 1',
       [quizId]
     );
@@ -1119,41 +1131,78 @@ export const createQuizQuestion = async (req: Request, res: Response) => {
     if (sections.length > 0) {
       sectionId = sections[0].id;
     } else {
-      const [secRes] = await pool.query<ResultSetHeader>(
+      const [secRes] = await connection.query<ResultSetHeader>(
         'INSERT INTO assessment_sections (assessment_id, title, section_order) VALUES (?, "Default Section", 1)',
         [quizId]
       );
       sectionId = secRes.insertId;
     }
 
-    const img = questionImage !== undefined ? questionImage : question_image || null;
-
-    const [result] = await pool.query<ResultSetHeader>(
+    const [result] = await connection.query<ResultSetHeader>(
       `INSERT INTO questions (assessment_section_id, question_type_id, question_code, question_text, explanation, point, question_order, status, question_image) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [sectionId, questionTypeId || 1, questionCode || 'Q_CODE', questionText, explanation || '', point || 10.00, questionOrder || 1, status || 'ACTIVE', img]
+      [sectionId, finalTypeId, finalCode, finalText, explanation || '', finalPoint, finalOrder, finalStatus, img]
     );
-    
-    res.status(201).json({ message: 'Quiz question created successfully', questionId: result.insertId });
+    const questionId = result.insertId;
+
+    // Handle nested options / matching pairs if provided (dynamic custom quantity: 2, 3, 4, 5, 10+ pairs)
+    const rawOptions = options || pairs || matchingPairs || matching_pairs;
+    if (Array.isArray(rawOptions) && rawOptions.length > 0) {
+      for (let i = 0; i < rawOptions.length; i++) {
+        const item = rawOptions[i];
+        const optLabel = item.optionLabel ?? item.option_label ?? item.left ?? item.premise ?? `Pair ${i + 1}`;
+        const optText = item.optionText ?? item.option_text ?? item.right ?? item.match ?? '';
+        const isCorr = item.isCorrect !== undefined ? (item.isCorrect ? 1 : 0) : (item.is_correct !== undefined ? (item.is_correct ? 1 : 0) : 1);
+        const optScore = item.score !== undefined ? Number(item.score) : 0.00;
+        const optOrder = item.optionOrder ?? item.option_order ?? (i + 1);
+        const optImg = item.optionImage ?? item.option_image ?? null;
+
+        await connection.query(
+          `INSERT INTO question_options (question_id, option_label, option_text, is_correct, score, option_order, option_image) 
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [questionId, optLabel, optText, isCorr, optScore, optOrder, optImg]
+        );
+      }
+    }
+
+    await connection.commit();
+    res.status(201).json({
+      message: 'Quiz question created successfully',
+      questionId,
+      questionTypeId: finalTypeId,
+      totalPairsCreated: Array.isArray(rawOptions) ? rawOptions.length : 0
+    });
   } catch (error: any) {
+    await connection.rollback();
     res.status(500).json({ error: error.message });
+  } finally {
+    connection.release();
   }
 };
 
 export const updateQuizQuestion = async (req: Request, res: Response) => {
   const { questionId } = req.params;
   const {
-    questionTypeId,
-    questionCode,
-    questionText,
+    questionTypeId, question_type_id,
+    questionCode, question_code,
+    questionText, question_text,
     explanation,
     point,
-    questionOrder,
+    questionOrder, question_order,
     status,
-    questionImage,
-    question_image
+    questionImage, question_image,
+    options, pairs, matchingPairs, matching_pairs
   } = req.body;
+
+  const finalTypeId = questionTypeId ?? question_type_id;
+  const finalCode = questionCode ?? question_code;
+  const finalText = questionText ?? question_text;
+  const finalOrder = questionOrder ?? question_order;
+
+  const connection = await pool.getConnection();
   try {
+    await connection.beginTransaction();
+
     const updates: string[] = [];
     const values: any[] = [];
     
@@ -1164,12 +1213,12 @@ export const updateQuizQuestion = async (req: Request, res: Response) => {
       }
     };
     
-    addUpdate('question_type_id', questionTypeId);
-    addUpdate('question_code', questionCode);
-    addUpdate('question_text', questionText);
+    addUpdate('question_type_id', finalTypeId);
+    addUpdate('question_code', finalCode);
+    addUpdate('question_text', finalText);
     addUpdate('explanation', explanation);
-    addUpdate('point', point);
-    addUpdate('question_order', questionOrder);
+    addUpdate('point', point !== undefined ? Number(point) : undefined);
+    addUpdate('question_order', finalOrder);
     addUpdate('status', status);
     if (questionImage !== undefined) {
       addUpdate('question_image', questionImage);
@@ -1177,24 +1226,47 @@ export const updateQuizQuestion = async (req: Request, res: Response) => {
       addUpdate('question_image', question_image);
     }
     
-    if (updates.length === 0) {
-      res.status(400).json({ error: 'No fields provided for update' });
-      return;
+    if (updates.length > 0) {
+      values.push(questionId);
+      const [result] = await connection.query<ResultSetHeader>(
+        `UPDATE questions SET ${updates.join(', ')} WHERE id = ?`,
+        values
+      );
+      if (result.affectedRows === 0) {
+        await connection.rollback();
+        res.status(404).json({ error: 'Question not found' });
+        return;
+      }
     }
-    
-    values.push(questionId);
-    const [result] = await pool.query<ResultSetHeader>(
-      `UPDATE questions SET ${updates.join(', ')} WHERE id = ?`,
-      values
-    );
-    
-    if (result.affectedRows === 0) {
-       res.status(404).json({ error: 'Question not found' });
-       return;
+
+    // If options/pairs are supplied in update, replace existing options
+    const rawOptions = options || pairs || matchingPairs || matching_pairs;
+    if (Array.isArray(rawOptions)) {
+      await connection.query('DELETE FROM question_options WHERE question_id = ?', [questionId]);
+      for (let i = 0; i < rawOptions.length; i++) {
+        const item = rawOptions[i];
+        const optLabel = item.optionLabel ?? item.option_label ?? item.left ?? item.premise ?? `Pair ${i + 1}`;
+        const optText = item.optionText ?? item.option_text ?? item.right ?? item.match ?? '';
+        const isCorr = item.isCorrect !== undefined ? (item.isCorrect ? 1 : 0) : (item.is_correct !== undefined ? (item.is_correct ? 1 : 0) : 1);
+        const optScore = item.score !== undefined ? Number(item.score) : 0.00;
+        const optOrder = item.optionOrder ?? item.option_order ?? (i + 1);
+        const optImg = item.optionImage ?? item.option_image ?? null;
+
+        await connection.query(
+          `INSERT INTO question_options (question_id, option_label, option_text, is_correct, score, option_order, option_image) 
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [questionId, optLabel, optText, isCorr, optScore, optOrder, optImg]
+        );
+      }
     }
+
+    await connection.commit();
     res.json({ message: 'Quiz question updated successfully' });
   } catch (error: any) {
+    await connection.rollback();
     res.status(500).json({ error: error.message });
+  } finally {
+    connection.release();
   }
 };
 
@@ -1213,16 +1285,22 @@ export const deleteQuizQuestion = async (req: Request, res: Response) => {
 };
 
 // ==========================================
-// QUIZ QUESTION OPTIONS CRUD
+// QUIZ QUESTION OPTIONS & MATCHING PAIRS CRUD
 // ==========================================
 export const createQuestionOption = async (req: Request, res: Response) => {
   const { questionId } = req.params;
-  const { optionLabel, optionText, isCorrect, score, optionOrder, optionImage, option_image } = req.body;
+  const { optionLabel, option_label, optionText, option_text, isCorrect, is_correct, score, optionOrder, option_order, optionImage, option_image, left, right, premise, match } = req.body;
   try {
+    const finalLabel = optionLabel ?? option_label ?? left ?? premise ?? 'A';
+    const finalText = optionText ?? option_text ?? right ?? match ?? '';
+    const finalCorrect = isCorrect !== undefined ? (isCorrect ? 1 : 0) : (is_correct !== undefined ? (is_correct ? 1 : 0) : 0);
+    const finalScore = score !== undefined ? Number(score) : 0.00;
+    const finalOrder = optionOrder ?? option_order ?? 1;
     const img = optionImage !== undefined ? optionImage : option_image || null;
+
     const [result] = await pool.query<ResultSetHeader>(
       'INSERT INTO question_options (question_id, option_label, option_text, is_correct, score, option_order, option_image) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [questionId, optionLabel || 'A', optionText, isCorrect ? 1 : 0, score || 0.00, optionOrder || 1, img]
+      [questionId, finalLabel, finalText, finalCorrect, finalScore, finalOrder, img]
     );
     res.status(201).json({ message: 'Question option created successfully', optionId: result.insertId });
   } catch (error: any) {
@@ -1232,7 +1310,7 @@ export const createQuestionOption = async (req: Request, res: Response) => {
 
 export const updateQuestionOption = async (req: Request, res: Response) => {
   const { optionId } = req.params;
-  const { optionLabel, optionText, isCorrect, score, optionOrder, optionImage, option_image } = req.body;
+  const { optionLabel, option_label, optionText, option_text, isCorrect, is_correct, score, optionOrder, option_order, optionImage, option_image, left, right, premise, match } = req.body;
   try {
     const updates: string[] = [];
     const values: any[] = [];
@@ -1244,11 +1322,15 @@ export const updateQuestionOption = async (req: Request, res: Response) => {
       }
     };
     
-    addUpdate('option_label', optionLabel);
-    addUpdate('option_text', optionText);
-    addUpdate('is_correct', isCorrect !== undefined ? (isCorrect ? 1 : 0) : undefined);
-    addUpdate('score', score);
-    addUpdate('option_order', optionOrder);
+    const finalLabel = optionLabel ?? option_label ?? left ?? premise;
+    const finalText = optionText ?? option_text ?? right ?? match;
+    const finalCorrect = isCorrect !== undefined ? (isCorrect ? 1 : 0) : (is_correct !== undefined ? (is_correct ? 1 : 0) : undefined);
+
+    addUpdate('option_label', finalLabel);
+    addUpdate('option_text', finalText);
+    addUpdate('is_correct', finalCorrect);
+    addUpdate('score', score !== undefined ? Number(score) : undefined);
+    addUpdate('option_order', optionOrder ?? option_order);
     if (optionImage !== undefined) {
       addUpdate('option_image', optionImage);
     } else if (option_image !== undefined) {
@@ -1289,6 +1371,73 @@ export const deleteQuestionOption = async (req: Request, res: Response) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+/**
+ * Bulk Set Matching Pairs / Options
+ * Allows adding or replacing multiple matching pairs for a question (any custom count: 2, 3, 5, 10, etc.)
+ */
+export const bulkSetMatchingPairs = async (req: Request, res: Response) => {
+  const { questionId } = req.params;
+  const { pairs, matchingPairs, matching_pairs, options, replaceExisting } = req.body;
+
+  const rawPairs = pairs || matchingPairs || matching_pairs || options;
+  if (!Array.isArray(rawPairs) || rawPairs.length === 0) {
+    res.status(400).json({ error: 'Array of matching pairs (pairs/matchingPairs/options) is required and cannot be empty' });
+    return;
+  }
+
+  const shouldReplace = replaceExisting !== undefined ? Boolean(replaceExisting) : true;
+  const connection = await pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Check if question exists
+    const [qRows] = await connection.query<RowDataPacket[]>('SELECT id, question_type_id FROM questions WHERE id = ?', [questionId]);
+    if (qRows.length === 0) {
+      await connection.rollback();
+      res.status(404).json({ error: 'Question not found' });
+      return;
+    }
+
+    if (shouldReplace) {
+      await connection.query('DELETE FROM question_options WHERE question_id = ?', [questionId]);
+    }
+
+    const insertedIds: number[] = [];
+    for (let i = 0; i < rawPairs.length; i++) {
+      const item = rawPairs[i];
+      const optLabel = item.optionLabel ?? item.option_label ?? item.left ?? item.premise ?? `Pair ${i + 1}`;
+      const optText = item.optionText ?? item.option_text ?? item.right ?? item.match ?? '';
+      const isCorr = item.isCorrect !== undefined ? (item.isCorrect ? 1 : 0) : 1;
+      const optScore = item.score !== undefined ? Number(item.score) : 0.00;
+      const optOrder = item.optionOrder ?? item.option_order ?? (i + 1);
+      const optImg = item.optionImage ?? item.option_image ?? null;
+
+      const [resHeader] = await connection.query<ResultSetHeader>(
+        `INSERT INTO question_options (question_id, option_label, option_text, is_correct, score, option_order, option_image) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [questionId, optLabel, optText, isCorr, optScore, optOrder, optImg]
+      );
+      insertedIds.push(resHeader.insertId);
+    }
+
+    await connection.commit();
+    res.status(201).json({
+      message: `Successfully set ${rawPairs.length} matching pairs for question #${questionId}`,
+      questionId: Number(questionId),
+      totalPairs: rawPairs.length,
+      insertedOptionIds: insertedIds
+    });
+  } catch (error: any) {
+    await connection.rollback();
+    res.status(500).json({ error: error.message });
+  } finally {
+    connection.release();
+  }
+};
+
+export const bulkSetQuestionOptions = bulkSetMatchingPairs;
 
 // ==========================================
 // SPEAKING TESTS & PROMPTS CRUD

@@ -116,7 +116,28 @@ export const getQuiz = async (req: AuthRequest, res: Response) => {
 
         // Attach options to questions
         for (const q of questions) {
-          q.options = optionRows.filter(o => o.question_id === q.id);
+          const rawOpts = optionRows.filter(o => o.question_id === q.id);
+          if (q.question_type_id === 5) { // MATCHING / PENCOCOKAN
+            // Collect all target match texts and shuffle them for student interface
+            const matchTargets = rawOpts.map((o: any) => o.option_text).filter(Boolean);
+            const shuffledChoices = [...matchTargets].sort(() => Math.random() - 0.5);
+            q.matchChoices = shuffledChoices;
+
+            if (!isAdminOrTutor && !isAttemptExceeded) {
+              // Hide direct option_text match during quiz taking to prevent cheating
+              q.options = rawOpts.map((o: any) => ({
+                id: o.id,
+                question_id: o.question_id,
+                option_label: o.option_label,
+                option_order: o.option_order,
+                option_image: o.option_image
+              }));
+            } else {
+              q.options = rawOpts;
+            }
+          } else {
+            q.options = rawOpts;
+          }
         }
       }
     }
@@ -134,7 +155,7 @@ export const getQuiz = async (req: AuthRequest, res: Response) => {
 };
 
 export const submitAttempt = async (req: AuthRequest, res: Response) => {
-  const { assessmentId, answers } = req.body; // answers: Array of { questionId, selectedOptionId }
+  const { assessmentId, answers } = req.body; // answers: Array of { questionId, selectedOptionId, selectedOptionIds, matchingAnswers, pairs, answerText }
   if (!req.user) {
      res.status(401).json({ error: 'Unauthorized' });
      return;
@@ -264,23 +285,114 @@ export const submitAttempt = async (req: AuthRequest, res: Response) => {
       const correctOpt = qOptions.find((opt: any) => opt.is_correct === 1);
 
       let isAnswerCorrect = false;
+      let earnedPoint = 0;
       let studentAnswerText = '-';
       let correctAnswerText = correctOpt ? `${correctOpt.option_label ? correctOpt.option_label + '. ' : ''}${correctOpt.option_text}` : '-';
 
-      if (!userAnsObj || (userAnsObj.selectedOptionId === undefined && !userAnsObj.answerText)) {
+      const isBlankAnswer = !userAnsObj || (
+        userAnsObj.selectedOptionId === undefined &&
+        !userAnsObj.answerText &&
+        !userAnsObj.matchingAnswers &&
+        !userAnsObj.pairs &&
+        !userAnsObj.selectedMatches &&
+        !userAnsObj.selectedOptionIds
+      );
+
+      if (isBlankAnswer) {
         studentAnswerText = '(Tidak dijawab)';
         totalUnanswered++;
+      } else if (q.question_type_id === 2) { // MULTIPLE_SELECT / MULTI_CHOICE
+        const submittedIds: number[] = Array.isArray(userAnsObj.selectedOptionIds)
+          ? userAnsObj.selectedOptionIds.map(Number)
+          : Array.isArray(userAnsObj.selectedOptionId)
+            ? userAnsObj.selectedOptionId.map(Number)
+            : userAnsObj.selectedOptionId !== undefined
+              ? [Number(userAnsObj.selectedOptionId)]
+              : [];
+
+        const correctOptIds = qOptions.filter((opt: any) => opt.is_correct === 1).map((opt: any) => opt.id);
+        const chosenOpts = qOptions.filter((opt: any) => submittedIds.includes(opt.id));
+
+        studentAnswerText = chosenOpts.length > 0
+          ? chosenOpts.map((opt: any) => `${opt.option_label ? opt.option_label + '. ' : ''}${opt.option_text}`).join(', ')
+          : '(Tidak dijawab)';
+
+        const correctOpts = qOptions.filter((opt: any) => opt.is_correct === 1);
+        correctAnswerText = correctOpts.map((opt: any) => `${opt.option_label ? opt.option_label + '. ' : ''}${opt.option_text}`).join(', ');
+
+        const allCorrectFound = correctOptIds.length > 0 &&
+                                correctOptIds.every(id => submittedIds.includes(id)) &&
+                                submittedIds.every(id => correctOptIds.includes(id));
+
+        isAnswerCorrect = allCorrectFound;
+        if (isAnswerCorrect) {
+          earnedPoint = Number(q.point);
+        }
       } else if (q.question_type_id === 4) { // FILL_BLANK
         const studentText = userAnsObj?.answerText ? String(userAnsObj.answerText).trim() : '';
         studentAnswerText = studentText || '(Tidak dijawab)';
         if (correctOpt && studentText) {
           isAnswerCorrect = studentText.toLowerCase() === String(correctOpt.option_text).trim().toLowerCase();
         }
+        if (isAnswerCorrect) {
+          earnedPoint = Number(q.point);
+        }
+      } else if (q.question_type_id === 5) { // MATCHING / PENCOCOKAN
+        const rawMatching = userAnsObj.matchingAnswers || userAnsObj.pairs || userAnsObj.selectedMatches;
+        let submittedPairs: Array<{ optionId?: number; left?: string; matchText: string }> = [];
+
+        if (Array.isArray(rawMatching)) {
+          submittedPairs = rawMatching.map((item: any) => ({
+            optionId: item.optionId !== undefined ? Number(item.optionId) : (item.id !== undefined ? Number(item.id) : undefined),
+            left: item.left ?? item.premise ?? item.optionLabel ?? item.option_label,
+            matchText: String(item.selectedMatch ?? item.match ?? item.right ?? item.optionText ?? item.option_text ?? item.answer ?? '').trim()
+          }));
+        } else if (rawMatching && typeof rawMatching === 'object') {
+          submittedPairs = Object.entries(rawMatching).map(([key, val]) => ({
+            optionId: !isNaN(Number(key)) ? Number(key) : undefined,
+            left: isNaN(Number(key)) ? key : undefined,
+            matchText: String(val).trim()
+          }));
+        }
+
+        let correctPairsCount = 0;
+        const totalPairs = qOptions.length;
+        const studentPairStrs: string[] = [];
+        const correctPairStrs: string[] = [];
+
+        for (const opt of qOptions) {
+          correctPairStrs.push(`${opt.option_label} ➔ ${opt.option_text}`);
+          const studentPair = submittedPairs.find(sp =>
+            (sp.optionId !== undefined && sp.optionId === opt.id) ||
+            (sp.left !== undefined && String(sp.left).trim().toLowerCase() === String(opt.option_label).trim().toLowerCase())
+          );
+
+          if (studentPair && studentPair.matchText) {
+            studentPairStrs.push(`${opt.option_label} ➔ ${studentPair.matchText}`);
+            if (studentPair.matchText.toLowerCase() === String(opt.option_text).trim().toLowerCase()) {
+              correctPairsCount++;
+            }
+          } else {
+            studentPairStrs.push(`${opt.option_label} ➔ (Belum dicocokkan)`);
+          }
+        }
+
+        studentAnswerText = studentPairStrs.join(' | ') || '(Tidak dijawab)';
+        correctAnswerText = correctPairStrs.join(' | ');
+        isAnswerCorrect = totalPairs > 0 && correctPairsCount === totalPairs;
+
+        // Partial or full scoring for matching
+        if (totalPairs > 0) {
+          earnedPoint = Number(((correctPairsCount / totalPairs) * Number(q.point)).toFixed(2));
+        }
       } else if (q.question_type_id === 6) { // ORDERING
         const studentText = userAnsObj?.answerText ? String(userAnsObj.answerText).trim() : '';
         studentAnswerText = studentText || '(Tidak dijawab)';
         if (correctOpt && studentText) {
           isAnswerCorrect = studentText.toLowerCase().replace(/\s+/g, ' ') === String(correctOpt.option_text).trim().toLowerCase().replace(/\s+/g, ' ');
+        }
+        if (isAnswerCorrect) {
+          earnedPoint = Number(q.point);
         }
       } else { // MULTIPLE_CHOICE (1), TRUE_FALSE (3), etc.
         const chosenOpt = qOptions.find((opt: any) => opt.id === Number(userAnsObj?.selectedOptionId));
@@ -290,13 +402,17 @@ export const submitAttempt = async (req: AuthRequest, res: Response) => {
         } else {
           studentAnswerText = '(Tidak dijawab)';
         }
+        if (isAnswerCorrect) {
+          earnedPoint = Number(q.point);
+        }
       }
 
       if (isAnswerCorrect) {
         totalCorrect++;
-        score += Number(q.point);
+        score += earnedPoint;
       } else if (studentAnswerText !== '(Tidak dijawab)') {
         totalWrong++;
+        score += earnedPoint; // Add partial score if earned
       }
 
       return {
@@ -307,19 +423,50 @@ export const submitAttempt = async (req: AuthRequest, res: Response) => {
         questionImage: q.question_image || null,
         questionTypeId: q.question_type_id,
         point: Number(q.point),
-        earnedPoint: isAnswerCorrect ? Number(q.point) : 0,
+        earnedPoint: earnedPoint,
         isCorrect: isAnswerCorrect,
         studentAnswer: studentAnswerText,
         correctAnswer: correctAnswerText,
         explanation: q.explanation || null,
-        options: qOptions.map((opt: any) => ({
-          id: opt.id,
-          label: opt.option_label,
-          text: opt.option_text,
-          image: opt.option_image || null,
-          isCorrect: opt.is_correct === 1,
-          isChosen: userAnsObj && (Number(userAnsObj.selectedOptionId) === opt.id || (q.question_type_id === 4 && String(userAnsObj.answerText).trim().toLowerCase() === String(opt.option_text).trim().toLowerCase()))
-        }))
+        options: qOptions.map((opt: any) => {
+          let isChosen = false;
+          let studentMatch = null;
+          let isPairMatch = false;
+
+          if (userAnsObj) {
+            if (q.question_type_id === 2) {
+              const subIds = Array.isArray(userAnsObj.selectedOptionIds) ? userAnsObj.selectedOptionIds.map(Number) : [Number(userAnsObj.selectedOptionId)];
+              isChosen = subIds.includes(opt.id);
+            } else if (q.question_type_id === 4) {
+              isChosen = String(userAnsObj.answerText || '').trim().toLowerCase() === String(opt.option_text).trim().toLowerCase();
+            } else if (q.question_type_id === 5) {
+              const rawMatching = userAnsObj.matchingAnswers || userAnsObj.pairs || userAnsObj.selectedMatches;
+              if (Array.isArray(rawMatching)) {
+                const sp = rawMatching.find((item: any) =>
+                  Number(item.optionId || item.id) === opt.id ||
+                  String(item.left || item.optionLabel || '').trim().toLowerCase() === String(opt.option_label).trim().toLowerCase()
+                );
+                if (sp) {
+                  studentMatch = sp.selectedMatch || sp.match || sp.right || sp.optionText;
+                  isPairMatch = String(studentMatch).trim().toLowerCase() === String(opt.option_text).trim().toLowerCase();
+                }
+              }
+            } else {
+              isChosen = Number(userAnsObj.selectedOptionId) === opt.id;
+            }
+          }
+
+          return {
+            id: opt.id,
+            label: opt.option_label,
+            text: opt.option_text,
+            image: opt.option_image || null,
+            isCorrect: opt.is_correct === 1,
+            isChosen,
+            studentMatch,
+            isPairMatch: q.question_type_id === 5 ? isPairMatch : undefined
+          };
+        })
       };
     });
 

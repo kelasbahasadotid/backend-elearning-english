@@ -15,6 +15,7 @@ import {
   // Quiz Questions & Options
   getQuizQuestions, createQuizQuestion, updateQuizQuestion, deleteQuizQuestion,
   createQuestionOption, updateQuestionOption, deleteQuestionOption,
+  bulkSetMatchingPairs, bulkSetQuestionOptions,
   updateQuestionImage, updateQuestionOptionImage,
   
   // Lesson Content Management
@@ -142,8 +143,10 @@ router.post('/quizzes/:quizId/questions', contentCreator, createQuizQuestion);
 router.put('/quizzes/questions/:questionId', contentCreator, updateQuizQuestion);
 router.delete('/quizzes/questions/:questionId', contentCreator, deleteQuizQuestion);
 
-// Quiz Question Options (Admin & Content Manager)
+// Quiz Question Options & Matching Pairs (Admin & Content Manager)
 router.post('/quizzes/questions/:questionId/options', contentCreator, createQuestionOption);
+router.post('/quizzes/questions/:questionId/options/bulk', contentCreator, bulkSetQuestionOptions);
+router.post('/quizzes/questions/:questionId/matching-pairs', contentCreator, bulkSetMatchingPairs);
 router.put('/quizzes/questions/options/:optionId', contentCreator, updateQuestionOption);
 router.delete('/quizzes/questions/options/:optionId', contentCreator, deleteQuestionOption);
 
