@@ -45,10 +45,11 @@
 # 4. CORS & SECURITY HEADERS
 # ------------------------------------------------------------------------------
 <IfModule mod_headers.c>
-    # Pass Authorization and Content-Type headers
+    # Pass Authorization, Range, and Content-Type headers
     Header always set Access-Control-Allow-Origin "*"
     Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-    Header always set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control"
+    Header always set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma, Range"
+    Header always set Access-Control-Expose-Headers "Content-Range, Accept-Ranges, Content-Length, Content-Type"
     Header always set Access-Control-Allow-Credentials "true"
 
     # Security Headers
@@ -56,6 +57,22 @@
     Header set X-Frame-Options "SAMEORIGIN"
     Header set X-XSS-Protection "1; mode=block"
     Header set Referrer-Policy "no-referrer-when-downgrade"
+
+    # Disable caching for audio media to prevent playback hang & stale caching
+    <FilesMatch "\.(mp3|wav|ogg|aac|m4a|webm)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+        Header set Accept-Ranges "bytes"
+    </FilesMatch>
+</IfModule>
+
+# ------------------------------------------------------------------------------
+# 4B. AUDIO MIME TYPES (WAV & AAC FOR HOSTING COMPATIBILITY)
+# ------------------------------------------------------------------------------
+<IfModule mod_mime.c>
+    AddType audio/wav .wav
+    AddType audio/aac .aac
 </IfModule>
 
 # ------------------------------------------------------------------------------

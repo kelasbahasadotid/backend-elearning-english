@@ -390,40 +390,73 @@ export const getTtsVoices = async (req: AuthRequest, res: Response) => {
 };
 
 export const synthesizeTts = async (req: AuthRequest, res: Response) => {
-  const { text, voice = 'en-US-AvaNeural', rate = '+0%', pitch = '+0Hz' } = req.body;
+  const isGet = req.method === 'GET';
+  const textRaw = isGet ? req.query.text : req.body.text;
+  const voiceRaw = isGet ? req.query.voice : req.body.voice;
+  const rateRaw = isGet ? req.query.rate : req.body.rate;
+  const pitchRaw = isGet ? req.query.pitch : req.body.pitch;
 
-  if (!text || typeof text !== 'string') {
+  const text = typeof textRaw === 'string' ? textRaw.trim() : '';
+  const voice = (typeof voiceRaw === 'string' && voiceRaw.trim()) ? voiceRaw.trim() : 'en-US-AvaNeural';
+  const rate = (typeof rateRaw === 'string' && rateRaw.trim()) ? rateRaw.trim() : '+0%';
+  const pitch = (typeof pitchRaw === 'string' && pitchRaw.trim()) ? pitchRaw.trim() : '+0Hz';
+
+  if (!text) {
     res.status(400).json({ error: 'Text string is required' });
     return;
   }
 
+  let isClientConnected = true;
+  req.on('close', () => {
+    isClientConnected = false;
+  });
+
   try {
     const { Communicate } = require('edge-tts-universal');
-    const selectedVoice = voice || 'en-US-AvaNeural';
     const communicate = new Communicate(text, {
-      voice: selectedVoice,
+      voice,
       rate,
       pitch
     });
 
-    const chunks: Buffer[] = [];
+    let headersSent = false;
+
     for await (const chunk of communicate.stream()) {
-      if (chunk.type === 'audio') {
-        chunks.push(chunk.data);
+      if (!isClientConnected) break;
+
+      if (chunk.type === 'audio' && chunk.data) {
+        if (!headersSent) {
+          res.writeHead(200, {
+            'Content-Type': 'audio/mpeg',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive',
+            'X-Content-Type-Options': 'nosniff',
+            'Accept-Ranges': 'none'
+          });
+          headersSent = true;
+        }
+        res.write(chunk.data);
       }
     }
 
-    const audioBuffer = Buffer.concat(chunks);
-
-    res.set({
-      'Content-Type': 'audio/mpeg',
-      'Content-Length': audioBuffer.length,
-      'Cache-Control': 'public, max-age=86400'
-    });
-    res.send(audioBuffer);
+    if (isClientConnected) {
+      if (!headersSent) {
+        // In case no audio chunks were generated
+        res.status(500).json({ error: 'Speech synthesis yielded empty audio' });
+      } else {
+        res.end();
+      }
+    }
   } catch (error: any) {
     console.error('TTS Synthesis Error:', error);
-    res.status(500).json({ error: error.message || 'Speech synthesis failed' });
+    if (!res.headersSent) {
+      res.status(500).json({ error: error.message || 'Speech synthesis failed' });
+    } else {
+      res.end();
+    }
   }
 };
 

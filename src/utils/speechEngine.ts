@@ -12,12 +12,9 @@ try {
   VoskModel = vosk.Model;
   VoskRecognizer = vosk.Recognizer;
   voskLoaded = true;
-  console.log('[VOSK Speech Engine] Successfully loaded native vosk npm module.');
 } catch (err: any) {
-  console.warn(
-    '[VOSK Speech Engine] Vosk native addon compilation failed or not found. ' +
-    'The engine will run in deterministic fallback mode.'
-  );
+  // Vosk native addon is optional; engine runs smoothly in deterministic phonetic alignment mode
+  voskLoaded = false;
 }
 
 function getOrInitVoskModel() {

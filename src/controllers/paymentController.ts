@@ -822,11 +822,12 @@ export const ensureManualPaymentProofsTable = async () => {
         KEY idx_status (status)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     `);
-  } catch (err) {
-    console.error('Error ensuring manual_payment_proofs table:', err);
+  } catch (err: any) {
+    if (err.code !== 'ECONNREFUSED') {
+      console.error('Error ensuring manual_payment_proofs table:', err.message || err);
+    }
   }
 };
-ensureManualPaymentProofsTable();
 
 export const submitManualPaymentProof = async (req: AuthRequest, res: Response) => {
   const { orderId, bankName, senderName, amount, proofImage, notes } = req.body;
@@ -961,11 +962,12 @@ export const ensurePaymentSettingsTable = async () => {
         VALUES (1, 1, '1234567890', 'PT Kelas Bahasa Indonesia', '0987654321', 'PT Kelas Bahasa Indonesia', '6281234567890')
       `);
     }
-  } catch (err) {
-    console.error('Error ensuring payment_settings table:', err);
+  } catch (err: any) {
+    if (err.code !== 'ECONNREFUSED') {
+      console.error('Error ensuring payment_settings table:', err.message || err);
+    }
   }
 };
-ensurePaymentSettingsTable();
 
 export const getPaymentSettings = async (req: Request, res: Response) => {
   try {

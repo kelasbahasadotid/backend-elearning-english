@@ -28,6 +28,7 @@ router.post('/link', addMediaLink);
 router.post('/generate-ai-audio', generateAiAudio);
 router.post('/generate-ai-dialogue', generateAiDialogue);
 router.post('/synthesize-preview', synthesizeMediaPreview);
+router.get('/synthesize-preview', synthesizeMediaPreview);
 router.put('/:id', updateMedia);
 router.delete('/:id', deleteMedia);
 

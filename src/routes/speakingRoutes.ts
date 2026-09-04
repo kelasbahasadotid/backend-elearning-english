@@ -9,6 +9,8 @@ const router = Router();
 router.post('/transcribe', uploadAudio.single('audio'), transcribeAudio);
 router.get('/tts/voices', getTtsVoices);
 router.post('/tts/synthesize', synthesizeTts);
+router.get('/tts/synthesize', synthesizeTts);
+router.get('/tts/stream', synthesizeTts);
 
 // Authenticated endpoints
 router.use(authenticateToken as any);

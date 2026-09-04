@@ -37,13 +37,12 @@ export const ensureEmailTables = async () => {
         ('support@erwinsyahrudin.online', 'E-Learning Support', 'siswa.paket1@example.com', 'Siswa Test 1', '🎉 Akses Kelas Aktif: Paket 1 E-learning + TOEFL', '<p>Halo Siswa Test 1, Akun siswa Anda sudah aktif dan siap digunakan untuk mulai belajar.</p>', 'SENT', 'SENT')
       `);
     }
-  } catch (err) {
-    console.error('[Email DB Init Error]', err);
+  } catch (err: any) {
+    if (err.code !== 'ECONNREFUSED') {
+      console.error('[Email DB Init Error]', err.message || err);
+    }
   }
 };
-
-// Auto-run on module load
-ensureEmailTables();
 
 /**
  * Helper: Fetch current SMTP Settings

@@ -1849,13 +1849,12 @@ export const ensureScalevPackagesTable = async () => {
         ('Paket 3 E-learning + TOEFL + Modul', 'paket 3, paket3, 1 tahun, 12 bulan, 1-tahun, 1y', 365, '1 Tahun', 'ACTIVE')
       `);
     }
-  } catch (err) {
-    console.error('Error ensuring scalev_packages table:', err);
+  } catch (err: any) {
+    if (err.code !== 'ECONNREFUSED') {
+      console.error('Error ensuring scalev_packages table:', err.message || err);
+    }
   }
 };
-
-// Ensure table is created when module loads
-ensureScalevPackagesTable();
 
 export const getScalevPackages = async (req: Request, res: Response) => {
   try {

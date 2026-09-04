@@ -7,3 +7,5 @@ uploads/certificates/*
 !uploads/certificates/.gitkeep
 uploads/templates/*
 !uploads/templates/.gitkeep
+src/controllers/h5pController.ts
+src/utils/progress.ts

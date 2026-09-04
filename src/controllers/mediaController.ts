@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import pool from '../config/db';
 import path from 'path';
 import fs from 'fs';
+import { convertMp3ToWav } from '../utils/audioUtils';
 
 // Helper to determine file_type from mime type or file extension
 function determineFileType(mimeType: string, filename: string): 'AUDIO' | 'VIDEO' | 'IMAGE' | 'DOCUMENT' | 'OTHER' {
@@ -160,14 +161,14 @@ export const uploadMediaFile = async (req: AuthRequest, res: Response) => {
     }
 
     const ext = path.extname(file.originalname).toLowerCase();
-    const isAudioFile = (file.mimetype && file.mimetype.startsWith('audio/')) || ['.mp3', '.wav', '.aac', '.ogg', '.m4a', '.flac', '.wma'].includes(ext);
+    const isAudioFile = (file.mimetype && file.mimetype.startsWith('audio/')) || ['.mp3', '.wav', '.aac', '.ogg', '.m4a', '.flac', '.wma', '.webm'].includes(ext);
 
     if (isAudioFile && ext !== '.aac' && ext !== '.wav') {
       const localPath = path.join(process.cwd(), 'uploads/media', file.filename);
       if (fs.existsSync(localPath)) {
         try { fs.unlinkSync(localPath); } catch (_) {}
       }
-      res.status(400).json({ error: 'Format berkas audio tidak didukung. Berkas audio wajib ber-ekstensi .aac atau .wav.' });
+      res.status(400).json({ error: 'Format berkas audio tidak didukung oleh hosting. Berkas audio wajib ber-ekstensi .aac atau .wav.' });
       return;
     }
 
@@ -313,33 +314,7 @@ export const generateAiAudio = async (req: AuthRequest, res: Response) => {
     const cleanText = text.trim();
     const speedNum = Number(speed) || 1.0;
 
-    // Check if identical audio already exists in media_files cache
-    if (!force_new) {
-      const [existing]: any = await pool.query(`
-        SELECT * FROM media_files 
-        WHERE source_type = 'AI_TTS' 
-          AND ai_prompt_text = ? 
-          AND ai_voice_code = ? 
-          AND ai_speed = ? 
-          AND deleted_at IS NULL
-        LIMIT 1
-      `, [cleanText, voice, speedNum]);
-
-      if (existing && existing.length > 0) {
-        const existingRecord = existing[0];
-        const localPath = path.join(__dirname, '../../', existingRecord.file_url);
-        if (fs.existsSync(localPath)) {
-          res.json({
-            success: true,
-            isCached: true,
-            message: `Kalimat ini sudah pernah dibuat dengan suara ${voice}. Menggunakan berkas yang sudah ada.`,
-            data: existingRecord
-          });
-          return;
-        }
-      }
-    }
-
+    // No-cache: Always synthesize fresh audio to prevent stale or corrupt audio reuse
     const { pitch, rateStr } = getEmotionPitchAndRate(emotion, speedNum);
 
     // Synthesize using Edge-TTS
@@ -352,15 +327,18 @@ export const generateAiAudio = async (req: AuthRequest, res: Response) => {
 
     const chunks: Buffer[] = [];
     for await (const chunk of communicate.stream()) {
-      if (chunk.type === 'audio') {
+      if (chunk.type === 'audio' && chunk.data) {
         chunks.push(chunk.data);
       }
     }
 
-    const audioBuffer = Buffer.concat(chunks);
-    if (audioBuffer.length === 0) {
+    const rawAudioBuffer = Buffer.concat(chunks);
+    if (rawAudioBuffer.length === 0) {
       throw new Error('TTS buffer output was empty');
     }
+
+    // Convert MP3 stream to genuine RIFF/WAVE (16-bit PCM) for hosting compatibility (.wav)
+    const wavBuffer = await convertMp3ToWav(rawAudioBuffer);
 
     // Save to uploads/media directory
     const mediaDir = path.join(process.cwd(), 'uploads', 'media');
@@ -371,7 +349,7 @@ export const generateAiAudio = async (req: AuthRequest, res: Response) => {
     const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1e5);
     const filename = `ai-audio-${uniqueId}.wav`;
     const fullPath = path.join(mediaDir, filename);
-    fs.writeFileSync(fullPath, audioBuffer);
+    fs.writeFileSync(fullPath, wavBuffer);
 
     // Approximate duration
     const wordCount = cleanText.split(/\s+/).length;
@@ -388,7 +366,7 @@ export const generateAiAudio = async (req: AuthRequest, res: Response) => {
       title,
       filename,
       fileUrl,
-      audioBuffer.length,
+      wavBuffer.length,
       estDuration,
       cleanText,
       voice,
@@ -466,8 +444,9 @@ export const generateAiDialogue = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    // Combine all audio buffers seamlessly
-    const combinedBuffer = Buffer.concat(audioSegments);
+    // Combine all audio buffers seamlessly and convert to genuine RIFF/WAV for hosting compatibility
+    const combinedMp3 = Buffer.concat(audioSegments);
+    const wavBuffer = await convertMp3ToWav(combinedMp3);
 
     // Save combined dialogue audio file
     const mediaDir = path.join(process.cwd(), 'uploads', 'media');
@@ -478,7 +457,7 @@ export const generateAiDialogue = async (req: AuthRequest, res: Response) => {
     const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1e5);
     const filename = `ai-dialogue-${uniqueId}.wav`;
     const fullPath = path.join(mediaDir, filename);
-    fs.writeFileSync(fullPath, combinedBuffer);
+    fs.writeFileSync(fullPath, wavBuffer);
 
     const fullPromptText = fullTranscriptLines.join('\n');
     const autoTitle = title?.trim() || `Dialog Percakapan (${dialogue_lines.length} Baris)`;
@@ -496,7 +475,7 @@ export const generateAiDialogue = async (req: AuthRequest, res: Response) => {
       autoTitle,
       filename,
       fileUrl,
-      combinedBuffer.length,
+      wavBuffer.length,
       estDuration,
       fullPromptText,
       target_placement,
@@ -516,25 +495,40 @@ export const generateAiDialogue = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// 4C. POST /api/media/synthesize-preview (Stream live preview directly)
+// 4C. POST & GET /api/media/synthesize-preview (Stream live preview directly with zero delay & no-cache)
 export const synthesizeMediaPreview = async (req: AuthRequest, res: Response) => {
-  try {
-    const {
-      mode = 'single', // 'single' | 'dialogue'
-      text,
-      voice = 'en-US-EmmaNeural',
-      speed = 1.0,
-      emotion = 'neutral',
-      dialogue_lines
-    } = req.body;
+  const isGet = req.method === 'GET';
+  const mode = (isGet ? req.query.mode : req.body.mode) || 'single';
+  const textRaw = isGet ? req.query.text : req.body.text;
+  const voiceRaw = isGet ? req.query.voice : req.body.voice;
+  const speedRaw = isGet ? req.query.speed : req.body.speed;
+  const emotionRaw = isGet ? req.query.emotion : req.body.emotion;
+  let dialogue_lines = isGet ? req.query.dialogue_lines : req.body.dialogue_lines;
 
+  if (typeof dialogue_lines === 'string') {
+    try { dialogue_lines = JSON.parse(dialogue_lines); } catch (_) {}
+  }
+
+  const voice = (typeof voiceRaw === 'string' && voiceRaw.trim()) ? voiceRaw.trim() : 'en-US-EmmaNeural';
+  const speed = Number(speedRaw) || 1.0;
+  const emotion = (typeof emotionRaw === 'string' && emotionRaw.trim()) ? emotionRaw.trim() : 'neutral';
+
+  let isClientConnected = true;
+  req.on('close', () => {
+    isClientConnected = false;
+  });
+
+  try {
     const { Communicate } = require('edge-tts-universal');
 
     if (mode === 'dialogue' && Array.isArray(dialogue_lines)) {
-      const audioSegments: Buffer[] = [];
+      let headersSent = false;
+
       for (const line of dialogue_lines) {
+        if (!isClientConnected) break;
         const lineText = (line.text || '').trim();
         if (!lineText) continue;
+
         const lineVoice = line.voice || 'en-US-EmmaNeural';
         const lineSpeed = Number(line.speed) || 1.0;
         const lineEmotion = line.emotion || 'neutral';
@@ -545,46 +539,88 @@ export const synthesizeMediaPreview = async (req: AuthRequest, res: Response) =>
           rate: rateStr,
           pitch: pitch
         });
-        const chunks: Buffer[] = [];
+
         for await (const chunk of comm.stream()) {
-          if (chunk.type === 'audio') chunks.push(chunk.data);
+          if (!isClientConnected) break;
+          if (chunk.type === 'audio' && chunk.data) {
+            if (!headersSent) {
+              res.writeHead(200, {
+                'Content-Type': 'audio/mpeg',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0',
+                'Transfer-Encoding': 'chunked',
+                'Connection': 'keep-alive',
+                'X-Content-Type-Options': 'nosniff',
+                'Accept-Ranges': 'none'
+              });
+              headersSent = true;
+            }
+            res.write(chunk.data);
+          }
         }
-        if (chunks.length > 0) audioSegments.push(Buffer.concat(chunks));
       }
 
-      const combined = Buffer.concat(audioSegments);
-      res.setHeader('Content-Type', 'audio/mpeg');
-      res.setHeader('Content-Length', combined.length);
-      res.send(combined);
+      if (isClientConnected) {
+        if (!headersSent) {
+          res.status(400).json({ error: 'Tidak ada baris percakapan teks yang dapat disintesis' });
+        } else {
+          res.end();
+        }
+      }
       return;
     }
 
     // Single voice preview
-    const cleanText = (text || '').trim();
+    const cleanText = (typeof textRaw === 'string' ? textRaw : '').trim();
     if (!cleanText) {
       res.status(400).json({ error: 'Text required' });
       return;
     }
 
-    const { pitch, rateStr } = getEmotionPitchAndRate(emotion, Number(speed) || 1.0);
+    const { pitch, rateStr } = getEmotionPitchAndRate(emotion, speed);
     const comm = new Communicate(cleanText, {
-      voice: voice || 'en-US-EmmaNeural',
+      voice,
       rate: rateStr,
-      pitch: pitch
+      pitch
     });
 
-    const chunks: Buffer[] = [];
-    for await (const chunk of comm.stream()) {
-      if (chunk.type === 'audio') chunks.push(chunk.data);
-    }
-    const resultBuffer = Buffer.concat(chunks);
+    let headersSent = false;
 
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Content-Length', resultBuffer.length);
-    res.send(resultBuffer);
+    for await (const chunk of comm.stream()) {
+      if (!isClientConnected) break;
+      if (chunk.type === 'audio' && chunk.data) {
+        if (!headersSent) {
+          res.writeHead(200, {
+            'Content-Type': 'audio/mpeg',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Transfer-Encoding': 'chunked',
+            'Connection': 'keep-alive',
+            'X-Content-Type-Options': 'nosniff',
+            'Accept-Ranges': 'none'
+          });
+          headersSent = true;
+        }
+        res.write(chunk.data);
+      }
+    }
+
+    if (isClientConnected) {
+      if (!headersSent) {
+        res.status(500).json({ error: 'Failed to synthesize audio preview' });
+      } else {
+        res.end();
+      }
+    }
   } catch (error: any) {
     console.error('Error synthesizing preview:', error);
-    res.status(500).json({ error: error.message || 'Failed to synthesize audio preview' });
+    if (!res.headersSent) {
+      res.status(500).json({ error: error.message || 'Failed to synthesize audio preview' });
+    } else {
+      res.end();
+    }
   }
 };
 
