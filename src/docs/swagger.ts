@@ -177,6 +177,28 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
           }
         }
       },
+      CheckQuestionDto: {
+        type: 'object',
+        required: ['questionId'],
+        properties: {
+          questionId: { type: 'integer', example: 101, description: 'ID of the question to evaluate' },
+          selectedOptionId: { type: 'integer', example: 2, description: 'Single selected option ID (for Multiple Choice & True/False)' },
+          selectedOptionIds: { type: 'array', items: { type: 'integer' }, example: [2, 4], description: 'Array of option IDs (for Multiple Select)' },
+          matchingAnswers: {
+            type: 'array',
+            description: 'Array of premise-to-choice pairs (for Matching Pairs / Jodohkan)',
+            items: {
+              type: 'object',
+              properties: {
+                optionId: { type: 'integer', example: 15 },
+                left: { type: 'string', example: 'Good morning' },
+                matchText: { type: 'string', example: 'Selamat pagi' }
+              }
+            }
+          },
+          answerText: { type: 'string', example: 'goes', description: 'Typed answer text (for Fill in the Blank & Word Ordering)' }
+        }
+      },
       SpeakingTestCreateDto: {
         type: 'object',
         required: ['title', 'assessmentId'],
@@ -635,6 +657,68 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'typeCode', in: 'path', required: true, schema: { type: 'string' } }],
         responses: { 200: { description: 'List of assessments by type' } }
+      }
+    },
+    '/api/quizzes/check-question': {
+      post: {
+        tags: ['Quizzes & Assessments'],
+        summary: 'Check single question answer & get instant feedback / explanation',
+        description: 'Instant evaluation for 1 question across all question types (MCQ, Multi-select, True/False, Fill Blank, Matching Pairs, Ordering). Returns isCorrect, earned points, matching breakdown, explanation, and feedback.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/CheckQuestionDto' } } }
+        },
+        responses: {
+          200: {
+            description: 'Instant evaluation and feedback result',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    questionId: { type: 'integer', example: 101 },
+                    questionTypeId: { type: 'integer', example: 5 },
+                    isCorrect: { type: 'boolean', example: true },
+                    earnedPoint: { type: 'number', example: 20 },
+                    totalPoint: { type: 'number', example: 20 },
+                    studentAnswer: { type: 'string', example: 'Good morning ➔ Selamat pagi' },
+                    correctAnswer: { type: 'string', example: 'Good morning ➔ Selamat pagi' },
+                    explanation: { type: 'string', example: 'Good morning is a greeting used until noon.' },
+                    feedback: { type: 'string', example: '🎉 Jawaban Anda Benar! Kerja bagus.' },
+                    pairs: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'integer' },
+                          label: { type: 'string' },
+                          studentMatch: { type: 'string' },
+                          correctMatch: { type: 'string' },
+                          isPairMatch: { type: 'boolean' }
+                        }
+                      }
+                    },
+                    options: { type: 'array', items: { type: 'object' } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/quizzes/{id}/check-question': {
+      post: {
+        tags: ['Quizzes & Assessments'],
+        summary: 'Check single question with quiz ID in URL parameter',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/CheckQuestionDto' } } }
+        },
+        responses: { 200: { description: 'Instant evaluation and feedback result' } }
       }
     },
     '/api/quizzes/submit': {
