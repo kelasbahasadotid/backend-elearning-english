@@ -1,0 +1,3021 @@
+{
+  "activeTables": [
+    "achievement_categories",
+    "achievement_rules",
+    "achievements",
+    "ai_feedbacks",
+    "ai_models",
+    "ai_prompt_templates",
+    "ai_prompt_versions",
+    "ai_provider_credentials",
+    "ai_providers",
+    "ai_request_logs",
+    "ai_requests",
+    "analytics_events",
+    "api_access_tokens",
+    "api_clients",
+    "assessment_analytics",
+    "assessment_attempts",
+    "assessment_progress",
+    "assessment_rules",
+    "assessment_sections",
+    "assessment_settings",
+    "assessment_types",
+    "assessments",
+    "assignment_submissions",
+    "assignments",
+    "backup_histories",
+    "badges",
+    "banner_click_logs",
+    "banners",
+    "blogs",
+    "bookmarks",
+    "broadcast_recipients",
+    "broadcasts",
+    "certificate_downloads",
+    "certificate_languages",
+    "certificate_logs",
+    "certificate_numbers",
+    "certificate_qrcodes",
+    "certificate_recipients",
+    "certificate_revisions",
+    "certificate_rules",
+    "certificate_share_logs",
+    "certificate_template_fields",
+    "certificate_templates",
+    "certificate_verifications",
+    "certificates",
+    "challenge_tasks",
+    "coupon_codes",
+    "coupon_usages",
+    "course_analytics",
+    "course_announcements",
+    "course_categories",
+    "course_levels",
+    "course_localizations",
+    "course_prerequisites",
+    "course_progress",
+    "course_reviews",
+    "course_tags",
+    "course_versions",
+    "courses",
+    "daily_challenges",
+    "discounts",
+    "discussion_replies",
+    "discussion_topics",
+    "email_messages",
+    "enrollment_histories",
+    "enrollments",
+    "fluency_scores",
+    "grammar_scores",
+    "h5p_contents",
+    "h5p_student_attempts",
+    "lesson_bookmarks",
+    "lesson_contents",
+    "lesson_progress",
+    "lessons",
+    "levels",
+    "manual_payment_proofs",
+    "media_files",
+    "menus",
+    "module_progress",
+    "modules",
+    "notifications",
+    "order_items",
+    "orders",
+    "pages",
+    "payment_methods",
+    "payment_settings",
+    "payment_transactions",
+    "payments",
+    "permissions",
+    "pronunciation_scores",
+    "question_options",
+    "questions",
+    "roles",
+    "scalev_orders",
+    "scalev_packages",
+    "sliders",
+    "speaking_attempts",
+    "speaking_prompts",
+    "speaking_recordings",
+    "speaking_tests",
+    "speech_transcriptions",
+    "system_backups",
+    "system_settings",
+    "user_notifications",
+    "user_profiles",
+    "user_statistics",
+    "users",
+    "video_progress",
+    "vocabulary_scores",
+    "xp_transactions"
+  ],
+  "unusedTables": [
+    "ai_response_cache",
+    "analytics_daily",
+    "analytics_monthly",
+    "analytics_settings",
+    "analytics_snapshots",
+    "analytics_weekly",
+    "assessment_difficulties",
+    "certificate_settings",
+    "certificate_signatures",
+    "course_tag_relations",
+    "dashboard_layouts",
+    "dashboard_widgets",
+    "email_logs",
+    "enrollment_sources",
+    "enrollments_bak27agu",
+    "executive_reports",
+    "feature_flags",
+    "gamification_settings",
+    "integration_api_logs",
+    "integration_credentials",
+    "integration_event_logs",
+    "integration_events",
+    "integration_job_logs",
+    "integration_jobs",
+    "integration_providers",
+    "integration_queue",
+    "integration_webhook_logs",
+    "integration_webhooks",
+    "invoice_items",
+    "invoices",
+    "job_executions",
+    "leaderboard_entries",
+    "leaderboards",
+    "learning_activities",
+    "learning_sessions",
+    "learning_streak_rewards",
+    "learning_streaks",
+    "lesson_analytics",
+    "lesson_assets",
+    "lesson_audio",
+    "lesson_downloads",
+    "lesson_external_links",
+    "lesson_localizations",
+    "lesson_resources",
+    "lesson_vocabulary",
+    "login_histories",
+    "maintenance_modes",
+    "marketing_analytics",
+    "menu_items",
+    "meta_capi_events",
+    "meta_conversion_analytics",
+    "module_localizations",
+    "notification_channels",
+    "notification_events",
+    "notification_logs",
+    "notification_preferences",
+    "notification_queue",
+    "notification_recipients",
+    "notification_retry_logs",
+    "notification_templates",
+    "page_blocks",
+    "page_translations",
+    "page_versions",
+    "password_resets",
+    "payment_callbacks",
+    "push_notifications",
+    "question_blank_answers",
+    "question_hints",
+    "question_matching_pairs",
+    "question_media",
+    "question_passages",
+    "question_tag_relations",
+    "question_tags",
+    "question_types",
+    "questions_bak_20260903",
+    "refunds",
+    "retention_analytics",
+    "revenue_analytics",
+    "reward_redemptions",
+    "rewards",
+    "role_permissions",
+    "scalev_analytics",
+    "scalev_enrollments",
+    "scheduled_jobs",
+    "setting_groups",
+    "setting_histories",
+    "sms_logs",
+    "speaking_analytics",
+    "storage_providers",
+    "user_achievements",
+    "user_badges",
+    "user_challenges",
+    "user_devices",
+    "user_learning_analytics",
+    "user_levels",
+    "user_sessions",
+    "video_analytics",
+    "whatsapp_logs"
+  ],
+  "tableCounts": {
+    "achievement_categories": 0,
+    "achievement_rules": 0,
+    "achievements": 0,
+    "ai_feedbacks": 214,
+    "ai_models": 0,
+    "ai_prompt_templates": 0,
+    "ai_prompt_versions": 0,
+    "ai_provider_credentials": 0,
+    "ai_providers": 0,
+    "ai_request_logs": 0,
+    "ai_requests": 0,
+    "ai_response_cache": 0,
+    "analytics_daily": 0,
+    "analytics_events": 0,
+    "analytics_monthly": 0,
+    "analytics_settings": 0,
+    "analytics_snapshots": 0,
+    "analytics_weekly": 0,
+    "api_access_tokens": 0,
+    "api_clients": 0,
+    "assessment_analytics": 0,
+    "assessment_attempts": 104,
+    "assessment_difficulties": 4,
+    "assessment_progress": 25,
+    "assessment_rules": 0,
+    "assessment_sections": 26,
+    "assessment_settings": 0,
+    "assessment_types": 10,
+    "assessments": 40,
+    "assignment_submissions": 2,
+    "assignments": 1,
+    "backup_histories": 0,
+    "badges": 0,
+    "banner_click_logs": 0,
+    "banners": 1,
+    "blogs": 0,
+    "bookmarks": 0,
+    "broadcast_recipients": 0,
+    "broadcasts": 0,
+    "certificate_downloads": 0,
+    "certificate_languages": 0,
+    "certificate_logs": 0,
+    "certificate_numbers": 3,
+    "certificate_qrcodes": 0,
+    "certificate_recipients": 0,
+    "certificate_revisions": 0,
+    "certificate_rules": 0,
+    "certificate_settings": 0,
+    "certificate_share_logs": 0,
+    "certificate_signatures": 0,
+    "certificate_template_fields": 0,
+    "certificate_templates": 1,
+    "certificate_verifications": 0,
+    "certificates": 3,
+    "challenge_tasks": 0,
+    "coupon_codes": 0,
+    "coupon_usages": 0,
+    "course_analytics": 0,
+    "course_announcements": 4,
+    "course_categories": 6,
+    "course_levels": 1,
+    "course_localizations": 0,
+    "course_prerequisites": 0,
+    "course_progress": 31,
+    "course_reviews": 5,
+    "course_tag_relations": 0,
+    "course_tags": 7,
+    "course_versions": 4,
+    "courses": 3,
+    "daily_challenges": 0,
+    "dashboard_layouts": 0,
+    "dashboard_widgets": 0,
+    "discounts": 0,
+    "discussion_replies": 4,
+    "discussion_topics": 2,
+    "email_logs": 0,
+    "email_messages": 6,
+    "enrollment_histories": 38,
+    "enrollment_sources": 4,
+    "enrollments": 34,
+    "enrollments_bak27agu": 30,
+    "executive_reports": 0,
+    "feature_flags": 0,
+    "fluency_scores": 214,
+    "gamification_settings": 0,
+    "grammar_scores": 214,
+    "h5p_contents": 16,
+    "h5p_student_attempts": 7,
+    "integration_api_logs": 0,
+    "integration_credentials": 0,
+    "integration_event_logs": 0,
+    "integration_events": 0,
+    "integration_job_logs": 0,
+    "integration_jobs": 0,
+    "integration_providers": 0,
+    "integration_queue": 0,
+    "integration_webhook_logs": 0,
+    "integration_webhooks": 0,
+    "invoice_items": 0,
+    "invoices": 0,
+    "job_executions": 0,
+    "leaderboard_entries": 0,
+    "leaderboards": 0,
+    "learning_activities": 0,
+    "learning_sessions": 0,
+    "learning_streak_rewards": 0,
+    "learning_streaks": 0,
+    "lesson_analytics": 0,
+    "lesson_assets": 0,
+    "lesson_audio": 0,
+    "lesson_bookmarks": 0,
+    "lesson_contents": 105,
+    "lesson_downloads": 0,
+    "lesson_external_links": 0,
+    "lesson_localizations": 0,
+    "lesson_progress": 101,
+    "lesson_resources": 0,
+    "lesson_vocabulary": 0,
+    "lessons": 102,
+    "levels": 0,
+    "login_histories": 0,
+    "maintenance_modes": 0,
+    "manual_payment_proofs": 1,
+    "marketing_analytics": 0,
+    "media_files": 35,
+    "menu_items": 0,
+    "menus": 0,
+    "meta_capi_events": 0,
+    "meta_conversion_analytics": 0,
+    "module_localizations": 0,
+    "module_progress": 16,
+    "modules": 9,
+    "notification_channels": 5,
+    "notification_events": 0,
+    "notification_logs": 0,
+    "notification_preferences": 0,
+    "notification_queue": 0,
+    "notification_recipients": 0,
+    "notification_retry_logs": 0,
+    "notification_templates": 0,
+    "notifications": 0,
+    "order_items": 40,
+    "orders": 40,
+    "page_blocks": 0,
+    "page_translations": 0,
+    "page_versions": 0,
+    "pages": 0,
+    "password_resets": 0,
+    "payment_callbacks": 0,
+    "payment_methods": 2,
+    "payment_settings": 1,
+    "payment_transactions": 36,
+    "payments": 36,
+    "permissions": 16,
+    "pronunciation_scores": 214,
+    "push_notifications": 0,
+    "question_blank_answers": 0,
+    "question_hints": 0,
+    "question_matching_pairs": 0,
+    "question_media": 0,
+    "question_options": 586,
+    "question_passages": 0,
+    "question_tag_relations": 0,
+    "question_tags": 0,
+    "question_types": 13,
+    "questions": 59,
+    "questions_bak_20260903": 8,
+    "refunds": 0,
+    "retention_analytics": 0,
+    "revenue_analytics": 0,
+    "reward_redemptions": 0,
+    "rewards": 0,
+    "role_permissions": 0,
+    "roles": 5,
+    "scalev_analytics": 0,
+    "scalev_enrollments": 0,
+    "scalev_orders": 81,
+    "scalev_packages": 3,
+    "scheduled_jobs": 0,
+    "setting_groups": 0,
+    "setting_histories": 0,
+    "sliders": 0,
+    "sms_logs": 0,
+    "speaking_analytics": 0,
+    "speaking_attempts": 214,
+    "speaking_prompts": 42,
+    "speaking_recordings": 214,
+    "speaking_tests": 33,
+    "speech_transcriptions": 214,
+    "storage_providers": 0,
+    "system_backups": 0,
+    "system_settings": 19,
+    "user_achievements": 0,
+    "user_badges": 0,
+    "user_challenges": 0,
+    "user_devices": 0,
+    "user_learning_analytics": 0,
+    "user_levels": 0,
+    "user_notifications": 100,
+    "user_profiles": 27,
+    "user_sessions": 0,
+    "user_statistics": 31,
+    "users": 32,
+    "video_analytics": 0,
+    "video_progress": 4,
+    "vocabulary_scores": 214,
+    "whatsapp_logs": 0,
+    "xp_transactions": 102
+  },
+  "tableReferences": {
+    "achievement_categories": {
+      "files": [],
+      "count": 0
+    },
+    "achievement_rules": {
+      "files": [],
+      "count": 0
+    },
+    "achievements": {
+      "files": [],
+      "count": 0
+    },
+    "ai_feedbacks": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\tutorController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\tutorController.ts"
+      ],
+      "count": 4
+    },
+    "ai_models": {
+      "files": [],
+      "count": 0
+    },
+    "ai_prompt_templates": {
+      "files": [],
+      "count": 0
+    },
+    "ai_prompt_versions": {
+      "files": [],
+      "count": 0
+    },
+    "ai_provider_credentials": {
+      "files": [],
+      "count": 0
+    },
+    "ai_providers": {
+      "files": [],
+      "count": 0
+    },
+    "ai_request_logs": {
+      "files": [],
+      "count": 0
+    },
+    "ai_requests": {
+      "files": [],
+      "count": 0
+    },
+    "ai_response_cache": {
+      "files": [],
+      "count": 0
+    },
+    "analytics_daily": {
+      "files": [],
+      "count": 0
+    },
+    "analytics_events": {
+      "files": [],
+      "count": 0
+    },
+    "analytics_monthly": {
+      "files": [],
+      "count": 0
+    },
+    "analytics_settings": {
+      "files": [],
+      "count": 0
+    },
+    "analytics_snapshots": {
+      "files": [],
+      "count": 0
+    },
+    "analytics_weekly": {
+      "files": [],
+      "count": 0
+    },
+    "api_access_tokens": {
+      "files": [],
+      "count": 0
+    },
+    "api_clients": {
+      "files": [],
+      "count": 0
+    },
+    "assessment_analytics": {
+      "files": [],
+      "count": 0
+    },
+    "assessment_attempts": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts"
+      ],
+      "count": 2
+    },
+    "assessment_difficulties": {
+      "files": [],
+      "count": 0
+    },
+    "assessment_progress": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts"
+      ],
+      "count": 8
+    },
+    "assessment_rules": {
+      "files": [],
+      "count": 0
+    },
+    "assessment_sections": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 6
+    },
+    "assessment_settings": {
+      "files": [],
+      "count": 0
+    },
+    "assessment_types": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts"
+      ],
+      "count": 2
+    },
+    "assessments": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\certificates\\verify\\[code]\\VerifyPageClient.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 17
+    },
+    "assignment_submissions": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts"
+      ],
+      "count": 4
+    },
+    "assignments": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\studentRoutes.ts",
+        "backend-elearning-english\\src\\routes\\taskRoutes.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\TutorSubmissionsTab.tsx",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\routes\\studentRoutes.ts",
+        "frontend-elearning-english\\src\\routes\\taskRoutes.ts"
+      ],
+      "count": 14
+    },
+    "backup_histories": {
+      "files": [],
+      "count": 0
+    },
+    "badges": {
+      "files": [
+        "backend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "backend-elearning-english\\src\\controllers\\emailController.ts",
+        "frontend-elearning-english\\src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "frontend-elearning-english\\src\\app\\quiz\\[id]\\QuizPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\CreateTemplateModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\LeaderboardTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\MediaTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\controllers\\emailController.ts"
+      ],
+      "count": 10
+    },
+    "banner_click_logs": {
+      "files": [],
+      "count": 0
+    },
+    "banners": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\components\\common\\SeoManager.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\CreateBannerModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\BannersTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\SettingsTab.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 16
+    },
+    "blogs": {
+      "files": [],
+      "count": 0
+    },
+    "bookmarks": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\studyRoutes.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\routes\\studyRoutes.ts"
+      ],
+      "count": 9
+    },
+    "broadcast_recipients": {
+      "files": [],
+      "count": 0
+    },
+    "broadcasts": {
+      "files": [],
+      "count": 0
+    },
+    "certificate_downloads": {
+      "files": [],
+      "count": 0
+    },
+    "certificate_languages": {
+      "files": [],
+      "count": 0
+    },
+    "certificate_logs": {
+      "files": [],
+      "count": 0
+    },
+    "certificate_numbers": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts"
+      ],
+      "count": 2
+    },
+    "certificate_qrcodes": {
+      "files": [],
+      "count": 0
+    },
+    "certificate_recipients": {
+      "files": [],
+      "count": 0
+    },
+    "certificate_revisions": {
+      "files": [],
+      "count": 0
+    },
+    "certificate_rules": {
+      "files": [],
+      "count": 0
+    },
+    "certificate_settings": {
+      "files": [],
+      "count": 0
+    },
+    "certificate_share_logs": {
+      "files": [],
+      "count": 0
+    },
+    "certificate_signatures": {
+      "files": [],
+      "count": 0
+    },
+    "certificate_template_fields": {
+      "files": [],
+      "count": 0
+    },
+    "certificate_templates": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 6
+    },
+    "certificate_verifications": {
+      "files": [],
+      "count": 0
+    },
+    "certificates": {
+      "files": [
+        "backend-elearning-english\\src\\app.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "frontend-elearning-english\\src\\app\\certificate\\[code]\\page.tsx",
+        "frontend-elearning-english\\src\\app\\certificates\\page.tsx",
+        "frontend-elearning-english\\src\\app\\certificates\\verify\\[code]\\VerifyPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\app\\verify-certificate\\[code]\\page.tsx",
+        "frontend-elearning-english\\src\\app.ts",
+        "frontend-elearning-english\\src\\components\\common\\GeminiHelpAssistant.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\DashboardHeader.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\CreateTemplateModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CertificatesTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\LeaderboardTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\components\\Footer.tsx",
+        "frontend-elearning-english\\src\\components\\Navbar.tsx",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts"
+      ],
+      "count": 21
+    },
+    "challenge_tasks": {
+      "files": [],
+      "count": 0
+    },
+    "coupon_codes": {
+      "files": [],
+      "count": 0
+    },
+    "coupon_usages": {
+      "files": [],
+      "count": 0
+    },
+    "course_analytics": {
+      "files": [],
+      "count": 0
+    },
+    "course_announcements": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts"
+      ],
+      "count": 4
+    },
+    "course_categories": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 6
+    },
+    "course_levels": {
+      "files": [
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 2
+    },
+    "course_localizations": {
+      "files": [],
+      "count": 0
+    },
+    "course_prerequisites": {
+      "files": [],
+      "count": 0
+    },
+    "course_progress": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts"
+      ],
+      "count": 12
+    },
+    "course_reviews": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts"
+      ],
+      "count": 4
+    },
+    "course_tag_relations": {
+      "files": [],
+      "count": 0
+    },
+    "course_tags": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts"
+      ],
+      "count": 2
+    },
+    "course_versions": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\mediaController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts"
+      ],
+      "count": 18
+    },
+    "courses": {
+      "files": [
+        "backend-elearning-english\\src\\app.ts",
+        "backend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\discussionController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\mediaController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\migrations\\20230720_add_tasks_and_discussions.sql",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\routes\\tutorRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\certificates\\page.tsx",
+        "frontend-elearning-english\\src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "frontend-elearning-english\\src\\app.ts",
+        "frontend-elearning-english\\src\\components\\common\\GeminiHelpAssistant.tsx",
+        "frontend-elearning-english\\src\\components\\CourseTabNav.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\CreateTemplateModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\ResetProgressModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\AdminTasksTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CourseAnnouncementsTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CourseReviewsTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\H5PStudioEditor.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\MediaTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\OrdersTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\OverviewTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\components\\Footer.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\discussionController.ts",
+        "frontend-elearning-english\\src\\controllers\\h5pController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\migrations\\20230720_add_tasks_and_discussions.sql",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 56
+    },
+    "daily_challenges": {
+      "files": [],
+      "count": 0
+    },
+    "dashboard_layouts": {
+      "files": [],
+      "count": 0
+    },
+    "dashboard_widgets": {
+      "files": [],
+      "count": 0
+    },
+    "discounts": {
+      "files": [],
+      "count": 0
+    },
+    "discussion_replies": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\discussionController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\discussionController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts"
+      ],
+      "count": 4
+    },
+    "discussion_topics": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\discussionController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\discussionController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts"
+      ],
+      "count": 4
+    },
+    "email_logs": {
+      "files": [],
+      "count": 0
+    },
+    "email_messages": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\emailController.ts",
+        "frontend-elearning-english\\src\\controllers\\emailController.ts"
+      ],
+      "count": 2
+    },
+    "enrollment_histories": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts"
+      ],
+      "count": 4
+    },
+    "enrollment_sources": {
+      "files": [],
+      "count": 0
+    },
+    "enrollments": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\certificates\\page.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\OrdersTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 29
+    },
+    "enrollments_bak27agu": {
+      "files": [],
+      "count": 0
+    },
+    "executive_reports": {
+      "files": [],
+      "count": 0
+    },
+    "feature_flags": {
+      "files": [],
+      "count": 0
+    },
+    "fluency_scores": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\tutorController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\tutorController.ts"
+      ],
+      "count": 4
+    },
+    "gamification_settings": {
+      "files": [],
+      "count": 0
+    },
+    "grammar_scores": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts"
+      ],
+      "count": 2
+    },
+    "h5p_contents": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\controllers\\h5pController.ts"
+      ],
+      "count": 5
+    },
+    "h5p_student_attempts": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "frontend-elearning-english\\src\\controllers\\h5pController.ts"
+      ],
+      "count": 2
+    },
+    "integration_api_logs": {
+      "files": [],
+      "count": 0
+    },
+    "integration_credentials": {
+      "files": [],
+      "count": 0
+    },
+    "integration_event_logs": {
+      "files": [],
+      "count": 0
+    },
+    "integration_events": {
+      "files": [],
+      "count": 0
+    },
+    "integration_job_logs": {
+      "files": [],
+      "count": 0
+    },
+    "integration_jobs": {
+      "files": [],
+      "count": 0
+    },
+    "integration_providers": {
+      "files": [],
+      "count": 0
+    },
+    "integration_queue": {
+      "files": [],
+      "count": 0
+    },
+    "integration_webhook_logs": {
+      "files": [],
+      "count": 0
+    },
+    "integration_webhooks": {
+      "files": [],
+      "count": 0
+    },
+    "invoice_items": {
+      "files": [],
+      "count": 0
+    },
+    "invoices": {
+      "files": [],
+      "count": 0
+    },
+    "job_executions": {
+      "files": [],
+      "count": 0
+    },
+    "leaderboard_entries": {
+      "files": [],
+      "count": 0
+    },
+    "leaderboards": {
+      "files": [],
+      "count": 0
+    },
+    "learning_activities": {
+      "files": [],
+      "count": 0
+    },
+    "learning_sessions": {
+      "files": [],
+      "count": 0
+    },
+    "learning_streak_rewards": {
+      "files": [],
+      "count": 0
+    },
+    "learning_streaks": {
+      "files": [],
+      "count": 0
+    },
+    "lesson_analytics": {
+      "files": [],
+      "count": 0
+    },
+    "lesson_assets": {
+      "files": [],
+      "count": 0
+    },
+    "lesson_audio": {
+      "files": [],
+      "count": 0
+    },
+    "lesson_bookmarks": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts"
+      ],
+      "count": 4
+    },
+    "lesson_contents": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\migrations\\add_file_attachments.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\h5pController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\migrations\\add_file_attachments.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 12
+    },
+    "lesson_downloads": {
+      "files": [],
+      "count": 0
+    },
+    "lesson_external_links": {
+      "files": [],
+      "count": 0
+    },
+    "lesson_localizations": {
+      "files": [],
+      "count": 0
+    },
+    "lesson_progress": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts"
+      ],
+      "count": 8
+    },
+    "lesson_resources": {
+      "files": [],
+      "count": 0
+    },
+    "lesson_vocabulary": {
+      "files": [],
+      "count": 0
+    },
+    "lessons": {
+      "files": [
+        "backend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\mediaController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\migrations\\20230720_add_tasks_and_discussions.sql",
+        "backend-elearning-english\\src\\migrations\\extend_lesson_type_enum.ts",
+        "backend-elearning-english\\src\\migrations\\revert_lesson_type_enum.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\routes\\mediaRoutes.ts",
+        "backend-elearning-english\\src\\routes\\tutorRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\app\\certificates\\page.tsx",
+        "frontend-elearning-english\\src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "frontend-elearning-english\\src\\app\\courses\\[slug]\\tasks\\TasksTabClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\loading.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\LessonContentManager.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\ResetProgressModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\MediaTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\h5pController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\migrations\\20230720_add_tasks_and_discussions.sql",
+        "frontend-elearning-english\\src\\migrations\\extend_lesson_type_enum.ts",
+        "frontend-elearning-english\\src\\migrations\\revert_lesson_type_enum.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts"
+      ],
+      "count": 44
+    },
+    "levels": {
+      "files": [
+        "backend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 6
+    },
+    "login_histories": {
+      "files": [],
+      "count": 0
+    },
+    "maintenance_modes": {
+      "files": [],
+      "count": 0
+    },
+    "manual_payment_proofs": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts"
+      ],
+      "count": 2
+    },
+    "marketing_analytics": {
+      "files": [],
+      "count": 0
+    },
+    "media_files": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\mediaController.ts",
+        "backend-elearning-english\\src\\seeders\\mediaSeeder.ts"
+      ],
+      "count": 2
+    },
+    "menu_items": {
+      "files": [],
+      "count": 0
+    },
+    "menus": {
+      "files": [
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx"
+      ],
+      "count": 1
+    },
+    "meta_capi_events": {
+      "files": [],
+      "count": 0
+    },
+    "meta_conversion_analytics": {
+      "files": [],
+      "count": 0
+    },
+    "module_localizations": {
+      "files": [],
+      "count": 0
+    },
+    "module_progress": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts"
+      ],
+      "count": 3
+    },
+    "modules": {
+      "files": [
+        "backend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\mediaController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\app\\certificates\\page.tsx",
+        "frontend-elearning-english\\src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\loading.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\ResetProgressModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts"
+      ],
+      "count": 31
+    },
+    "notification_channels": {
+      "files": [],
+      "count": 0
+    },
+    "notification_events": {
+      "files": [],
+      "count": 0
+    },
+    "notification_logs": {
+      "files": [],
+      "count": 0
+    },
+    "notification_preferences": {
+      "files": [],
+      "count": 0
+    },
+    "notification_queue": {
+      "files": [],
+      "count": 0
+    },
+    "notification_recipients": {
+      "files": [],
+      "count": 0
+    },
+    "notification_retry_logs": {
+      "files": [],
+      "count": 0
+    },
+    "notification_templates": {
+      "files": [],
+      "count": 0
+    },
+    "notifications": {
+      "files": [
+        "backend-elearning-english\\src\\app.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\notificationController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\studentRoutes.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app.ts",
+        "frontend-elearning-english\\src\\components\\dashboard\\DashboardHeader.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\components\\Navbar.tsx",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\notificationController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\routes\\studentRoutes.ts"
+      ],
+      "count": 15
+    },
+    "order_items": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 6
+    },
+    "orders": {
+      "files": [
+        "backend-elearning-english\\src\\app.ts",
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\routes\\paymentRoutes.ts",
+        "backend-elearning-english\\src\\routes\\studentRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\app.ts",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\OrdersTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\OverviewTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\routes\\paymentRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 22
+    },
+    "page_blocks": {
+      "files": [],
+      "count": 0
+    },
+    "page_translations": {
+      "files": [],
+      "count": 0
+    },
+    "page_versions": {
+      "files": [],
+      "count": 0
+    },
+    "pages": {
+      "files": [
+        "frontend-elearning-english\\src\\app\\certificates\\page.tsx"
+      ],
+      "count": 1
+    },
+    "password_resets": {
+      "files": [],
+      "count": 0
+    },
+    "payment_callbacks": {
+      "files": [],
+      "count": 0
+    },
+    "payment_methods": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts"
+      ],
+      "count": 2
+    },
+    "payment_settings": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\paymentController.ts"
+      ],
+      "count": 1
+    },
+    "payment_transactions": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\utils\\auditAndDumpDb.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\utils\\auditAndDumpDb.ts"
+      ],
+      "count": 6
+    },
+    "payments": {
+      "files": [
+        "backend-elearning-english\\src\\app.ts",
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\app.ts",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts"
+      ],
+      "count": 7
+    },
+    "permissions": {
+      "files": [
+        "backend-elearning-english\\src\\middleware\\auth.ts",
+        "frontend-elearning-english\\src\\middleware\\auth.ts"
+      ],
+      "count": 2
+    },
+    "pronunciation_scores": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\tutorController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\tutorController.ts"
+      ],
+      "count": 4
+    },
+    "push_notifications": {
+      "files": [],
+      "count": 0
+    },
+    "question_blank_answers": {
+      "files": [],
+      "count": 0
+    },
+    "question_hints": {
+      "files": [],
+      "count": 0
+    },
+    "question_matching_pairs": {
+      "files": [],
+      "count": 0
+    },
+    "question_media": {
+      "files": [],
+      "count": 0
+    },
+    "question_options": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\migrations\\add_file_attachments.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\migrations\\add_file_attachments.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 8
+    },
+    "question_passages": {
+      "files": [],
+      "count": 0
+    },
+    "question_tag_relations": {
+      "files": [],
+      "count": 0
+    },
+    "question_tags": {
+      "files": [],
+      "count": 0
+    },
+    "question_types": {
+      "files": [],
+      "count": 0
+    },
+    "questions": {
+      "files": [
+        "backend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\migrations\\add_file_attachments.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\routes\\tutorRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\seeders\\mediaSeeder.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\quiz\\[id]\\QuizPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\common\\GeminiHelpAssistant.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\migrations\\add_file_attachments.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 22
+    },
+    "questions_bak_20260903": {
+      "files": [],
+      "count": 0
+    },
+    "refunds": {
+      "files": [],
+      "count": 0
+    },
+    "retention_analytics": {
+      "files": [],
+      "count": 0
+    },
+    "revenue_analytics": {
+      "files": [],
+      "count": 0
+    },
+    "reward_redemptions": {
+      "files": [],
+      "count": 0
+    },
+    "rewards": {
+      "files": [],
+      "count": 0
+    },
+    "role_permissions": {
+      "files": [],
+      "count": 0
+    },
+    "roles": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\mediaRoutes.ts",
+        "backend-elearning-english\\src\\routes\\tutorRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\UsersTab.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\routes\\tutorRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 12
+    },
+    "scalev_analytics": {
+      "files": [],
+      "count": 0
+    },
+    "scalev_enrollments": {
+      "files": [],
+      "count": 0
+    },
+    "scalev_orders": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts"
+      ],
+      "count": 4
+    },
+    "scalev_packages": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts"
+      ],
+      "count": 4
+    },
+    "scheduled_jobs": {
+      "files": [],
+      "count": 0
+    },
+    "setting_groups": {
+      "files": [],
+      "count": 0
+    },
+    "setting_histories": {
+      "files": [],
+      "count": 0
+    },
+    "sliders": {
+      "files": [
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\CreateTemplateModal.tsx"
+      ],
+      "count": 1
+    },
+    "sms_logs": {
+      "files": [],
+      "count": 0
+    },
+    "speaking_analytics": {
+      "files": [],
+      "count": 0
+    },
+    "speaking_attempts": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\controllers\\tutorController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\tutorController.ts"
+      ],
+      "count": 10
+    },
+    "speaking_prompts": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\tutorController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\tutorController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 8
+    },
+    "speaking_recordings": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts"
+      ],
+      "count": 2
+    },
+    "speaking_tests": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 13
+    },
+    "speech_transcriptions": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts"
+      ],
+      "count": 2
+    },
+    "storage_providers": {
+      "files": [],
+      "count": 0
+    },
+    "system_backups": {
+      "files": [],
+      "count": 0
+    },
+    "system_settings": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts"
+      ],
+      "count": 2
+    },
+    "user_achievements": {
+      "files": [],
+      "count": 0
+    },
+    "user_badges": {
+      "files": [],
+      "count": 0
+    },
+    "user_challenges": {
+      "files": [],
+      "count": 0
+    },
+    "user_devices": {
+      "files": [],
+      "count": 0
+    },
+    "user_learning_analytics": {
+      "files": [],
+      "count": 0
+    },
+    "user_levels": {
+      "files": [],
+      "count": 0
+    },
+    "user_notifications": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\notificationController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\notificationController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts"
+      ],
+      "count": 10
+    },
+    "user_profiles": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 8
+    },
+    "user_sessions": {
+      "files": [],
+      "count": 0
+    },
+    "user_statistics": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "backend-elearning-english\\src\\utils\\xp.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\utils\\xp.ts"
+      ],
+      "count": 18
+    },
+    "users": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\discussionController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "backend-elearning-english\\src\\controllers\\tutorController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\migrations\\20230720_add_tasks_and_discussions.sql",
+        "backend-elearning-english\\src\\migrations\\20230721_add_task_submissions.sql",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\ResetProgressModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\UsersTab.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\discussionController.ts",
+        "frontend-elearning-english\\src\\controllers\\h5pController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\controllers\\tutorController.ts",
+        "frontend-elearning-english\\src\\migrations\\20230720_add_tasks_and_discussions.sql",
+        "frontend-elearning-english\\src\\migrations\\20230721_add_task_submissions.sql",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ],
+      "count": 37
+    },
+    "video_analytics": {
+      "files": [],
+      "count": 0
+    },
+    "video_progress": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts"
+      ],
+      "count": 2
+    },
+    "vocabulary_scores": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts"
+      ],
+      "count": 2
+    },
+    "whatsapp_logs": {
+      "files": [],
+      "count": 0
+    },
+    "xp_transactions": {
+      "files": [
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\utils\\xp.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\utils\\xp.ts"
+      ],
+      "count": 6
+    }
+  },
+  "relations": {
+    "achievement_categories": {
+      "references": [],
+      "referencedBy": [
+        "achievements"
+      ]
+    },
+    "achievement_rules": {
+      "references": [
+        "achievements"
+      ],
+      "referencedBy": []
+    },
+    "achievements": {
+      "references": [
+        "badges",
+        "achievement_categories"
+      ],
+      "referencedBy": [
+        "achievement_rules"
+      ]
+    },
+    "ai_feedbacks": {
+      "references": [
+        "speaking_attempts"
+      ],
+      "referencedBy": []
+    },
+    "ai_models": {
+      "references": [
+        "ai_providers"
+      ],
+      "referencedBy": [
+        "ai_requests"
+      ]
+    },
+    "ai_prompt_templates": {
+      "references": [],
+      "referencedBy": [
+        "ai_prompt_versions"
+      ]
+    },
+    "ai_prompt_versions": {
+      "references": [
+        "ai_prompt_templates"
+      ],
+      "referencedBy": []
+    },
+    "ai_provider_credentials": {
+      "references": [
+        "ai_providers"
+      ],
+      "referencedBy": []
+    },
+    "ai_providers": {
+      "references": [],
+      "referencedBy": [
+        "ai_models",
+        "ai_provider_credentials"
+      ]
+    },
+    "ai_request_logs": {
+      "references": [
+        "ai_requests"
+      ],
+      "referencedBy": []
+    },
+    "ai_requests": {
+      "references": [
+        "ai_models",
+        "users"
+      ],
+      "referencedBy": [
+        "ai_request_logs"
+      ]
+    },
+    "ai_response_cache": {
+      "references": [],
+      "referencedBy": []
+    },
+    "analytics_daily": {
+      "references": [],
+      "referencedBy": []
+    },
+    "analytics_events": {
+      "references": [
+        "courses",
+        "lessons",
+        "users"
+      ],
+      "referencedBy": []
+    },
+    "analytics_monthly": {
+      "references": [],
+      "referencedBy": []
+    },
+    "analytics_settings": {
+      "references": [],
+      "referencedBy": []
+    },
+    "analytics_snapshots": {
+      "references": [],
+      "referencedBy": []
+    },
+    "analytics_weekly": {
+      "references": [],
+      "referencedBy": []
+    },
+    "api_access_tokens": {
+      "references": [
+        "api_clients"
+      ],
+      "referencedBy": []
+    },
+    "api_clients": {
+      "references": [],
+      "referencedBy": [
+        "api_access_tokens"
+      ]
+    },
+    "assessment_analytics": {
+      "references": [
+        "assessments"
+      ],
+      "referencedBy": []
+    },
+    "assessment_attempts": {
+      "references": [
+        "users",
+        "assessments"
+      ],
+      "referencedBy": []
+    },
+    "assessment_difficulties": {
+      "references": [],
+      "referencedBy": []
+    },
+    "assessment_progress": {
+      "references": [
+        "assessments",
+        "users"
+      ],
+      "referencedBy": []
+    },
+    "assessment_rules": {
+      "references": [
+        "assessments"
+      ],
+      "referencedBy": []
+    },
+    "assessment_sections": {
+      "references": [
+        "assessments"
+      ],
+      "referencedBy": []
+    },
+    "assessment_settings": {
+      "references": [
+        "assessments"
+      ],
+      "referencedBy": []
+    },
+    "assessment_types": {
+      "references": [],
+      "referencedBy": [
+        "assessments"
+      ]
+    },
+    "assessments": {
+      "references": [
+        "lessons",
+        "modules",
+        "courses",
+        "users",
+        "assessment_types"
+      ],
+      "referencedBy": [
+        "assessment_analytics",
+        "assessment_attempts",
+        "assessment_progress",
+        "assessment_rules",
+        "assessment_sections",
+        "assessment_settings"
+      ]
+    },
+    "assignment_submissions": {
+      "references": [],
+      "referencedBy": []
+    },
+    "assignments": {
+      "references": [],
+      "referencedBy": []
+    },
+    "backup_histories": {
+      "references": [
+        "system_backups",
+        "users"
+      ],
+      "referencedBy": []
+    },
+    "badges": {
+      "references": [],
+      "referencedBy": [
+        "achievements"
+      ]
+    },
+    "banner_click_logs": {
+      "references": [
+        "banners",
+        "users"
+      ],
+      "referencedBy": []
+    },
+    "banners": {
+      "references": [],
+      "referencedBy": [
+        "banner_click_logs"
+      ]
+    },
+    "blogs": {
+      "references": [
+        "users",
+        "course_categories"
+      ],
+      "referencedBy": []
+    },
+    "bookmarks": {
+      "references": [
+        "lessons",
+        "users"
+      ],
+      "referencedBy": []
+    },
+    "broadcast_recipients": {
+      "references": [
+        "broadcasts",
+        "users"
+      ],
+      "referencedBy": []
+    },
+    "broadcasts": {
+      "references": [
+        "users"
+      ],
+      "referencedBy": [
+        "broadcast_recipients"
+      ]
+    },
+    "certificate_downloads": {
+      "references": [
+        "certificates",
+        "users"
+      ],
+      "referencedBy": []
+    },
+    "certificate_languages": {
+      "references": [
+        "certificates"
+      ],
+      "referencedBy": []
+    },
+    "certificate_logs": {
+      "references": [
+        "certificates",
+        "users"
+      ],
+      "referencedBy": []
+    },
+    "certificate_numbers": {
+      "references": [],
+      "referencedBy": [
+        "certificates"
+      ]
+    },
+    "certificate_qrcodes": {
+      "references": [
+        "certificates"
+      ],
+      "referencedBy": []
+    },
+    "certificate_recipients": {
+      "references": [
+        "certificates"
+      ],
+      "referencedBy": []
+    },
+    "certificate_revisions": {
+      "references": [
+        "certificates"
+      ],
+      "referencedBy": []
+    },
+    "certificate_rules": {
+      "references": [
+        "courses"
+      ],
+      "referencedBy": []
+    },
+    "certificate_settings": {
+      "references": [],
+      "referencedBy": []
+    },
+    "certificate_share_logs": {
+      "references": [
+        "certificates"
+      ],
+      "referencedBy": []
+    },
+    "certificate_signatures": {
+      "references": [],
+      "referencedBy": []
+    },
+    "certificate_template_fields": {
+      "references": [
+        "certificate_templates"
+      ],
+      "referencedBy": []
+    },
+    "certificate_templates": {
+      "references": [
+        "courses"
+      ],
+      "referencedBy": [
+        "certificate_template_fields",
+        "certificates"
+      ]
+    },
+    "certificate_verifications": {
+      "references": [
+        "certificates"
+      ],
+      "referencedBy": []
+    },
+    "certificates": {
+      "references": [
+        "certificate_numbers",
+        "courses",
+        "enrollments",
+        "certificate_templates",
+        "users"
+      ],
+      "referencedBy": [
+        "certificate_downloads",
+        "certificate_languages",
+        "certificate_logs",
+        "certificate_qrcodes",
+        "certificate_recipients",
+        "certificate_revisions",
+        "certificate_share_logs",
+        "certificate_verifications"
+      ]
+    },
+    "challenge_tasks": {
+      "references": [
+        "daily_challenges"
+      ],
+      "referencedBy": []
+    },
+    "coupon_codes": {
+      "references": [
+        "discounts"
+      ],
+      "referencedBy": [
+        "coupon_usages"
+      ]
+    },
+    "coupon_usages": {
+      "references": [
+        "coupon_codes",
+        "orders",
+        "users"
+      ],
+      "referencedBy": []
+    },
+    "course_analytics": {
+      "references": [
+        "courses"
+      ],
+      "referencedBy": []
+    },
+    "course_announcements": {
+      "references": [
+        "courses",
+        "users"
+      ],
+      "referencedBy": []
+    },
+    "course_categories": {
+      "references": [
+        "course_categories"
+      ],
+      "referencedBy": [
+        "blogs",
+        "course_categories",
+        "courses"
+      ]
+    },
+    "course_levels": {
+      "references": [],
+      "referencedBy": [
+        "courses"
+      ]
+    },
+    "course_localizations": {
+      "references": [
+        "courses"
+      ],
+      "referencedBy": []
+    },
+    "course_prerequisites": {
+      "references": [
+        "courses",
+        "courses"
+      ],
+      "referencedBy": []
+    },
+    "course_progress": {
+      "references": [
+        "courses",
+        "enrollments",
+        "users"
+      ],
+      "referencedBy": []
+    },
+    "course_reviews": {
+      "references": [
+        "courses",
+        "users",
+        "users"
+      ],
+      "referencedBy": []
+    },
+    "course_tag_relations": {
+      "references": [],
+      "referencedBy": []
+    },
+    "course_tags": {
+      "references": [],
+      "referencedBy": []
+    },
+    "course_versions": {
+      "references": [],
+      "referencedBy": []
+    },
+    "courses": {
+      "references": [
+        "course_categories",
+        "users",
+        "course_levels"
+      ],
+      "referencedBy": [
+        "analytics_events",
+        "assessments",
+        "certificate_rules",
+        "certificate_templates",
+        "certificates",
+        "course_analytics",
+        "course_announcements",
+        "course_localizations",
+        "course_prerequisites",
+        "course_prerequisites",
+        "course_progress",
+        "course_reviews"
+      ]
+    },
+    "daily_challenges": {
+      "references": [],
+      "referencedBy": [
+        "challenge_tasks"
+      ]
+    },
+    "dashboard_layouts": {
+      "references": [],
+      "referencedBy": []
+    },
+    "dashboard_widgets": {
+      "references": [],
+      "referencedBy": []
+    },
+    "discounts": {
+      "references": [],
+      "referencedBy": [
+        "coupon_codes"
+      ]
+    },
+    "discussion_replies": {
+      "references": [],
+      "referencedBy": []
+    },
+    "discussion_topics": {
+      "references": [],
+      "referencedBy": []
+    },
+    "email_logs": {
+      "references": [],
+      "referencedBy": []
+    },
+    "email_messages": {
+      "references": [],
+      "referencedBy": []
+    },
+    "enrollment_histories": {
+      "references": [],
+      "referencedBy": []
+    },
+    "enrollment_sources": {
+      "references": [],
+      "referencedBy": []
+    },
+    "enrollments": {
+      "references": [],
+      "referencedBy": [
+        "certificates",
+        "course_progress"
+      ]
+    },
+    "enrollments_bak27agu": {
+      "references": [],
+      "referencedBy": []
+    },
+    "executive_reports": {
+      "references": [],
+      "referencedBy": []
+    },
+    "feature_flags": {
+      "references": [],
+      "referencedBy": []
+    },
+    "fluency_scores": {
+      "references": [],
+      "referencedBy": []
+    },
+    "gamification_settings": {
+      "references": [],
+      "referencedBy": []
+    },
+    "grammar_scores": {
+      "references": [],
+      "referencedBy": []
+    },
+    "h5p_contents": {
+      "references": [],
+      "referencedBy": []
+    },
+    "h5p_student_attempts": {
+      "references": [],
+      "referencedBy": []
+    },
+    "integration_api_logs": {
+      "references": [],
+      "referencedBy": []
+    },
+    "integration_credentials": {
+      "references": [],
+      "referencedBy": []
+    },
+    "integration_event_logs": {
+      "references": [],
+      "referencedBy": []
+    },
+    "integration_events": {
+      "references": [],
+      "referencedBy": []
+    },
+    "integration_job_logs": {
+      "references": [],
+      "referencedBy": []
+    },
+    "integration_jobs": {
+      "references": [],
+      "referencedBy": []
+    },
+    "integration_providers": {
+      "references": [],
+      "referencedBy": []
+    },
+    "integration_queue": {
+      "references": [],
+      "referencedBy": []
+    },
+    "integration_webhook_logs": {
+      "references": [],
+      "referencedBy": []
+    },
+    "integration_webhooks": {
+      "references": [],
+      "referencedBy": []
+    },
+    "invoice_items": {
+      "references": [],
+      "referencedBy": []
+    },
+    "invoices": {
+      "references": [],
+      "referencedBy": []
+    },
+    "job_executions": {
+      "references": [],
+      "referencedBy": []
+    },
+    "leaderboard_entries": {
+      "references": [],
+      "referencedBy": []
+    },
+    "leaderboards": {
+      "references": [],
+      "referencedBy": []
+    },
+    "learning_activities": {
+      "references": [],
+      "referencedBy": []
+    },
+    "learning_sessions": {
+      "references": [],
+      "referencedBy": []
+    },
+    "learning_streak_rewards": {
+      "references": [],
+      "referencedBy": []
+    },
+    "learning_streaks": {
+      "references": [],
+      "referencedBy": []
+    },
+    "lesson_analytics": {
+      "references": [],
+      "referencedBy": []
+    },
+    "lesson_assets": {
+      "references": [],
+      "referencedBy": []
+    },
+    "lesson_audio": {
+      "references": [],
+      "referencedBy": []
+    },
+    "lesson_bookmarks": {
+      "references": [],
+      "referencedBy": []
+    },
+    "lesson_contents": {
+      "references": [],
+      "referencedBy": []
+    },
+    "lesson_downloads": {
+      "references": [],
+      "referencedBy": []
+    },
+    "lesson_external_links": {
+      "references": [],
+      "referencedBy": []
+    },
+    "lesson_localizations": {
+      "references": [],
+      "referencedBy": []
+    },
+    "lesson_progress": {
+      "references": [],
+      "referencedBy": []
+    },
+    "lesson_resources": {
+      "references": [],
+      "referencedBy": []
+    },
+    "lesson_vocabulary": {
+      "references": [],
+      "referencedBy": []
+    },
+    "lessons": {
+      "references": [],
+      "referencedBy": [
+        "analytics_events",
+        "assessments",
+        "bookmarks"
+      ]
+    },
+    "levels": {
+      "references": [],
+      "referencedBy": []
+    },
+    "login_histories": {
+      "references": [],
+      "referencedBy": []
+    },
+    "maintenance_modes": {
+      "references": [],
+      "referencedBy": []
+    },
+    "manual_payment_proofs": {
+      "references": [],
+      "referencedBy": []
+    },
+    "marketing_analytics": {
+      "references": [],
+      "referencedBy": []
+    },
+    "media_files": {
+      "references": [],
+      "referencedBy": []
+    },
+    "menu_items": {
+      "references": [],
+      "referencedBy": []
+    },
+    "menus": {
+      "references": [],
+      "referencedBy": []
+    },
+    "meta_capi_events": {
+      "references": [],
+      "referencedBy": []
+    },
+    "meta_conversion_analytics": {
+      "references": [],
+      "referencedBy": []
+    },
+    "module_localizations": {
+      "references": [],
+      "referencedBy": []
+    },
+    "module_progress": {
+      "references": [],
+      "referencedBy": []
+    },
+    "modules": {
+      "references": [],
+      "referencedBy": [
+        "assessments"
+      ]
+    },
+    "notification_channels": {
+      "references": [],
+      "referencedBy": []
+    },
+    "notification_events": {
+      "references": [],
+      "referencedBy": []
+    },
+    "notification_logs": {
+      "references": [],
+      "referencedBy": []
+    },
+    "notification_preferences": {
+      "references": [],
+      "referencedBy": []
+    },
+    "notification_queue": {
+      "references": [],
+      "referencedBy": []
+    },
+    "notification_recipients": {
+      "references": [],
+      "referencedBy": []
+    },
+    "notification_retry_logs": {
+      "references": [],
+      "referencedBy": []
+    },
+    "notification_templates": {
+      "references": [],
+      "referencedBy": []
+    },
+    "notifications": {
+      "references": [],
+      "referencedBy": []
+    },
+    "order_items": {
+      "references": [],
+      "referencedBy": []
+    },
+    "orders": {
+      "references": [],
+      "referencedBy": [
+        "coupon_usages"
+      ]
+    },
+    "page_blocks": {
+      "references": [],
+      "referencedBy": []
+    },
+    "page_translations": {
+      "references": [],
+      "referencedBy": []
+    },
+    "page_versions": {
+      "references": [],
+      "referencedBy": []
+    },
+    "pages": {
+      "references": [],
+      "referencedBy": []
+    },
+    "password_resets": {
+      "references": [],
+      "referencedBy": []
+    },
+    "payment_callbacks": {
+      "references": [],
+      "referencedBy": []
+    },
+    "payment_methods": {
+      "references": [],
+      "referencedBy": []
+    },
+    "payment_settings": {
+      "references": [],
+      "referencedBy": []
+    },
+    "payment_transactions": {
+      "references": [],
+      "referencedBy": []
+    },
+    "payments": {
+      "references": [],
+      "referencedBy": []
+    },
+    "permissions": {
+      "references": [],
+      "referencedBy": []
+    },
+    "pronunciation_scores": {
+      "references": [],
+      "referencedBy": []
+    },
+    "push_notifications": {
+      "references": [],
+      "referencedBy": []
+    },
+    "question_blank_answers": {
+      "references": [],
+      "referencedBy": []
+    },
+    "question_hints": {
+      "references": [],
+      "referencedBy": []
+    },
+    "question_matching_pairs": {
+      "references": [],
+      "referencedBy": []
+    },
+    "question_media": {
+      "references": [],
+      "referencedBy": []
+    },
+    "question_options": {
+      "references": [],
+      "referencedBy": []
+    },
+    "question_passages": {
+      "references": [],
+      "referencedBy": []
+    },
+    "question_tag_relations": {
+      "references": [],
+      "referencedBy": []
+    },
+    "question_tags": {
+      "references": [],
+      "referencedBy": []
+    },
+    "question_types": {
+      "references": [],
+      "referencedBy": []
+    },
+    "questions": {
+      "references": [],
+      "referencedBy": []
+    },
+    "questions_bak_20260903": {
+      "references": [],
+      "referencedBy": []
+    },
+    "refunds": {
+      "references": [],
+      "referencedBy": []
+    },
+    "retention_analytics": {
+      "references": [],
+      "referencedBy": []
+    },
+    "revenue_analytics": {
+      "references": [],
+      "referencedBy": []
+    },
+    "reward_redemptions": {
+      "references": [],
+      "referencedBy": []
+    },
+    "rewards": {
+      "references": [],
+      "referencedBy": []
+    },
+    "role_permissions": {
+      "references": [],
+      "referencedBy": []
+    },
+    "roles": {
+      "references": [],
+      "referencedBy": []
+    },
+    "scalev_analytics": {
+      "references": [],
+      "referencedBy": []
+    },
+    "scalev_enrollments": {
+      "references": [],
+      "referencedBy": []
+    },
+    "scalev_orders": {
+      "references": [],
+      "referencedBy": []
+    },
+    "scalev_packages": {
+      "references": [],
+      "referencedBy": []
+    },
+    "scheduled_jobs": {
+      "references": [],
+      "referencedBy": []
+    },
+    "setting_groups": {
+      "references": [],
+      "referencedBy": []
+    },
+    "setting_histories": {
+      "references": [],
+      "referencedBy": []
+    },
+    "sliders": {
+      "references": [],
+      "referencedBy": []
+    },
+    "sms_logs": {
+      "references": [],
+      "referencedBy": []
+    },
+    "speaking_analytics": {
+      "references": [],
+      "referencedBy": []
+    },
+    "speaking_attempts": {
+      "references": [],
+      "referencedBy": [
+        "ai_feedbacks"
+      ]
+    },
+    "speaking_prompts": {
+      "references": [],
+      "referencedBy": []
+    },
+    "speaking_recordings": {
+      "references": [],
+      "referencedBy": []
+    },
+    "speaking_tests": {
+      "references": [],
+      "referencedBy": []
+    },
+    "speech_transcriptions": {
+      "references": [],
+      "referencedBy": []
+    },
+    "storage_providers": {
+      "references": [],
+      "referencedBy": []
+    },
+    "system_backups": {
+      "references": [],
+      "referencedBy": [
+        "backup_histories"
+      ]
+    },
+    "system_settings": {
+      "references": [],
+      "referencedBy": []
+    },
+    "user_achievements": {
+      "references": [],
+      "referencedBy": []
+    },
+    "user_badges": {
+      "references": [],
+      "referencedBy": []
+    },
+    "user_challenges": {
+      "references": [],
+      "referencedBy": []
+    },
+    "user_devices": {
+      "references": [],
+      "referencedBy": []
+    },
+    "user_learning_analytics": {
+      "references": [],
+      "referencedBy": []
+    },
+    "user_levels": {
+      "references": [],
+      "referencedBy": []
+    },
+    "user_notifications": {
+      "references": [],
+      "referencedBy": []
+    },
+    "user_profiles": {
+      "references": [],
+      "referencedBy": []
+    },
+    "user_sessions": {
+      "references": [],
+      "referencedBy": []
+    },
+    "user_statistics": {
+      "references": [],
+      "referencedBy": []
+    },
+    "users": {
+      "references": [],
+      "referencedBy": [
+        "ai_requests",
+        "analytics_events",
+        "assessment_attempts",
+        "assessment_progress",
+        "assessments",
+        "backup_histories",
+        "banner_click_logs",
+        "blogs",
+        "bookmarks",
+        "broadcast_recipients",
+        "broadcasts",
+        "certificate_downloads",
+        "certificate_logs",
+        "certificates",
+        "coupon_usages",
+        "course_announcements",
+        "course_progress",
+        "course_reviews",
+        "course_reviews",
+        "courses"
+      ]
+    },
+    "video_analytics": {
+      "references": [],
+      "referencedBy": []
+    },
+    "video_progress": {
+      "references": [],
+      "referencedBy": []
+    },
+    "vocabulary_scores": {
+      "references": [],
+      "referencedBy": []
+    },
+    "whatsapp_logs": {
+      "references": [],
+      "referencedBy": []
+    },
+    "xp_transactions": {
+      "references": [],
+      "referencedBy": []
+    }
+  }
+}

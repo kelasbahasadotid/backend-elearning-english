@@ -1,0 +1,1249 @@
+{
+  "actuallyUsed": [
+    {
+      "table": "ai_feedbacks",
+      "rowCount": 214,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\tutorController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\tutorController.ts"
+      ]
+    },
+    {
+      "table": "assessment_attempts",
+      "rowCount": 104,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts"
+      ]
+    },
+    {
+      "table": "assessment_progress",
+      "rowCount": 25,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts"
+      ]
+    },
+    {
+      "table": "assessment_sections",
+      "rowCount": 26,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "assessment_types",
+      "rowCount": 10,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts"
+      ]
+    },
+    {
+      "table": "assessments",
+      "rowCount": 40,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\certificates\\verify\\[code]\\VerifyPageClient.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "assignment_submissions",
+      "rowCount": 2,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts"
+      ]
+    },
+    {
+      "table": "assignments",
+      "rowCount": 1,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\studentRoutes.ts",
+        "backend-elearning-english\\src\\routes\\taskRoutes.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\TutorSubmissionsTab.tsx",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\routes\\studentRoutes.ts",
+        "frontend-elearning-english\\src\\routes\\taskRoutes.ts"
+      ]
+    },
+    {
+      "table": "badges",
+      "rowCount": 0,
+      "refFiles": [
+        "backend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "backend-elearning-english\\src\\controllers\\emailController.ts",
+        "frontend-elearning-english\\src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "frontend-elearning-english\\src\\app\\quiz\\[id]\\QuizPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\CreateTemplateModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\LeaderboardTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\MediaTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\controllers\\emailController.ts"
+      ]
+    },
+    {
+      "table": "banners",
+      "rowCount": 1,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\components\\common\\SeoManager.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\CreateBannerModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\BannersTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\SettingsTab.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "bookmarks",
+      "rowCount": 0,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\studyRoutes.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\routes\\studyRoutes.ts"
+      ]
+    },
+    {
+      "table": "certificate_numbers",
+      "rowCount": 3,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts"
+      ]
+    },
+    {
+      "table": "certificate_templates",
+      "rowCount": 1,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "certificates",
+      "rowCount": 3,
+      "refFiles": [
+        "backend-elearning-english\\src\\app.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "frontend-elearning-english\\src\\app\\certificate\\[code]\\page.tsx",
+        "frontend-elearning-english\\src\\app\\certificates\\page.tsx",
+        "frontend-elearning-english\\src\\app\\certificates\\verify\\[code]\\VerifyPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\app\\verify-certificate\\[code]\\page.tsx",
+        "frontend-elearning-english\\src\\app.ts",
+        "frontend-elearning-english\\src\\components\\common\\GeminiHelpAssistant.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\DashboardHeader.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\CreateTemplateModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CertificatesTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\LeaderboardTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\components\\Footer.tsx",
+        "frontend-elearning-english\\src\\components\\Navbar.tsx",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts"
+      ]
+    },
+    {
+      "table": "course_announcements",
+      "rowCount": 4,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts"
+      ]
+    },
+    {
+      "table": "course_categories",
+      "rowCount": 6,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "course_levels",
+      "rowCount": 1,
+      "refFiles": [
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "course_progress",
+      "rowCount": 31,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts"
+      ]
+    },
+    {
+      "table": "course_reviews",
+      "rowCount": 5,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts"
+      ]
+    },
+    {
+      "table": "course_tags",
+      "rowCount": 7,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts"
+      ]
+    },
+    {
+      "table": "course_versions",
+      "rowCount": 4,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\mediaController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts"
+      ]
+    },
+    {
+      "table": "courses",
+      "rowCount": 3,
+      "refFiles": [
+        "backend-elearning-english\\src\\app.ts",
+        "backend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\discussionController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\mediaController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\routes\\tutorRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\certificates\\page.tsx",
+        "frontend-elearning-english\\src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "frontend-elearning-english\\src\\app.ts",
+        "frontend-elearning-english\\src\\components\\common\\GeminiHelpAssistant.tsx",
+        "frontend-elearning-english\\src\\components\\CourseTabNav.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\CreateTemplateModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\ResetProgressModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\AdminTasksTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CourseAnnouncementsTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CourseReviewsTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\H5PStudioEditor.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\MediaTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\OrdersTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\OverviewTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\components\\Footer.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\discussionController.ts",
+        "frontend-elearning-english\\src\\controllers\\h5pController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "discussion_replies",
+      "rowCount": 4,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\discussionController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\discussionController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts"
+      ]
+    },
+    {
+      "table": "discussion_topics",
+      "rowCount": 2,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\discussionController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\discussionController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts"
+      ]
+    },
+    {
+      "table": "email_messages",
+      "rowCount": 6,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\emailController.ts",
+        "frontend-elearning-english\\src\\controllers\\emailController.ts"
+      ]
+    },
+    {
+      "table": "enrollment_histories",
+      "rowCount": 38,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts"
+      ]
+    },
+    {
+      "table": "enrollments",
+      "rowCount": 34,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\certificates\\page.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\OrdersTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "fluency_scores",
+      "rowCount": 214,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\tutorController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\tutorController.ts"
+      ]
+    },
+    {
+      "table": "grammar_scores",
+      "rowCount": 214,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts"
+      ]
+    },
+    {
+      "table": "h5p_contents",
+      "rowCount": 16,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\controllers\\h5pController.ts"
+      ]
+    },
+    {
+      "table": "h5p_student_attempts",
+      "rowCount": 7,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "frontend-elearning-english\\src\\controllers\\h5pController.ts"
+      ]
+    },
+    {
+      "table": "lesson_bookmarks",
+      "rowCount": 0,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts"
+      ]
+    },
+    {
+      "table": "lesson_contents",
+      "rowCount": 105,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\migrations\\add_file_attachments.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\h5pController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\migrations\\add_file_attachments.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "lesson_progress",
+      "rowCount": 101,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts"
+      ]
+    },
+    {
+      "table": "lessons",
+      "rowCount": 102,
+      "refFiles": [
+        "backend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\mediaController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\migrations\\extend_lesson_type_enum.ts",
+        "backend-elearning-english\\src\\migrations\\revert_lesson_type_enum.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\routes\\mediaRoutes.ts",
+        "backend-elearning-english\\src\\routes\\tutorRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\app\\certificates\\page.tsx",
+        "frontend-elearning-english\\src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "frontend-elearning-english\\src\\app\\courses\\[slug]\\tasks\\TasksTabClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\loading.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\LessonContentManager.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\ResetProgressModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\MediaTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\h5pController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\migrations\\extend_lesson_type_enum.ts",
+        "frontend-elearning-english\\src\\migrations\\revert_lesson_type_enum.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts"
+      ]
+    },
+    {
+      "table": "levels",
+      "rowCount": 0,
+      "refFiles": [
+        "backend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "manual_payment_proofs",
+      "rowCount": 1,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts"
+      ]
+    },
+    {
+      "table": "media_files",
+      "rowCount": 35,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\mediaController.ts",
+        "backend-elearning-english\\src\\seeders\\mediaSeeder.ts"
+      ]
+    },
+    {
+      "table": "menus",
+      "rowCount": 0,
+      "refFiles": [
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx"
+      ]
+    },
+    {
+      "table": "module_progress",
+      "rowCount": 16,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts"
+      ]
+    },
+    {
+      "table": "modules",
+      "rowCount": 9,
+      "refFiles": [
+        "backend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\mediaController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\app\\certificates\\page.tsx",
+        "frontend-elearning-english\\src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\loading.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\ResetProgressModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts"
+      ]
+    },
+    {
+      "table": "notifications",
+      "rowCount": 0,
+      "refFiles": [
+        "backend-elearning-english\\src\\app.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\notificationController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\studentRoutes.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app.ts",
+        "frontend-elearning-english\\src\\components\\dashboard\\DashboardHeader.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\components\\Navbar.tsx",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\notificationController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\routes\\studentRoutes.ts"
+      ]
+    },
+    {
+      "table": "order_items",
+      "rowCount": 40,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "orders",
+      "rowCount": 40,
+      "refFiles": [
+        "backend-elearning-english\\src\\app.ts",
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\routes\\paymentRoutes.ts",
+        "backend-elearning-english\\src\\routes\\studentRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\app.ts",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\OrdersTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\OverviewTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\routes\\paymentRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "pages",
+      "rowCount": 0,
+      "refFiles": [
+        "frontend-elearning-english\\src\\app\\certificates\\page.tsx"
+      ]
+    },
+    {
+      "table": "payment_methods",
+      "rowCount": 2,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts"
+      ]
+    },
+    {
+      "table": "payment_settings",
+      "rowCount": 1,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\paymentController.ts"
+      ]
+    },
+    {
+      "table": "payment_transactions",
+      "rowCount": 36,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\utils\\auditAndDumpDb.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\utils\\auditAndDumpDb.ts"
+      ]
+    },
+    {
+      "table": "payments",
+      "rowCount": 36,
+      "refFiles": [
+        "backend-elearning-english\\src\\app.ts",
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\app.ts",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts"
+      ]
+    },
+    {
+      "table": "permissions",
+      "rowCount": 16,
+      "refFiles": [
+        "backend-elearning-english\\src\\middleware\\auth.ts",
+        "frontend-elearning-english\\src\\middleware\\auth.ts"
+      ]
+    },
+    {
+      "table": "pronunciation_scores",
+      "rowCount": 214,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\tutorController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\tutorController.ts"
+      ]
+    },
+    {
+      "table": "question_options",
+      "rowCount": 586,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\migrations\\add_file_attachments.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\migrations\\add_file_attachments.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "questions",
+      "rowCount": 59,
+      "refFiles": [
+        "backend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\migrations\\add_file_attachments.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\routes\\tutorRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\seeders\\mediaSeeder.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\quiz\\[id]\\QuizPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\common\\GeminiHelpAssistant.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\migrations\\add_file_attachments.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "roles",
+      "rowCount": 5,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\mediaRoutes.ts",
+        "backend-elearning-english\\src\\routes\\tutorRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\UsersTab.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\routes\\tutorRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "scalev_orders",
+      "rowCount": 81,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts"
+      ]
+    },
+    {
+      "table": "scalev_packages",
+      "rowCount": 3,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts"
+      ]
+    },
+    {
+      "table": "sliders",
+      "rowCount": 0,
+      "refFiles": [
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\CreateTemplateModal.tsx"
+      ]
+    },
+    {
+      "table": "speaking_attempts",
+      "rowCount": 214,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\controllers\\tutorController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\tutorController.ts"
+      ]
+    },
+    {
+      "table": "speaking_prompts",
+      "rowCount": 42,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\tutorController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\tutorController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "speaking_recordings",
+      "rowCount": 214,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts"
+      ]
+    },
+    {
+      "table": "speaking_tests",
+      "rowCount": 33,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "speech_transcriptions",
+      "rowCount": 214,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts"
+      ]
+    },
+    {
+      "table": "system_settings",
+      "rowCount": 19,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts"
+      ]
+    },
+    {
+      "table": "user_notifications",
+      "rowCount": 100,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\notificationController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\notificationController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts"
+      ]
+    },
+    {
+      "table": "user_profiles",
+      "rowCount": 27,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "user_statistics",
+      "rowCount": 31,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\quizController.ts",
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\utils\\progress.ts",
+        "backend-elearning-english\\src\\utils\\xp.ts",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\quizController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\utils\\progress.ts",
+        "frontend-elearning-english\\src\\utils\\xp.ts"
+      ]
+    },
+    {
+      "table": "users",
+      "rowCount": 32,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\adminController.ts",
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\controllers\\certificateController.ts",
+        "backend-elearning-english\\src\\controllers\\courseController.ts",
+        "backend-elearning-english\\src\\controllers\\discussionController.ts",
+        "backend-elearning-english\\src\\controllers\\h5pController.ts",
+        "backend-elearning-english\\src\\controllers\\paymentController.ts",
+        "backend-elearning-english\\src\\controllers\\studentController.ts",
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "backend-elearning-english\\src\\controllers\\taskController.ts",
+        "backend-elearning-english\\src\\controllers\\tutorController.ts",
+        "backend-elearning-english\\src\\docs\\swagger.ts",
+        "backend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "frontend-elearning-english\\src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\modals\\ResetProgressModal.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "frontend-elearning-english\\src\\components\\dashboard\\tabs\\UsersTab.tsx",
+        "frontend-elearning-english\\src\\context\\LanguageContext.tsx",
+        "frontend-elearning-english\\src\\controllers\\adminController.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\controllers\\certificateController.ts",
+        "frontend-elearning-english\\src\\controllers\\courseController.ts",
+        "frontend-elearning-english\\src\\controllers\\discussionController.ts",
+        "frontend-elearning-english\\src\\controllers\\h5pController.ts",
+        "frontend-elearning-english\\src\\controllers\\paymentController.ts",
+        "frontend-elearning-english\\src\\controllers\\studentController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\taskController.ts",
+        "frontend-elearning-english\\src\\controllers\\tutorController.ts",
+        "frontend-elearning-english\\src\\routes\\adminRoutes.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts"
+      ]
+    },
+    {
+      "table": "video_progress",
+      "rowCount": 4,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\studyController.ts",
+        "frontend-elearning-english\\src\\controllers\\studyController.ts"
+      ]
+    },
+    {
+      "table": "vocabulary_scores",
+      "rowCount": 214,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\speakingController.ts",
+        "frontend-elearning-english\\src\\controllers\\speakingController.ts"
+      ]
+    },
+    {
+      "table": "xp_transactions",
+      "rowCount": 102,
+      "refFiles": [
+        "backend-elearning-english\\src\\controllers\\authController.ts",
+        "backend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "backend-elearning-english\\src\\utils\\xp.ts",
+        "frontend-elearning-english\\src\\controllers\\authController.ts",
+        "frontend-elearning-english\\src\\seeders\\dbSeeder.ts",
+        "frontend-elearning-english\\src\\utils\\xp.ts"
+      ]
+    }
+  ],
+  "suspiciousActive": [
+    {
+      "table": "achievement_categories",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "achievement_rules",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "achievements",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "ai_models",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "ai_prompt_templates",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "ai_prompt_versions",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "ai_provider_credentials",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "ai_providers",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "ai_request_logs",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "ai_requests",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "analytics_events",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "api_access_tokens",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "api_clients",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "assessment_analytics",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "assessment_rules",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "assessment_settings",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "backup_histories",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "banner_click_logs",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "blogs",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "broadcast_recipients",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "broadcasts",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "certificate_downloads",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "certificate_languages",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "certificate_logs",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "certificate_qrcodes",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "certificate_recipients",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "certificate_revisions",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "certificate_rules",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "certificate_share_logs",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "certificate_template_fields",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "certificate_verifications",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "challenge_tasks",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "coupon_codes",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "coupon_usages",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "course_analytics",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "course_localizations",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "course_prerequisites",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "daily_challenges",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "discounts",
+      "rowCount": 0,
+      "refFiles": []
+    },
+    {
+      "table": "system_backups",
+      "rowCount": 0,
+      "refFiles": []
+    }
+  ]
+}

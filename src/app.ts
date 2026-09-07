@@ -21,6 +21,8 @@ import taskRoutes from './routes/taskRoutes';
 import discussionRoutes from './routes/discussionRoutes';
 import h5pRoutes from './routes/h5pRoutes';
 import mediaRoutes from './routes/mediaRoutes';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerDocument, swaggerUiOptions } from './docs/swagger';
 
 dotenv.config();
 
@@ -99,6 +101,18 @@ app.use('/api/discussions', discussionRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api', h5pRoutes);
 
+
+// OpenAPI 3.0 & Swagger UI Interactive API Documentation (/docs & /api-docs)
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerUiOptions));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerUiOptions));
+app.get('/openapi.json', (req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.json(swaggerDocument);
+});
+app.get('/docs/swagger.json', (req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.json(swaggerDocument);
+});
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {

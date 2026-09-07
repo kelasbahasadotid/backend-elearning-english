@@ -4,6 +4,7 @@ import pool from '../config/db';
 import path from 'path';
 import fs from 'fs';
 import { convertMp3ToWav } from '../utils/audioUtils';
+import { resolveVoice } from '../utils/voiceUtils';
 
 // Helper to determine file_type from mime type or file extension
 function determineFileType(mimeType: string, filename: string): 'AUDIO' | 'VIDEO' | 'IMAGE' | 'DOCUMENT' | 'OTHER' {
@@ -316,11 +317,12 @@ export const generateAiAudio = async (req: AuthRequest, res: Response) => {
 
     // No-cache: Always synthesize fresh audio to prevent stale or corrupt audio reuse
     const { pitch, rateStr } = getEmotionPitchAndRate(emotion, speedNum);
+    const targetVoice = resolveVoice(voice || 'en-US-EmmaNeural');
 
     // Synthesize using Edge-TTS
     const { Communicate } = require('edge-tts-universal');
     const communicate = new Communicate(cleanText, {
-      voice: voice || 'en-US-EmmaNeural',
+      voice: targetVoice,
       rate: rateStr,
       pitch: pitch
     });
@@ -411,7 +413,7 @@ export const generateAiDialogue = async (req: AuthRequest, res: Response) => {
       const line = dialogue_lines[i];
       const speakerName = line.speaker || `Speaker ${i + 1}`;
       const lineText = (line.text || '').trim();
-      const lineVoice = line.voice || 'en-US-EmmaNeural';
+      const lineVoice = resolveVoice(line.voice || 'en-US-EmmaNeural');
       const lineSpeed = Number(line.speed) || 1.0;
       const lineEmotion = line.emotion || 'neutral';
 
@@ -509,7 +511,7 @@ export const synthesizeMediaPreview = async (req: AuthRequest, res: Response) =>
     try { dialogue_lines = JSON.parse(dialogue_lines); } catch (_) {}
   }
 
-  const voice = (typeof voiceRaw === 'string' && voiceRaw.trim()) ? voiceRaw.trim() : 'en-US-EmmaNeural';
+  const voice = resolveVoice((typeof voiceRaw === 'string' && voiceRaw.trim()) ? voiceRaw.trim() : 'en-US-EmmaNeural');
   const speed = Number(speedRaw) || 1.0;
   const emotion = (typeof emotionRaw === 'string' && emotionRaw.trim()) ? emotionRaw.trim() : 'neutral';
 
@@ -529,7 +531,7 @@ export const synthesizeMediaPreview = async (req: AuthRequest, res: Response) =>
         const lineText = (line.text || '').trim();
         if (!lineText) continue;
 
-        const lineVoice = line.voice || 'en-US-EmmaNeural';
+        const lineVoice = resolveVoice(line.voice || 'en-US-EmmaNeural');
         const lineSpeed = Number(line.speed) || 1.0;
         const lineEmotion = line.emotion || 'neutral';
         const { pitch, rateStr } = getEmotionPitchAndRate(lineEmotion, lineSpeed);

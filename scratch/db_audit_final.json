@@ -1,0 +1,1999 @@
+{
+  "coreActive": [
+    "ai_feedbacks",
+    "assessment_attempts",
+    "assessment_progress",
+    "assessment_sections",
+    "assessment_types",
+    "assessments",
+    "assignment_submissions",
+    "assignments",
+    "badges",
+    "banners",
+    "bookmarks",
+    "certificate_numbers",
+    "certificate_templates",
+    "certificates",
+    "course_announcements",
+    "course_categories",
+    "course_levels",
+    "course_progress",
+    "course_reviews",
+    "course_tags",
+    "course_versions",
+    "courses",
+    "discussion_replies",
+    "discussion_topics",
+    "email_messages",
+    "enrollment_histories",
+    "enrollments",
+    "fluency_scores",
+    "grammar_scores",
+    "h5p_contents",
+    "h5p_student_attempts",
+    "lesson_bookmarks",
+    "lesson_contents",
+    "lesson_progress",
+    "lessons",
+    "levels",
+    "manual_payment_proofs",
+    "media_files",
+    "menus",
+    "module_progress",
+    "modules",
+    "notifications",
+    "order_items",
+    "orders",
+    "pages",
+    "payment_methods",
+    "payment_settings",
+    "payment_transactions",
+    "payments",
+    "permissions",
+    "pronunciation_scores",
+    "question_options",
+    "questions",
+    "roles",
+    "scalev_orders",
+    "scalev_packages",
+    "sliders",
+    "speaking_attempts",
+    "speaking_prompts",
+    "speaking_recordings",
+    "speaking_tests",
+    "speech_transcriptions",
+    "system_settings",
+    "user_notifications",
+    "user_profiles",
+    "user_statistics",
+    "users",
+    "video_progress",
+    "vocabulary_scores",
+    "xp_transactions"
+  ],
+  "deadUnused": [
+    "achievement_categories",
+    "achievement_rules",
+    "achievements",
+    "ai_models",
+    "ai_prompt_templates",
+    "ai_prompt_versions",
+    "ai_provider_credentials",
+    "ai_providers",
+    "ai_request_logs",
+    "ai_requests",
+    "ai_response_cache",
+    "analytics_daily",
+    "analytics_events",
+    "analytics_monthly",
+    "analytics_settings",
+    "analytics_snapshots",
+    "analytics_weekly",
+    "api_access_tokens",
+    "api_clients",
+    "assessment_analytics",
+    "assessment_difficulties",
+    "assessment_rules",
+    "assessment_settings",
+    "backup_histories",
+    "banner_click_logs",
+    "blogs",
+    "broadcast_recipients",
+    "broadcasts",
+    "certificate_downloads",
+    "certificate_languages",
+    "certificate_logs",
+    "certificate_qrcodes",
+    "certificate_recipients",
+    "certificate_revisions",
+    "certificate_rules",
+    "certificate_settings",
+    "certificate_share_logs",
+    "certificate_signatures",
+    "certificate_template_fields",
+    "certificate_verifications",
+    "challenge_tasks",
+    "coupon_codes",
+    "coupon_usages",
+    "course_analytics",
+    "course_localizations",
+    "course_prerequisites",
+    "course_tag_relations",
+    "daily_challenges",
+    "dashboard_layouts",
+    "dashboard_widgets",
+    "discounts",
+    "email_logs",
+    "enrollment_sources",
+    "enrollments_bak27agu",
+    "executive_reports",
+    "feature_flags",
+    "gamification_settings",
+    "integration_api_logs",
+    "integration_credentials",
+    "integration_event_logs",
+    "integration_events",
+    "integration_job_logs",
+    "integration_jobs",
+    "integration_providers",
+    "integration_queue",
+    "integration_webhook_logs",
+    "integration_webhooks",
+    "invoice_items",
+    "invoices",
+    "job_executions",
+    "leaderboard_entries",
+    "leaderboards",
+    "learning_activities",
+    "learning_sessions",
+    "learning_streak_rewards",
+    "learning_streaks",
+    "lesson_analytics",
+    "lesson_assets",
+    "lesson_audio",
+    "lesson_downloads",
+    "lesson_external_links",
+    "lesson_localizations",
+    "lesson_resources",
+    "lesson_vocabulary",
+    "login_histories",
+    "maintenance_modes",
+    "marketing_analytics",
+    "menu_items",
+    "meta_capi_events",
+    "meta_conversion_analytics",
+    "module_localizations",
+    "notification_channels",
+    "notification_events",
+    "notification_logs",
+    "notification_preferences",
+    "notification_queue",
+    "notification_recipients",
+    "notification_retry_logs",
+    "notification_templates",
+    "page_blocks",
+    "page_translations",
+    "page_versions",
+    "password_resets",
+    "payment_callbacks",
+    "push_notifications",
+    "question_blank_answers",
+    "question_hints",
+    "question_matching_pairs",
+    "question_media",
+    "question_passages",
+    "question_tag_relations",
+    "question_tags",
+    "question_types",
+    "questions_bak_20260903",
+    "refunds",
+    "retention_analytics",
+    "revenue_analytics",
+    "reward_redemptions",
+    "rewards",
+    "role_permissions",
+    "scalev_analytics",
+    "scalev_enrollments",
+    "scheduled_jobs",
+    "setting_groups",
+    "setting_histories",
+    "sms_logs",
+    "speaking_analytics",
+    "storage_providers",
+    "system_backups",
+    "user_achievements",
+    "user_badges",
+    "user_challenges",
+    "user_devices",
+    "user_learning_analytics",
+    "user_levels",
+    "user_sessions",
+    "video_analytics",
+    "whatsapp_logs"
+  ],
+  "tableStats": {
+    "achievement_categories": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "achievement_rules": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "achievements": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "ai_feedbacks": {
+      "backendRefs": [
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\tutorController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\tutorController.ts"
+      ],
+      "rowCount": 214
+    },
+    "ai_models": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "ai_prompt_templates": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "ai_prompt_versions": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "ai_provider_credentials": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "ai_providers": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "ai_request_logs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "ai_requests": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "ai_response_cache": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "analytics_daily": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "analytics_events": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "analytics_monthly": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "analytics_settings": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "analytics_snapshots": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "analytics_weekly": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "api_access_tokens": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "api_clients": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "assessment_analytics": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "assessment_attempts": {
+      "backendRefs": [
+        "src\\controllers\\quizController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\quizController.ts"
+      ],
+      "rowCount": 104
+    },
+    "assessment_difficulties": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 4
+    },
+    "assessment_progress": {
+      "backendRefs": [
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\studyController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\studyController.ts"
+      ],
+      "rowCount": 25
+    },
+    "assessment_rules": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "assessment_sections": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 26
+    },
+    "assessment_settings": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "assessment_types": {
+      "backendRefs": [
+        "src\\controllers\\quizController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\quizController.ts"
+      ],
+      "rowCount": 10
+    },
+    "assessments": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\certificates\\verify\\[code]\\VerifyPageClient.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 40
+    },
+    "assignment_submissions": {
+      "backendRefs": [
+        "src\\controllers\\studentController.ts",
+        "src\\controllers\\taskController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\studentController.ts",
+        "src\\controllers\\taskController.ts"
+      ],
+      "rowCount": 2
+    },
+    "assignments": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\studentController.ts",
+        "src\\controllers\\taskController.ts",
+        "src\\routes\\studentRoutes.ts",
+        "src\\routes\\taskRoutes.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\components\\dashboard\\tabs\\TutorSubmissionsTab.tsx",
+        "src\\controllers\\studentController.ts",
+        "src\\controllers\\taskController.ts",
+        "src\\routes\\studentRoutes.ts",
+        "src\\routes\\taskRoutes.ts"
+      ],
+      "rowCount": 1
+    },
+    "backup_histories": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "badges": {
+      "backendRefs": [
+        "src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "src\\controllers\\emailController.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "src\\app\\quiz\\[id]\\QuizPageClient.tsx",
+        "src\\components\\dashboard\\modals\\CreateTemplateModal.tsx",
+        "src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "src\\components\\dashboard\\tabs\\LeaderboardTab.tsx",
+        "src\\components\\dashboard\\tabs\\MediaTab.tsx",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\controllers\\emailController.ts"
+      ],
+      "rowCount": 0
+    },
+    "banner_click_logs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "banners": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "src\\components\\common\\SeoManager.tsx",
+        "src\\components\\dashboard\\modals\\CreateBannerModal.tsx",
+        "src\\components\\dashboard\\tabs\\BannersTab.tsx",
+        "src\\components\\dashboard\\tabs\\SettingsTab.tsx",
+        "src\\context\\LanguageContext.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 1
+    },
+    "blogs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "bookmarks": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\routes\\studyRoutes.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\controllers\\studyController.ts",
+        "src\\routes\\studyRoutes.ts"
+      ],
+      "rowCount": 0
+    },
+    "broadcast_recipients": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "broadcasts": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "certificate_downloads": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "certificate_languages": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "certificate_logs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "certificate_numbers": {
+      "backendRefs": [
+        "src\\controllers\\certificateController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\certificateController.ts"
+      ],
+      "rowCount": 3
+    },
+    "certificate_qrcodes": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "certificate_recipients": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "certificate_revisions": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "certificate_rules": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "certificate_settings": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "certificate_share_logs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "certificate_signatures": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "certificate_template_fields": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "certificate_templates": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 1
+    },
+    "certificate_verifications": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "certificates": {
+      "backendRefs": [
+        "src\\app.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\studyController.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\certificate\\[code]\\page.tsx",
+        "src\\app\\certificates\\page.tsx",
+        "src\\app\\certificates\\verify\\[code]\\VerifyPageClient.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "src\\app\\verify-certificate\\[code]\\page.tsx",
+        "src\\app.ts",
+        "src\\components\\common\\GeminiHelpAssistant.tsx",
+        "src\\components\\dashboard\\DashboardHeader.tsx",
+        "src\\components\\dashboard\\modals\\CreateTemplateModal.tsx",
+        "src\\components\\dashboard\\tabs\\CertificatesTab.tsx",
+        "src\\components\\dashboard\\tabs\\LeaderboardTab.tsx",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\components\\Footer.tsx",
+        "src\\components\\Navbar.tsx",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\studyController.ts"
+      ],
+      "rowCount": 3
+    },
+    "challenge_tasks": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "coupon_codes": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "coupon_usages": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "course_analytics": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "course_announcements": {
+      "backendRefs": [
+        "src\\controllers\\courseController.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "src\\controllers\\courseController.ts"
+      ],
+      "rowCount": 4
+    },
+    "course_categories": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 6
+    },
+    "course_levels": {
+      "backendRefs": [
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 1
+    },
+    "course_localizations": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "course_prerequisites": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "course_progress": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\seeders\\dbSeeder.ts",
+        "src\\utils\\progress.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\seeders\\dbSeeder.ts",
+        "src\\utils\\progress.ts"
+      ],
+      "rowCount": 31
+    },
+    "course_reviews": {
+      "backendRefs": [
+        "src\\controllers\\courseController.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "src\\controllers\\courseController.ts"
+      ],
+      "rowCount": 5
+    },
+    "course_tag_relations": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "course_tags": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts"
+      ],
+      "rowCount": 7
+    },
+    "course_versions": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\mediaController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\seeders\\dbSeeder.ts",
+        "src\\utils\\progress.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\seeders\\dbSeeder.ts",
+        "src\\utils\\progress.ts"
+      ],
+      "rowCount": 4
+    },
+    "courses": {
+      "backendRefs": [
+        "src\\app.ts",
+        "src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\discussionController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\mediaController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studentController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\controllers\\taskController.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\routes\\tutorRoutes.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\certificates\\page.tsx",
+        "src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "src\\app.ts",
+        "src\\components\\common\\GeminiHelpAssistant.tsx",
+        "src\\components\\CourseTabNav.tsx",
+        "src\\components\\dashboard\\modals\\CreateTemplateModal.tsx",
+        "src\\components\\dashboard\\modals\\ResetProgressModal.tsx",
+        "src\\components\\dashboard\\tabs\\AdminTasksTab.tsx",
+        "src\\components\\dashboard\\tabs\\CourseAnnouncementsTab.tsx",
+        "src\\components\\dashboard\\tabs\\CourseReviewsTab.tsx",
+        "src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "src\\components\\dashboard\\tabs\\H5PStudioEditor.tsx",
+        "src\\components\\dashboard\\tabs\\MediaTab.tsx",
+        "src\\components\\dashboard\\tabs\\OrdersTab.tsx",
+        "src\\components\\dashboard\\tabs\\OverviewTab.tsx",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\components\\Footer.tsx",
+        "src\\context\\LanguageContext.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\discussionController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studentController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\controllers\\taskController.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 3
+    },
+    "daily_challenges": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "dashboard_layouts": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "dashboard_widgets": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "discounts": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "discussion_replies": {
+      "backendRefs": [
+        "src\\controllers\\discussionController.ts",
+        "src\\controllers\\studentController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\discussionController.ts",
+        "src\\controllers\\studentController.ts"
+      ],
+      "rowCount": 4
+    },
+    "discussion_topics": {
+      "backendRefs": [
+        "src\\controllers\\discussionController.ts",
+        "src\\controllers\\studentController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\discussionController.ts",
+        "src\\controllers\\studentController.ts"
+      ],
+      "rowCount": 2
+    },
+    "email_logs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "email_messages": {
+      "backendRefs": [
+        "src\\controllers\\emailController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\emailController.ts"
+      ],
+      "rowCount": 6
+    },
+    "enrollment_histories": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts"
+      ],
+      "rowCount": 38
+    },
+    "enrollment_sources": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 4
+    },
+    "enrollments": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studentController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\controllers\\taskController.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\certificates\\page.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\components\\dashboard\\tabs\\OrdersTab.tsx",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studentController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\controllers\\taskController.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 34
+    },
+    "enrollments_bak27agu": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 30
+    },
+    "executive_reports": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "feature_flags": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "fluency_scores": {
+      "backendRefs": [
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\tutorController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\tutorController.ts"
+      ],
+      "rowCount": 214
+    },
+    "gamification_settings": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "grammar_scores": {
+      "backendRefs": [
+        "src\\controllers\\speakingController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\speakingController.ts"
+      ],
+      "rowCount": 214
+    },
+    "h5p_contents": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\utils\\progress.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\h5pController.ts"
+      ],
+      "rowCount": 16
+    },
+    "h5p_student_attempts": {
+      "backendRefs": [
+        "src\\controllers\\h5pController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\h5pController.ts"
+      ],
+      "rowCount": 7
+    },
+    "integration_api_logs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "integration_credentials": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "integration_event_logs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "integration_events": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "integration_job_logs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "integration_jobs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "integration_providers": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "integration_queue": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "integration_webhook_logs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "integration_webhooks": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "invoice_items": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "invoices": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "job_executions": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "leaderboard_entries": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "leaderboards": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "learning_activities": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "learning_sessions": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "learning_streak_rewards": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "learning_streaks": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "lesson_analytics": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "lesson_assets": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "lesson_audio": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "lesson_bookmarks": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\studyController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\studyController.ts"
+      ],
+      "rowCount": 0
+    },
+    "lesson_contents": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\migrations\\add_file_attachments.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\migrations\\add_file_attachments.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 105
+    },
+    "lesson_downloads": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "lesson_external_links": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "lesson_localizations": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "lesson_progress": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\utils\\progress.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\utils\\progress.ts"
+      ],
+      "rowCount": 101
+    },
+    "lesson_resources": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "lesson_vocabulary": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "lessons": {
+      "backendRefs": [
+        "src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\mediaController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\controllers\\taskController.ts",
+        "src\\migrations\\extend_lesson_type_enum.ts",
+        "src\\migrations\\revert_lesson_type_enum.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\routes\\mediaRoutes.ts",
+        "src\\routes\\tutorRoutes.ts",
+        "src\\seeders\\dbSeeder.ts",
+        "src\\utils\\progress.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\certificates\\page.tsx",
+        "src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "src\\app\\courses\\[slug]\\tasks\\TasksTabClient.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\app\\study\\[id]\\loading.tsx",
+        "src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "src\\components\\dashboard\\LessonContentManager.tsx",
+        "src\\components\\dashboard\\modals\\ResetProgressModal.tsx",
+        "src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "src\\components\\dashboard\\tabs\\MediaTab.tsx",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\context\\LanguageContext.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\controllers\\taskController.ts",
+        "src\\migrations\\extend_lesson_type_enum.ts",
+        "src\\migrations\\revert_lesson_type_enum.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\seeders\\dbSeeder.ts",
+        "src\\utils\\progress.ts"
+      ],
+      "rowCount": 102
+    },
+    "levels": {
+      "backendRefs": [
+        "src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 0
+    },
+    "login_histories": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "maintenance_modes": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "manual_payment_proofs": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts"
+      ],
+      "frontendRefs": [],
+      "rowCount": 1
+    },
+    "marketing_analytics": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "media_files": {
+      "backendRefs": [
+        "src\\controllers\\mediaController.ts",
+        "src\\seeders\\mediaSeeder.ts"
+      ],
+      "frontendRefs": [],
+      "rowCount": 35
+    },
+    "menu_items": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "menus": {
+      "backendRefs": [],
+      "frontendRefs": [
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx"
+      ],
+      "rowCount": 0
+    },
+    "meta_capi_events": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "meta_conversion_analytics": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "module_localizations": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "module_progress": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\utils\\progress.ts"
+      ],
+      "frontendRefs": [
+        "src\\utils\\progress.ts"
+      ],
+      "rowCount": 16
+    },
+    "modules": {
+      "backendRefs": [
+        "src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\mediaController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\seeders\\dbSeeder.ts",
+        "src\\utils\\progress.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\certificates\\page.tsx",
+        "src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\app\\study\\[id]\\loading.tsx",
+        "src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "src\\components\\dashboard\\modals\\ResetProgressModal.tsx",
+        "src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\context\\LanguageContext.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\seeders\\dbSeeder.ts",
+        "src\\utils\\progress.ts"
+      ],
+      "rowCount": 9
+    },
+    "notification_channels": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 5
+    },
+    "notification_events": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "notification_logs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "notification_preferences": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "notification_queue": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "notification_recipients": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "notification_retry_logs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "notification_templates": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "notifications": {
+      "backendRefs": [
+        "src\\app.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\notificationController.ts",
+        "src\\controllers\\studentController.ts",
+        "src\\routes\\studentRoutes.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\app.ts",
+        "src\\components\\dashboard\\DashboardHeader.tsx",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\components\\Navbar.tsx",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\notificationController.ts",
+        "src\\controllers\\studentController.ts",
+        "src\\routes\\studentRoutes.ts"
+      ],
+      "rowCount": 0
+    },
+    "order_items": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 40
+    },
+    "orders": {
+      "backendRefs": [
+        "src\\app.ts",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\routes\\paymentRoutes.ts",
+        "src\\routes\\studentRoutes.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\courses\\[slug]\\CourseDetailClient.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "src\\app.ts",
+        "src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "src\\components\\dashboard\\tabs\\OrdersTab.tsx",
+        "src\\components\\dashboard\\tabs\\OverviewTab.tsx",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\context\\LanguageContext.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\routes\\paymentRoutes.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 40
+    },
+    "page_blocks": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "page_translations": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "page_versions": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "pages": {
+      "backendRefs": [],
+      "frontendRefs": [
+        "src\\app\\certificates\\page.tsx"
+      ],
+      "rowCount": 0
+    },
+    "password_resets": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "payment_callbacks": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "payment_methods": {
+      "backendRefs": [
+        "src\\controllers\\paymentController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\paymentController.ts"
+      ],
+      "rowCount": 2
+    },
+    "payment_settings": {
+      "backendRefs": [
+        "src\\controllers\\paymentController.ts"
+      ],
+      "frontendRefs": [],
+      "rowCount": 1
+    },
+    "payment_transactions": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\utils\\auditAndDumpDb.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\utils\\auditAndDumpDb.ts"
+      ],
+      "rowCount": 36
+    },
+    "payments": {
+      "backendRefs": [
+        "src\\app.ts",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts"
+      ],
+      "frontendRefs": [
+        "src\\app.ts",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts"
+      ],
+      "rowCount": 36
+    },
+    "permissions": {
+      "backendRefs": [
+        "src\\middleware\\auth.ts"
+      ],
+      "frontendRefs": [
+        "src\\middleware\\auth.ts"
+      ],
+      "rowCount": 16
+    },
+    "pronunciation_scores": {
+      "backendRefs": [
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\tutorController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\tutorController.ts"
+      ],
+      "rowCount": 214
+    },
+    "push_notifications": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "question_blank_answers": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "question_hints": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "question_matching_pairs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "question_media": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "question_options": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\migrations\\add_file_attachments.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\migrations\\add_file_attachments.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 586
+    },
+    "question_passages": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "question_tag_relations": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "question_tags": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "question_types": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 13
+    },
+    "questions": {
+      "backendRefs": [
+        "src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\migrations\\add_file_attachments.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\routes\\tutorRoutes.ts",
+        "src\\seeders\\dbSeeder.ts",
+        "src\\seeders\\mediaSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\app\\quiz\\[id]\\QuizPageClient.tsx",
+        "src\\app\\study\\[id]\\StudyPageClient.tsx",
+        "src\\components\\common\\GeminiHelpAssistant.tsx",
+        "src\\components\\dashboard\\tabs\\CoursesTab.tsx",
+        "src\\components\\dashboard\\tabs\\H5PEditorTab.tsx",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\context\\LanguageContext.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\migrations\\add_file_attachments.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 59
+    },
+    "questions_bak_20260903": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 8
+    },
+    "refunds": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "retention_analytics": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "revenue_analytics": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "reward_redemptions": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "rewards": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "role_permissions": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "roles": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\routes\\mediaRoutes.ts",
+        "src\\routes\\tutorRoutes.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\components\\dashboard\\tabs\\UsersTab.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\routes\\tutorRoutes.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 5
+    },
+    "scalev_analytics": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "scalev_enrollments": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "scalev_orders": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts"
+      ],
+      "rowCount": 81
+    },
+    "scalev_packages": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\paymentController.ts"
+      ],
+      "rowCount": 3
+    },
+    "scheduled_jobs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "setting_groups": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "setting_histories": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "sliders": {
+      "backendRefs": [],
+      "frontendRefs": [
+        "src\\components\\dashboard\\modals\\CreateTemplateModal.tsx"
+      ],
+      "rowCount": 0
+    },
+    "sms_logs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "speaking_analytics": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "speaking_attempts": {
+      "backendRefs": [
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\controllers\\tutorController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\controllers\\tutorController.ts"
+      ],
+      "rowCount": 214
+    },
+    "speaking_prompts": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\tutorController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\tutorController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 42
+    },
+    "speaking_recordings": {
+      "backendRefs": [
+        "src\\controllers\\speakingController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\speakingController.ts"
+      ],
+      "rowCount": 214
+    },
+    "speaking_tests": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 33
+    },
+    "speech_transcriptions": {
+      "backendRefs": [
+        "src\\controllers\\speakingController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\speakingController.ts"
+      ],
+      "rowCount": 214
+    },
+    "storage_providers": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "system_backups": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "system_settings": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts"
+      ],
+      "rowCount": 19
+    },
+    "user_achievements": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "user_badges": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "user_challenges": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "user_devices": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "user_learning_analytics": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "user_levels": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "user_notifications": {
+      "backendRefs": [
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\notificationController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\studentController.ts",
+        "src\\controllers\\taskController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\notificationController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\studentController.ts",
+        "src\\controllers\\taskController.ts"
+      ],
+      "rowCount": 100
+    },
+    "user_profiles": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 27
+    },
+    "user_sessions": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "user_statistics": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\seeders\\dbSeeder.ts",
+        "src\\utils\\progress.ts",
+        "src\\utils\\xp.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\quizController.ts",
+        "src\\controllers\\speakingController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\seeders\\dbSeeder.ts",
+        "src\\utils\\progress.ts",
+        "src\\utils\\xp.ts"
+      ],
+      "rowCount": 31
+    },
+    "users": {
+      "backendRefs": [
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\discussionController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\studentController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\controllers\\taskController.ts",
+        "src\\controllers\\tutorController.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "frontendRefs": [
+        "src\\app\\dashboard\\[[...slug]]\\DashboardPageClient.tsx",
+        "src\\app\\dashboard\\[[...slug]]\\page.tsx",
+        "src\\components\\dashboard\\modals\\ResetProgressModal.tsx",
+        "src\\components\\dashboard\\tabs\\StudentHubTabs.tsx",
+        "src\\components\\dashboard\\tabs\\UsersTab.tsx",
+        "src\\context\\LanguageContext.tsx",
+        "src\\controllers\\adminController.ts",
+        "src\\controllers\\authController.ts",
+        "src\\controllers\\certificateController.ts",
+        "src\\controllers\\courseController.ts",
+        "src\\controllers\\discussionController.ts",
+        "src\\controllers\\h5pController.ts",
+        "src\\controllers\\paymentController.ts",
+        "src\\controllers\\studentController.ts",
+        "src\\controllers\\studyController.ts",
+        "src\\controllers\\taskController.ts",
+        "src\\controllers\\tutorController.ts",
+        "src\\routes\\adminRoutes.ts",
+        "src\\seeders\\dbSeeder.ts"
+      ],
+      "rowCount": 32
+    },
+    "video_analytics": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "video_progress": {
+      "backendRefs": [
+        "src\\controllers\\studyController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\studyController.ts"
+      ],
+      "rowCount": 4
+    },
+    "vocabulary_scores": {
+      "backendRefs": [
+        "src\\controllers\\speakingController.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\speakingController.ts"
+      ],
+      "rowCount": 214
+    },
+    "whatsapp_logs": {
+      "backendRefs": [],
+      "frontendRefs": [],
+      "rowCount": 0
+    },
+    "xp_transactions": {
+      "backendRefs": [
+        "src\\controllers\\authController.ts",
+        "src\\seeders\\dbSeeder.ts",
+        "src\\utils\\xp.ts"
+      ],
+      "frontendRefs": [
+        "src\\controllers\\authController.ts",
+        "src\\seeders\\dbSeeder.ts",
+        "src\\utils\\xp.ts"
+      ],
+      "rowCount": 102
+    }
+  }
+}

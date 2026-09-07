@@ -1,10 +1,21 @@
 import { Response } from 'express';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
 import pool from '../config/db';
 import { AuthRequest } from '../middleware/auth';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { addXpTransaction } from '../utils/xp';
 import { transcribeAndAnalyze } from '../utils/speechEngine';
 import { updateProgressHelper, checkSequentialLessonLock } from '../utils/progress';
+import { resolveVoice, CURATED_VOICES } from '../utils/voiceUtils';
+
+const TTS_CACHE_DIR = path.join(process.cwd(), 'uploads', 'tts_cache');
+if (!fs.existsSync(TTS_CACHE_DIR)) {
+  try {
+    fs.mkdirSync(TTS_CACHE_DIR, { recursive: true });
+  } catch (_) {}
+}
 
 export const getPrompts = async (req: AuthRequest, res: Response) => {
   const { testId } = req.params;
@@ -368,19 +379,6 @@ export const getSpeakingAttemptsHistory = async (req: AuthRequest, res: Response
   }
 };
 
-// Preset curated natural human-like voices for learning English
-export const CURATED_VOICES = [
-  { id: 'en-US-AvaNeural', name: 'Ava (US Female - Natural & Friendly)', gender: 'Female', locale: 'en-US' },
-  { id: 'en-US-AndrewNeural', name: 'Andrew (US Male - Professional)', gender: 'Male', locale: 'en-US' },
-  { id: 'en-US-EmmaNeural', name: 'Emma (US Female - Warm Conversational)', gender: 'Female', locale: 'en-US' },
-  { id: 'en-US-BrianNeural', name: 'Brian (US Male - Deep Clear Voice)', gender: 'Male', locale: 'en-US' },
-  { id: 'en-US-AnaNeural', name: 'Ana (US Young Female - Expressive)', gender: 'Female', locale: 'en-US' },
-  { id: 'en-US-GuyNeural', name: 'Guy (US Male - Casual)', gender: 'Male', locale: 'en-US' },
-  { id: 'en-GB-SoniaNeural', name: 'Sonia (UK Female - British Accent)', gender: 'Female', locale: 'en-GB' },
-  { id: 'en-GB-RyanNeural', name: 'Ryan (UK Male - British Accent)', gender: 'Male', locale: 'en-GB' },
-  { id: 'en-AU-NatashaNeural', name: 'Natasha (AU Female - Australian Accent)', gender: 'Female', locale: 'en-AU' },
-];
-
 export const getTtsVoices = async (req: AuthRequest, res: Response) => {
   try {
     res.json(CURATED_VOICES);
@@ -397,13 +395,38 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
   const pitchRaw = isGet ? req.query.pitch : req.body.pitch;
 
   const text = typeof textRaw === 'string' ? textRaw.trim() : '';
-  const voice = (typeof voiceRaw === 'string' && voiceRaw.trim()) ? voiceRaw.trim() : 'en-US-AvaNeural';
+  const rawVoice = (typeof voiceRaw === 'string' && voiceRaw.trim()) ? voiceRaw.trim() : 'en-US-AvaNeural';
+  const voice = resolveVoice(rawVoice);
   const rate = (typeof rateRaw === 'string' && rateRaw.trim()) ? rateRaw.trim() : '+0%';
   const pitch = (typeof pitchRaw === 'string' && pitchRaw.trim()) ? pitchRaw.trim() : '+0Hz';
 
   if (!text) {
     res.status(400).json({ error: 'Text string is required' });
     return;
+  }
+
+  // 1. Check Server Disk & Memory Cache for Instant (0ms - 5ms) Response
+  const cacheKey = crypto.createHash('md5').update(`${voice}__${rate}__${pitch}__${text}`).digest('hex');
+  const cacheFile = path.join(TTS_CACHE_DIR, `${cacheKey}.mp3`);
+
+  if (fs.existsSync(cacheFile)) {
+    try {
+      const stats = fs.statSync(cacheFile);
+      if (stats.size > 0) {
+        res.writeHead(200, {
+          'Content-Type': 'audio/mpeg',
+          'Content-Length': stats.size,
+          'Accept-Ranges': 'bytes',
+          'Cache-Control': 'public, max-age=604800, immutable',
+          'X-Cache': 'HIT'
+        });
+        const readStream = fs.createReadStream(cacheFile);
+        readStream.pipe(res);
+        return;
+      }
+    } catch (_) {
+      // Continue to live synthesize on file read error
+    }
   }
 
   let isClientConnected = true;
@@ -420,38 +443,55 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
     });
 
     let headersSent = false;
+    const collectedChunks: Buffer[] = [];
 
-    for await (const chunk of communicate.stream()) {
-      if (!isClientConnected) break;
+    // Timeout safety: if Edge-TTS takes > 4.5 seconds, abort so client does not hang
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('TTS Cloud Synthesis Timeout')), 4500)
+    );
 
-      if (chunk.type === 'audio' && chunk.data) {
-        if (!headersSent) {
-          res.writeHead(200, {
-            'Content-Type': 'audio/mpeg',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            'Transfer-Encoding': 'chunked',
-            'Connection': 'keep-alive',
-            'X-Content-Type-Options': 'nosniff',
-            'Accept-Ranges': 'none'
-          });
-          headersSent = true;
+    const streamPromise = (async () => {
+      for await (const chunk of communicate.stream()) {
+        if (!isClientConnected) break;
+
+        if (chunk.type === 'audio' && chunk.data) {
+          collectedChunks.push(chunk.data);
+          if (!headersSent) {
+            res.writeHead(200, {
+              'Content-Type': 'audio/mpeg',
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0',
+              'Transfer-Encoding': 'chunked',
+              'Connection': 'keep-alive',
+              'X-Content-Type-Options': 'nosniff',
+              'Accept-Ranges': 'none',
+              'X-Cache': 'MISS'
+            });
+            headersSent = true;
+          }
+          res.write(chunk.data);
         }
-        res.write(chunk.data);
       }
-    }
+    })();
+
+    await Promise.race([streamPromise, timeoutPromise]);
 
     if (isClientConnected) {
       if (!headersSent) {
-        // In case no audio chunks were generated
         res.status(500).json({ error: 'Speech synthesis yielded empty audio' });
       } else {
         res.end();
       }
     }
+
+    // Save generated audio to cache for all subsequent clicks/students
+    if (collectedChunks.length > 0) {
+      const combined = Buffer.concat(collectedChunks);
+      fs.writeFile(cacheFile, combined, () => {});
+    }
   } catch (error: any) {
-    console.error('TTS Synthesis Error:', error);
+    console.error('TTS Synthesis Error:', error.message || error);
     if (!res.headersSent) {
       res.status(500).json({ error: error.message || 'Speech synthesis failed' });
     } else {

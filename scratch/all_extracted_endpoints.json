@@ -1,0 +1,2312 @@
+{
+  "total": 201,
+  "documentedCount": 72,
+  "missingCount": 128,
+  "missing": [
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/settings/public",
+      "fullPath": "/api/admin/settings/public",
+      "controllerFn": "getPublicSettings"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/convert-pptx",
+      "fullPath": "/api/admin/convert-pptx",
+      "controllerFn": "convertPptxToPdf"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/emails/settings",
+      "fullPath": "/api/admin/emails/settings",
+      "controllerFn": "saveEmailSettings"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/emails/sync-roundcube",
+      "fullPath": "/api/admin/emails/sync-roundcube",
+      "controllerFn": "syncRoundcubeEmails"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/emails/messages",
+      "fullPath": "/api/admin/emails/messages",
+      "controllerFn": "getEmailMessages"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/emails/messages",
+      "fullPath": "/api/admin/emails/messages",
+      "controllerFn": "createOrSendEmailMessage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/emails/messages/:id/folder",
+      "fullPath": "/api/admin/emails/messages/{id}/folder",
+      "controllerFn": "updateMessageFolder"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/emails/messages/:id",
+      "fullPath": "/api/admin/emails/messages/{id}",
+      "controllerFn": "deleteEmailMessage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/scalev-packages",
+      "fullPath": "/api/admin/scalev-packages",
+      "controllerFn": "getScalevPackages"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/scalev-packages",
+      "fullPath": "/api/admin/scalev-packages",
+      "controllerFn": "createScalevPackage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/scalev-packages/:id",
+      "fullPath": "/api/admin/scalev-packages/{id}",
+      "controllerFn": "updateScalevPackage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/scalev-packages/:id",
+      "fullPath": "/api/admin/scalev-packages/{id}",
+      "controllerFn": "deleteScalevPackage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/orders/import-scalev",
+      "fullPath": "/api/admin/orders/import-scalev",
+      "controllerFn": "importScalevOrders"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/orders/scalev-sync",
+      "fullPath": "/api/admin/orders/scalev-sync",
+      "controllerFn": "handleManualScalevSync"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/enrollments",
+      "fullPath": "/api/admin/enrollments",
+      "controllerFn": "getAllEnrollments"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/enrollments/:id",
+      "fullPath": "/api/admin/enrollments/{id}",
+      "controllerFn": "deleteEnrollment"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/banners",
+      "fullPath": "/api/admin/banners",
+      "controllerFn": "getAllBanners"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/banners",
+      "fullPath": "/api/admin/banners",
+      "controllerFn": "createBanner"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/banners/:id",
+      "fullPath": "/api/admin/banners/{id}",
+      "controllerFn": "updateBanner"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/banners/:id",
+      "fullPath": "/api/admin/banners/{id}",
+      "controllerFn": "deleteBanner"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/courses/:id/lessons",
+      "fullPath": "/api/admin/courses/{id}/lessons",
+      "controllerFn": "getLessonsByCourse"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/courses/:id",
+      "fullPath": "/api/admin/courses/{id}",
+      "controllerFn": "updateCourse"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/courses/:id",
+      "fullPath": "/api/admin/courses/{id}",
+      "controllerFn": "deleteCourse"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/categories",
+      "fullPath": "/api/admin/categories",
+      "controllerFn": "getAllCategories"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/categories",
+      "fullPath": "/api/admin/categories",
+      "controllerFn": "createCategory"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/categories/:id",
+      "fullPath": "/api/admin/categories/{id}",
+      "controllerFn": "updateCategory"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/categories/:id",
+      "fullPath": "/api/admin/categories/{id}",
+      "controllerFn": "deleteCategory"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/modules",
+      "fullPath": "/api/admin/modules",
+      "controllerFn": "getAllModules"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/modules",
+      "fullPath": "/api/admin/modules",
+      "controllerFn": "createModule"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/modules/:id",
+      "fullPath": "/api/admin/modules/{id}",
+      "controllerFn": "updateModule"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/modules/:id",
+      "fullPath": "/api/admin/modules/{id}",
+      "controllerFn": "deleteModule"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/lessons",
+      "fullPath": "/api/admin/lessons",
+      "controllerFn": "getAllLessons"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/lessons",
+      "fullPath": "/api/admin/lessons",
+      "controllerFn": "createLesson"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/lessons/:id",
+      "fullPath": "/api/admin/lessons/{id}",
+      "controllerFn": "updateLesson"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/lessons/:id",
+      "fullPath": "/api/admin/lessons/{id}",
+      "controllerFn": "deleteLesson"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/quizzes",
+      "fullPath": "/api/admin/quizzes",
+      "controllerFn": "getAllQuizzes"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes",
+      "fullPath": "/api/admin/quizzes",
+      "controllerFn": "createQuiz"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/:id",
+      "fullPath": "/api/admin/quizzes/{id}",
+      "controllerFn": "updateQuiz"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/quizzes/:id",
+      "fullPath": "/api/admin/quizzes/{id}",
+      "controllerFn": "deleteQuiz"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/quizzes/:quizId/questions",
+      "fullPath": "/api/admin/quizzes/{quizId}/questions",
+      "controllerFn": "getQuizQuestions"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/:quizId/questions",
+      "fullPath": "/api/admin/quizzes/{quizId}/questions",
+      "controllerFn": "createQuizQuestion"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/:questionId",
+      "fullPath": "/api/admin/quizzes/questions/{questionId}",
+      "controllerFn": "updateQuizQuestion"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/quizzes/questions/:questionId",
+      "fullPath": "/api/admin/quizzes/questions/{questionId}",
+      "controllerFn": "deleteQuizQuestion"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/questions/:questionId/options",
+      "fullPath": "/api/admin/quizzes/questions/{questionId}/options",
+      "controllerFn": "createQuestionOption"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/questions/:questionId/options/bulk",
+      "fullPath": "/api/admin/quizzes/questions/{questionId}/options/bulk",
+      "controllerFn": "bulkSetQuestionOptions"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/questions/:questionId/matching-pairs",
+      "fullPath": "/api/admin/quizzes/questions/{questionId}/matching-pairs",
+      "controllerFn": "bulkSetMatchingPairs"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/options/:optionId",
+      "fullPath": "/api/admin/quizzes/questions/options/{optionId}",
+      "controllerFn": "updateQuestionOption"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/quizzes/questions/options/:optionId",
+      "fullPath": "/api/admin/quizzes/questions/options/{optionId}",
+      "controllerFn": "deleteQuestionOption"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/:questionId/image",
+      "fullPath": "/api/admin/quizzes/questions/{questionId}/image",
+      "controllerFn": "updateQuestionImage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/options/:optionId/image",
+      "fullPath": "/api/admin/quizzes/questions/options/{optionId}/image",
+      "controllerFn": "updateQuestionOptionImage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/lessons/:lessonId/contents",
+      "fullPath": "/api/admin/lessons/{lessonId}/contents",
+      "controllerFn": "getLessonContents"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/lessons/contents/:id/attachments",
+      "fullPath": "/api/admin/lessons/contents/{id}/attachments",
+      "controllerFn": "getLessonContentAttachments"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/lessons/:lessonId/contents",
+      "fullPath": "/api/admin/lessons/{lessonId}/contents",
+      "controllerFn": "createLessonContent"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/lessons/:lessonId/contents/reorder",
+      "fullPath": "/api/admin/lessons/{lessonId}/contents/reorder",
+      "controllerFn": "reorderLessonContents"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/lessons/contents/:id",
+      "fullPath": "/api/admin/lessons/contents/{id}",
+      "controllerFn": "updateLessonContent"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/lessons/contents/:id",
+      "fullPath": "/api/admin/lessons/contents/{id}",
+      "controllerFn": "deleteLessonContent"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/speaking-tests",
+      "fullPath": "/api/admin/speaking-tests",
+      "controllerFn": "getAllSpeakingTests"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/speaking-tests",
+      "fullPath": "/api/admin/speaking-tests",
+      "controllerFn": "createSpeakingTest"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/speaking-tests/:id",
+      "fullPath": "/api/admin/speaking-tests/{id}",
+      "controllerFn": "updateSpeakingTest"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/speaking-tests/:id",
+      "fullPath": "/api/admin/speaking-tests/{id}",
+      "controllerFn": "deleteSpeakingTest"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/speaking-tests/:testId/prompts",
+      "fullPath": "/api/admin/speaking-tests/{testId}/prompts",
+      "controllerFn": "createSpeakingPrompt"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/speaking-tests/prompts/:promptId",
+      "fullPath": "/api/admin/speaking-tests/prompts/{promptId}",
+      "controllerFn": "updateSpeakingPrompt"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/speaking-tests/prompts/:promptId",
+      "fullPath": "/api/admin/speaking-tests/prompts/{promptId}",
+      "controllerFn": "deleteSpeakingPrompt"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/certificate-templates",
+      "fullPath": "/api/admin/certificate-templates",
+      "controllerFn": "getAllCertificateTemplates"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/certificate-templates",
+      "fullPath": "/api/admin/certificate-templates",
+      "controllerFn": "createCertificateTemplate"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/certificate-templates/:id",
+      "fullPath": "/api/admin/certificate-templates/{id}",
+      "controllerFn": "updateCertificateTemplate"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/certificate-templates/:id",
+      "fullPath": "/api/admin/certificate-templates/{id}",
+      "controllerFn": "deleteCertificateTemplate"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/courses/:id/status",
+      "fullPath": "/api/admin/courses/{id}/status",
+      "controllerFn": "updateCourseStatus"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/tags",
+      "fullPath": "/api/admin/tags",
+      "controllerFn": "getAllTags"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/tags",
+      "fullPath": "/api/admin/tags",
+      "controllerFn": "createTag"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/tags/:id",
+      "fullPath": "/api/admin/tags/{id}",
+      "controllerFn": "updateTag"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/tags/:id",
+      "fullPath": "/api/admin/tags/{id}",
+      "controllerFn": "deleteTag"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/users/bulk-action",
+      "fullPath": "/api/admin/users/bulk-action",
+      "controllerFn": "bulkUserAction"
+    },
+    {
+      "file": "courseRoutes.ts",
+      "method": "get",
+      "subPath": "/presentation/:contentId/file.pptx",
+      "fullPath": "/api/courses/presentation/{contentId}/file.pptx",
+      "controllerFn": "getPresentationFile"
+    },
+    {
+      "file": "courseRoutes.ts",
+      "method": "get",
+      "subPath": "/attachment/:contentId/:attIdx/file",
+      "fullPath": "/api/courses/attachment/{contentId}/{attIdx}/file",
+      "controllerFn": "getAttachmentFile"
+    },
+    {
+      "file": "discussionRoutes.ts",
+      "method": "get",
+      "subPath": "/comments",
+      "fullPath": "/api/discussions/comments",
+      "controllerFn": "listComments"
+    },
+    {
+      "file": "discussionRoutes.ts",
+      "method": "delete",
+      "subPath": "/:id",
+      "fullPath": "/api/discussions/{id}",
+      "controllerFn": "deleteDiscussion"
+    },
+    {
+      "file": "discussionRoutes.ts",
+      "method": "delete",
+      "subPath": "/comment/:id",
+      "fullPath": "/api/discussions/comment/{id}",
+      "controllerFn": "deleteComment"
+    },
+    {
+      "file": "h5pRoutes.ts",
+      "method": "post",
+      "subPath": "/admin/h5p/:id/attach",
+      "fullPath": "/api/admin/h5p/{id}/attach",
+      "controllerFn": "attachH5PToLesson"
+    },
+    {
+      "file": "h5pRoutes.ts",
+      "method": "get",
+      "subPath": "/students/h5p/:id",
+      "fullPath": "/api/students/h5p/{id}",
+      "controllerFn": "getH5PById"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "post",
+      "subPath": "/synthesize-preview",
+      "fullPath": "/api/media/synthesize-preview",
+      "controllerFn": "synthesizeMediaPreview"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "get",
+      "subPath": "/synthesize-preview",
+      "fullPath": "/api/media/synthesize-preview",
+      "controllerFn": "synthesizeMediaPreview"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "get",
+      "subPath": "/target-lessons",
+      "fullPath": "/api/media/target-lessons",
+      "controllerFn": "getSpeakingTargets"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "get",
+      "subPath": "/speaking-targets",
+      "fullPath": "/api/media/speaking-targets",
+      "controllerFn": "getSpeakingTargets"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "post",
+      "subPath": "/link",
+      "fullPath": "/api/media/link",
+      "controllerFn": "addMediaLink"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "put",
+      "subPath": "/:id",
+      "fullPath": "/api/media/{id}",
+      "controllerFn": "updateMedia"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "delete",
+      "subPath": "/:id",
+      "fullPath": "/api/media/{id}",
+      "controllerFn": "deleteMedia"
+    },
+    {
+      "file": "notificationRoutes.ts",
+      "method": "get",
+      "subPath": "/",
+      "fullPath": "/api/notifications",
+      "controllerFn": "getNotifications"
+    },
+    {
+      "file": "notificationRoutes.ts",
+      "method": "put",
+      "subPath": "/read",
+      "fullPath": "/api/notifications/read",
+      "controllerFn": "markAllNotificationsRead"
+    },
+    {
+      "file": "notificationRoutes.ts",
+      "method": "put",
+      "subPath": "/:id/read",
+      "fullPath": "/api/notifications/{id}/read",
+      "controllerFn": "markNotificationRead"
+    },
+    {
+      "file": "quizRoutes.ts",
+      "method": "get",
+      "subPath": "/type/:typeCode",
+      "fullPath": "/api/quizzes/type/{typeCode}",
+      "controllerFn": "getAssessmentsByType"
+    },
+    {
+      "file": "speakingRoutes.ts",
+      "method": "get",
+      "subPath": "/tts/stream",
+      "fullPath": "/api/speaking/tts/stream",
+      "controllerFn": "synthesizeTts"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "put",
+      "subPath": "/notifications/:id/read",
+      "fullPath": "/api/students/notifications/{id}/read",
+      "controllerFn": "markNotificationRead"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "post",
+      "subPath": "/assignments/submissions",
+      "fullPath": "/api/students/assignments/submissions",
+      "controllerFn": "submitAssignment"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "get",
+      "subPath": "/discussions",
+      "fullPath": "/api/students/discussions",
+      "controllerFn": "getDiscussionTopics"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "post",
+      "subPath": "/discussions/topics",
+      "fullPath": "/api/students/discussions/topics",
+      "controllerFn": "createDiscussionTopic"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "get",
+      "subPath": "/discussions/topics/:id/replies",
+      "fullPath": "/api/students/discussions/topics/{id}/replies",
+      "controllerFn": "getDiscussionReplies"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "post",
+      "subPath": "/discussions/topics/:id/replies",
+      "fullPath": "/api/students/discussions/topics/{id}/replies",
+      "controllerFn": "createDiscussionReply"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "put",
+      "subPath": "/:id",
+      "fullPath": "/api/tasks/{id}",
+      "controllerFn": "updateTask"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "delete",
+      "subPath": "/:id",
+      "fullPath": "/api/tasks/{id}",
+      "controllerFn": "deleteTask"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "post",
+      "subPath": "/assign",
+      "fullPath": "/api/tasks/assign",
+      "controllerFn": "assignTask"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "put",
+      "subPath": "/:id/status",
+      "fullPath": "/api/tasks/{id}/status",
+      "controllerFn": "updateTaskStatus"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "get",
+      "subPath": "/lessons",
+      "fullPath": "/api/tutor/lessons",
+      "controllerFn": "getAllLessons"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "get",
+      "subPath": "/courses/:id/lessons",
+      "fullPath": "/api/tutor/courses/{id}/lessons",
+      "controllerFn": "getLessonsByCourse"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/lessons",
+      "fullPath": "/api/tutor/lessons",
+      "controllerFn": "createLesson"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/lessons/:id",
+      "fullPath": "/api/tutor/lessons/{id}",
+      "controllerFn": "updateLesson"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "delete",
+      "subPath": "/lessons/:id",
+      "fullPath": "/api/tutor/lessons/{id}",
+      "controllerFn": "deleteLesson"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "get",
+      "subPath": "/lessons/:lessonId/contents",
+      "fullPath": "/api/tutor/lessons/{lessonId}/contents",
+      "controllerFn": "getLessonContents"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "get",
+      "subPath": "/lessons/contents/:id/attachments",
+      "fullPath": "/api/tutor/lessons/contents/{id}/attachments",
+      "controllerFn": "getLessonContentAttachments"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/lessons/:lessonId/contents",
+      "fullPath": "/api/tutor/lessons/{lessonId}/contents",
+      "controllerFn": "createLessonContent"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/lessons/:lessonId/contents/reorder",
+      "fullPath": "/api/tutor/lessons/{lessonId}/contents/reorder",
+      "controllerFn": "reorderLessonContents"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/lessons/contents/:id",
+      "fullPath": "/api/tutor/lessons/contents/{id}",
+      "controllerFn": "updateLessonContent"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "delete",
+      "subPath": "/lessons/contents/:id",
+      "fullPath": "/api/tutor/lessons/contents/{id}",
+      "controllerFn": "deleteLessonContent"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "get",
+      "subPath": "/quizzes",
+      "fullPath": "/api/tutor/quizzes",
+      "controllerFn": "getAllQuizzes"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes",
+      "fullPath": "/api/tutor/quizzes",
+      "controllerFn": "createQuiz"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/:id",
+      "fullPath": "/api/tutor/quizzes/{id}",
+      "controllerFn": "updateQuiz"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "delete",
+      "subPath": "/quizzes/:id",
+      "fullPath": "/api/tutor/quizzes/{id}",
+      "controllerFn": "deleteQuiz"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "get",
+      "subPath": "/quizzes/:quizId/questions",
+      "fullPath": "/api/tutor/quizzes/{quizId}/questions",
+      "controllerFn": "getQuizQuestions"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/:quizId/questions",
+      "fullPath": "/api/tutor/quizzes/{quizId}/questions",
+      "controllerFn": "createQuizQuestion"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/:questionId",
+      "fullPath": "/api/tutor/quizzes/questions/{questionId}",
+      "controllerFn": "updateQuizQuestion"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "delete",
+      "subPath": "/quizzes/questions/:questionId",
+      "fullPath": "/api/tutor/quizzes/questions/{questionId}",
+      "controllerFn": "deleteQuizQuestion"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/questions/:questionId/options",
+      "fullPath": "/api/tutor/quizzes/questions/{questionId}/options",
+      "controllerFn": "createQuestionOption"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/questions/:questionId/options/bulk",
+      "fullPath": "/api/tutor/quizzes/questions/{questionId}/options/bulk",
+      "controllerFn": "bulkSetQuestionOptions"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/questions/:questionId/matching-pairs",
+      "fullPath": "/api/tutor/quizzes/questions/{questionId}/matching-pairs",
+      "controllerFn": "bulkSetMatchingPairs"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/options/:optionId",
+      "fullPath": "/api/tutor/quizzes/questions/options/{optionId}",
+      "controllerFn": "updateQuestionOption"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "delete",
+      "subPath": "/quizzes/questions/options/:optionId",
+      "fullPath": "/api/tutor/quizzes/questions/options/{optionId}",
+      "controllerFn": "deleteQuestionOption"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/:questionId/image",
+      "fullPath": "/api/tutor/quizzes/questions/{questionId}/image",
+      "controllerFn": "updateQuestionImage"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/options/:optionId/image",
+      "fullPath": "/api/tutor/quizzes/questions/options/{optionId}/image",
+      "controllerFn": "updateQuestionOptionImage"
+    }
+  ],
+  "all": [
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/settings/public",
+      "fullPath": "/api/admin/settings/public",
+      "controllerFn": "getPublicSettings"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/convert-pptx",
+      "fullPath": "/api/admin/convert-pptx",
+      "controllerFn": "convertPptxToPdf"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/emails/settings",
+      "fullPath": "/api/admin/emails/settings",
+      "controllerFn": "getEmailSettings"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/emails/settings",
+      "fullPath": "/api/admin/emails/settings",
+      "controllerFn": "saveEmailSettings"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/emails/test-smtp",
+      "fullPath": "/api/admin/emails/test-smtp",
+      "controllerFn": "testSmtpConnection"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/emails/sync-roundcube",
+      "fullPath": "/api/admin/emails/sync-roundcube",
+      "controllerFn": "syncRoundcubeEmails"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/emails/messages",
+      "fullPath": "/api/admin/emails/messages",
+      "controllerFn": "getEmailMessages"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/emails/messages",
+      "fullPath": "/api/admin/emails/messages",
+      "controllerFn": "createOrSendEmailMessage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/emails/messages/:id/folder",
+      "fullPath": "/api/admin/emails/messages/{id}/folder",
+      "controllerFn": "updateMessageFolder"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/emails/messages/:id",
+      "fullPath": "/api/admin/emails/messages/{id}",
+      "controllerFn": "deleteEmailMessage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/scalev-packages",
+      "fullPath": "/api/admin/scalev-packages",
+      "controllerFn": "getScalevPackages"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/scalev-packages",
+      "fullPath": "/api/admin/scalev-packages",
+      "controllerFn": "createScalevPackage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/scalev-packages/:id",
+      "fullPath": "/api/admin/scalev-packages/{id}",
+      "controllerFn": "updateScalevPackage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/scalev-packages/:id",
+      "fullPath": "/api/admin/scalev-packages/{id}",
+      "controllerFn": "deleteScalevPackage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/orders",
+      "fullPath": "/api/admin/orders",
+      "controllerFn": "getAllOrders"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/orders/:id/status",
+      "fullPath": "/api/admin/orders/{id}/status",
+      "controllerFn": "updateOrderStatus"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/orders/import-scalev",
+      "fullPath": "/api/admin/orders/import-scalev",
+      "controllerFn": "importScalevOrders"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/orders/scalev-sync",
+      "fullPath": "/api/admin/orders/scalev-sync",
+      "controllerFn": "handleManualScalevSync"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/orders/manual-proofs",
+      "fullPath": "/api/admin/orders/manual-proofs",
+      "controllerFn": "getManualPaymentProofs"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/orders/manual-proofs/:id/verify",
+      "fullPath": "/api/admin/orders/manual-proofs/{id}/verify",
+      "controllerFn": "verifyManualPaymentProof"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/enrollments/manual",
+      "fullPath": "/api/admin/enrollments/manual",
+      "controllerFn": "directManualEnroll"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/enrollments",
+      "fullPath": "/api/admin/enrollments",
+      "controllerFn": "getAllEnrollments"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/enrollments/:id",
+      "fullPath": "/api/admin/enrollments/{id}",
+      "controllerFn": "deleteEnrollment"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/users",
+      "fullPath": "/api/admin/users",
+      "controllerFn": "getAllUsers"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/users",
+      "fullPath": "/api/admin/users",
+      "controllerFn": "createUser"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/users/:id",
+      "fullPath": "/api/admin/users/{id}",
+      "controllerFn": "updateUser"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/users/:id",
+      "fullPath": "/api/admin/users/{id}",
+      "controllerFn": "deleteUser"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/users/:id/progress-summary",
+      "fullPath": "/api/admin/users/{id}/progress-summary",
+      "controllerFn": "getUserProgressSummary"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/users/:id/reset-progress",
+      "fullPath": "/api/admin/users/{id}/reset-progress",
+      "controllerFn": "resetUserLessonProgress"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/banners",
+      "fullPath": "/api/admin/banners",
+      "controllerFn": "getAllBanners"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/banners",
+      "fullPath": "/api/admin/banners",
+      "controllerFn": "createBanner"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/banners/:id",
+      "fullPath": "/api/admin/banners/{id}",
+      "controllerFn": "updateBanner"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/banners/:id",
+      "fullPath": "/api/admin/banners/{id}",
+      "controllerFn": "deleteBanner"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/courses",
+      "fullPath": "/api/admin/courses",
+      "controllerFn": "getAllAdminCourses"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/courses/:id/lessons",
+      "fullPath": "/api/admin/courses/{id}/lessons",
+      "controllerFn": "getLessonsByCourse"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/courses",
+      "fullPath": "/api/admin/courses",
+      "controllerFn": "createCourse"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/courses/:id",
+      "fullPath": "/api/admin/courses/{id}",
+      "controllerFn": "updateCourse"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/courses/:id",
+      "fullPath": "/api/admin/courses/{id}",
+      "controllerFn": "deleteCourse"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/categories",
+      "fullPath": "/api/admin/categories",
+      "controllerFn": "getAllCategories"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/categories",
+      "fullPath": "/api/admin/categories",
+      "controllerFn": "createCategory"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/categories/:id",
+      "fullPath": "/api/admin/categories/{id}",
+      "controllerFn": "updateCategory"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/categories/:id",
+      "fullPath": "/api/admin/categories/{id}",
+      "controllerFn": "deleteCategory"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/modules",
+      "fullPath": "/api/admin/modules",
+      "controllerFn": "getAllModules"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/modules",
+      "fullPath": "/api/admin/modules",
+      "controllerFn": "createModule"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/modules/:id",
+      "fullPath": "/api/admin/modules/{id}",
+      "controllerFn": "updateModule"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/modules/:id",
+      "fullPath": "/api/admin/modules/{id}",
+      "controllerFn": "deleteModule"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/lessons",
+      "fullPath": "/api/admin/lessons",
+      "controllerFn": "getAllLessons"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/lessons",
+      "fullPath": "/api/admin/lessons",
+      "controllerFn": "createLesson"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/lessons/:id",
+      "fullPath": "/api/admin/lessons/{id}",
+      "controllerFn": "updateLesson"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/lessons/:id",
+      "fullPath": "/api/admin/lessons/{id}",
+      "controllerFn": "deleteLesson"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/quizzes",
+      "fullPath": "/api/admin/quizzes",
+      "controllerFn": "getAllQuizzes"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes",
+      "fullPath": "/api/admin/quizzes",
+      "controllerFn": "createQuiz"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/:id",
+      "fullPath": "/api/admin/quizzes/{id}",
+      "controllerFn": "updateQuiz"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/quizzes/:id",
+      "fullPath": "/api/admin/quizzes/{id}",
+      "controllerFn": "deleteQuiz"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/quizzes/:quizId/questions",
+      "fullPath": "/api/admin/quizzes/{quizId}/questions",
+      "controllerFn": "getQuizQuestions"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/:quizId/questions",
+      "fullPath": "/api/admin/quizzes/{quizId}/questions",
+      "controllerFn": "createQuizQuestion"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/:questionId",
+      "fullPath": "/api/admin/quizzes/questions/{questionId}",
+      "controllerFn": "updateQuizQuestion"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/quizzes/questions/:questionId",
+      "fullPath": "/api/admin/quizzes/questions/{questionId}",
+      "controllerFn": "deleteQuizQuestion"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/questions/:questionId/options",
+      "fullPath": "/api/admin/quizzes/questions/{questionId}/options",
+      "controllerFn": "createQuestionOption"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/questions/:questionId/options/bulk",
+      "fullPath": "/api/admin/quizzes/questions/{questionId}/options/bulk",
+      "controllerFn": "bulkSetQuestionOptions"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/questions/:questionId/matching-pairs",
+      "fullPath": "/api/admin/quizzes/questions/{questionId}/matching-pairs",
+      "controllerFn": "bulkSetMatchingPairs"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/options/:optionId",
+      "fullPath": "/api/admin/quizzes/questions/options/{optionId}",
+      "controllerFn": "updateQuestionOption"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/quizzes/questions/options/:optionId",
+      "fullPath": "/api/admin/quizzes/questions/options/{optionId}",
+      "controllerFn": "deleteQuestionOption"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/:questionId/image",
+      "fullPath": "/api/admin/quizzes/questions/{questionId}/image",
+      "controllerFn": "updateQuestionImage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/options/:optionId/image",
+      "fullPath": "/api/admin/quizzes/questions/options/{optionId}/image",
+      "controllerFn": "updateQuestionOptionImage"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/lessons/:lessonId/contents",
+      "fullPath": "/api/admin/lessons/{lessonId}/contents",
+      "controllerFn": "getLessonContents"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/lessons/contents/:id/attachments",
+      "fullPath": "/api/admin/lessons/contents/{id}/attachments",
+      "controllerFn": "getLessonContentAttachments"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/lessons/:lessonId/contents",
+      "fullPath": "/api/admin/lessons/{lessonId}/contents",
+      "controllerFn": "createLessonContent"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/lessons/:lessonId/contents/reorder",
+      "fullPath": "/api/admin/lessons/{lessonId}/contents/reorder",
+      "controllerFn": "reorderLessonContents"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/lessons/contents/:id",
+      "fullPath": "/api/admin/lessons/contents/{id}",
+      "controllerFn": "updateLessonContent"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/lessons/contents/:id",
+      "fullPath": "/api/admin/lessons/contents/{id}",
+      "controllerFn": "deleteLessonContent"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/speaking-tests",
+      "fullPath": "/api/admin/speaking-tests",
+      "controllerFn": "getAllSpeakingTests"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/speaking-tests",
+      "fullPath": "/api/admin/speaking-tests",
+      "controllerFn": "createSpeakingTest"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/speaking-tests/:id",
+      "fullPath": "/api/admin/speaking-tests/{id}",
+      "controllerFn": "updateSpeakingTest"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/speaking-tests/:id",
+      "fullPath": "/api/admin/speaking-tests/{id}",
+      "controllerFn": "deleteSpeakingTest"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/speaking-tests/:testId/prompts",
+      "fullPath": "/api/admin/speaking-tests/{testId}/prompts",
+      "controllerFn": "createSpeakingPrompt"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/speaking-tests/prompts/:promptId",
+      "fullPath": "/api/admin/speaking-tests/prompts/{promptId}",
+      "controllerFn": "updateSpeakingPrompt"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/speaking-tests/prompts/:promptId",
+      "fullPath": "/api/admin/speaking-tests/prompts/{promptId}",
+      "controllerFn": "deleteSpeakingPrompt"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/certificate-templates",
+      "fullPath": "/api/admin/certificate-templates",
+      "controllerFn": "getAllCertificateTemplates"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/certificate-templates",
+      "fullPath": "/api/admin/certificate-templates",
+      "controllerFn": "createCertificateTemplate"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/certificate-templates/:id",
+      "fullPath": "/api/admin/certificate-templates/{id}",
+      "controllerFn": "updateCertificateTemplate"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/certificate-templates/:id",
+      "fullPath": "/api/admin/certificate-templates/{id}",
+      "controllerFn": "deleteCertificateTemplate"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/settings",
+      "fullPath": "/api/admin/settings",
+      "controllerFn": "getSettings"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/settings",
+      "fullPath": "/api/admin/settings",
+      "controllerFn": "updateSettings"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/courses/:id/status",
+      "fullPath": "/api/admin/courses/{id}/status",
+      "controllerFn": "updateCourseStatus"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/tags",
+      "fullPath": "/api/admin/tags",
+      "controllerFn": "getAllTags"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/tags",
+      "fullPath": "/api/admin/tags",
+      "controllerFn": "createTag"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "put",
+      "subPath": "/tags/:id",
+      "fullPath": "/api/admin/tags/{id}",
+      "controllerFn": "updateTag"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "delete",
+      "subPath": "/tags/:id",
+      "fullPath": "/api/admin/tags/{id}",
+      "controllerFn": "deleteTag"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "post",
+      "subPath": "/users/bulk-action",
+      "fullPath": "/api/admin/users/bulk-action",
+      "controllerFn": "bulkUserAction"
+    },
+    {
+      "file": "adminRoutes.ts",
+      "method": "get",
+      "subPath": "/analytics",
+      "fullPath": "/api/admin/analytics",
+      "controllerFn": "getAdminAnalytics"
+    },
+    {
+      "file": "authRoutes.ts",
+      "method": "post",
+      "subPath": "/register",
+      "fullPath": "/api/auth/register",
+      "controllerFn": "register"
+    },
+    {
+      "file": "authRoutes.ts",
+      "method": "post",
+      "subPath": "/verify-code",
+      "fullPath": "/api/auth/verify-code",
+      "controllerFn": "verifyCode"
+    },
+    {
+      "file": "authRoutes.ts",
+      "method": "post",
+      "subPath": "/resend-code",
+      "fullPath": "/api/auth/resend-code",
+      "controllerFn": "resendCode"
+    },
+    {
+      "file": "authRoutes.ts",
+      "method": "post",
+      "subPath": "/login",
+      "fullPath": "/api/auth/login",
+      "controllerFn": "login"
+    },
+    {
+      "file": "authRoutes.ts",
+      "method": "post",
+      "subPath": "/social-login",
+      "fullPath": "/api/auth/social-login",
+      "controllerFn": "socialLogin"
+    },
+    {
+      "file": "authRoutes.ts",
+      "method": "post",
+      "subPath": "/complete-onboarding",
+      "fullPath": "/api/auth/complete-onboarding",
+      "controllerFn": "completeOnboarding"
+    },
+    {
+      "file": "authRoutes.ts",
+      "method": "post",
+      "subPath": "/forgot-password",
+      "fullPath": "/api/auth/forgot-password",
+      "controllerFn": "forgotPassword"
+    },
+    {
+      "file": "authRoutes.ts",
+      "method": "get",
+      "subPath": "/profile",
+      "fullPath": "/api/auth/profile",
+      "controllerFn": "getProfile"
+    },
+    {
+      "file": "authRoutes.ts",
+      "method": "put",
+      "subPath": "/profile",
+      "fullPath": "/api/auth/profile",
+      "controllerFn": "updateProfile"
+    },
+    {
+      "file": "certificateRoutes.ts",
+      "method": "get",
+      "subPath": "/verify/:code",
+      "fullPath": "/api/certificates/verify/{code}",
+      "controllerFn": "verifyCertificate"
+    },
+    {
+      "file": "certificateRoutes.ts",
+      "method": "post",
+      "subPath": "/claim",
+      "fullPath": "/api/certificates/claim",
+      "controllerFn": "claimCertificate"
+    },
+    {
+      "file": "courseRoutes.ts",
+      "method": "get",
+      "subPath": "/landing",
+      "fullPath": "/api/courses/landing",
+      "controllerFn": "getLandingPage"
+    },
+    {
+      "file": "courseRoutes.ts",
+      "method": "get",
+      "subPath": "/",
+      "fullPath": "/api/courses",
+      "controllerFn": "getCourses"
+    },
+    {
+      "file": "courseRoutes.ts",
+      "method": "get",
+      "subPath": "/presentation/:contentId/file.pptx",
+      "fullPath": "/api/courses/presentation/{contentId}/file.pptx",
+      "controllerFn": "getPresentationFile"
+    },
+    {
+      "file": "courseRoutes.ts",
+      "method": "get",
+      "subPath": "/attachment/:contentId/:attIdx/file",
+      "fullPath": "/api/courses/attachment/{contentId}/{attIdx}/file",
+      "controllerFn": "getAttachmentFile"
+    },
+    {
+      "file": "courseRoutes.ts",
+      "method": "get",
+      "subPath": "/:slug",
+      "fullPath": "/api/courses/{slug}",
+      "controllerFn": "getCourseDetails"
+    },
+    {
+      "file": "courseRoutes.ts",
+      "method": "post",
+      "subPath": "/:id/reviews",
+      "fullPath": "/api/courses/{id}/reviews",
+      "controllerFn": "createCourseReview"
+    },
+    {
+      "file": "discussionRoutes.ts",
+      "method": "post",
+      "subPath": "/",
+      "fullPath": "/api/discussions",
+      "controllerFn": "createDiscussion"
+    },
+    {
+      "file": "discussionRoutes.ts",
+      "method": "get",
+      "subPath": "/",
+      "fullPath": "/api/discussions",
+      "controllerFn": "listDiscussions"
+    },
+    {
+      "file": "discussionRoutes.ts",
+      "method": "post",
+      "subPath": "/comment",
+      "fullPath": "/api/discussions/comment",
+      "controllerFn": "addComment"
+    },
+    {
+      "file": "discussionRoutes.ts",
+      "method": "get",
+      "subPath": "/comments",
+      "fullPath": "/api/discussions/comments",
+      "controllerFn": "listComments"
+    },
+    {
+      "file": "discussionRoutes.ts",
+      "method": "delete",
+      "subPath": "/:id",
+      "fullPath": "/api/discussions/{id}",
+      "controllerFn": "deleteDiscussion"
+    },
+    {
+      "file": "discussionRoutes.ts",
+      "method": "delete",
+      "subPath": "/comment/:id",
+      "fullPath": "/api/discussions/comment/{id}",
+      "controllerFn": "deleteComment"
+    },
+    {
+      "file": "h5pRoutes.ts",
+      "method": "get",
+      "subPath": "/admin/h5p",
+      "fullPath": "/api/admin/h5p",
+      "controllerFn": "getAllH5P"
+    },
+    {
+      "file": "h5pRoutes.ts",
+      "method": "get",
+      "subPath": "/admin/h5p/:id",
+      "fullPath": "/api/admin/h5p/{id}",
+      "controllerFn": "getH5PById"
+    },
+    {
+      "file": "h5pRoutes.ts",
+      "method": "post",
+      "subPath": "/admin/h5p",
+      "fullPath": "/api/admin/h5p",
+      "controllerFn": "createH5P"
+    },
+    {
+      "file": "h5pRoutes.ts",
+      "method": "put",
+      "subPath": "/admin/h5p/:id",
+      "fullPath": "/api/admin/h5p/{id}",
+      "controllerFn": "updateH5P"
+    },
+    {
+      "file": "h5pRoutes.ts",
+      "method": "delete",
+      "subPath": "/admin/h5p/:id",
+      "fullPath": "/api/admin/h5p/{id}",
+      "controllerFn": "deleteH5P"
+    },
+    {
+      "file": "h5pRoutes.ts",
+      "method": "post",
+      "subPath": "/admin/h5p/:id/attach",
+      "fullPath": "/api/admin/h5p/{id}/attach",
+      "controllerFn": "attachH5PToLesson"
+    },
+    {
+      "file": "h5pRoutes.ts",
+      "method": "get",
+      "subPath": "/students/h5p/:id",
+      "fullPath": "/api/students/h5p/{id}",
+      "controllerFn": "getH5PById"
+    },
+    {
+      "file": "h5pRoutes.ts",
+      "method": "post",
+      "subPath": "/students/h5p/:id/submit",
+      "fullPath": "/api/students/h5p/{id}/submit",
+      "controllerFn": "submitH5PAttempt"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "post",
+      "subPath": "/synthesize-preview",
+      "fullPath": "/api/media/synthesize-preview",
+      "controllerFn": "synthesizeMediaPreview"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "get",
+      "subPath": "/synthesize-preview",
+      "fullPath": "/api/media/synthesize-preview",
+      "controllerFn": "synthesizeMediaPreview"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "get",
+      "subPath": "/",
+      "fullPath": "/api/media",
+      "controllerFn": "getMediaList"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "get",
+      "subPath": "/target-lessons",
+      "fullPath": "/api/media/target-lessons",
+      "controllerFn": "getSpeakingTargets"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "get",
+      "subPath": "/speaking-targets",
+      "fullPath": "/api/media/speaking-targets",
+      "controllerFn": "getSpeakingTargets"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "post",
+      "subPath": "/link",
+      "fullPath": "/api/media/link",
+      "controllerFn": "addMediaLink"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "post",
+      "subPath": "/generate-ai-audio",
+      "fullPath": "/api/media/generate-ai-audio",
+      "controllerFn": "generateAiAudio"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "post",
+      "subPath": "/generate-ai-dialogue",
+      "fullPath": "/api/media/generate-ai-dialogue",
+      "controllerFn": "generateAiDialogue"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "put",
+      "subPath": "/:id",
+      "fullPath": "/api/media/{id}",
+      "controllerFn": "updateMedia"
+    },
+    {
+      "file": "mediaRoutes.ts",
+      "method": "delete",
+      "subPath": "/:id",
+      "fullPath": "/api/media/{id}",
+      "controllerFn": "deleteMedia"
+    },
+    {
+      "file": "notificationRoutes.ts",
+      "method": "get",
+      "subPath": "/",
+      "fullPath": "/api/notifications",
+      "controllerFn": "getNotifications"
+    },
+    {
+      "file": "notificationRoutes.ts",
+      "method": "put",
+      "subPath": "/read",
+      "fullPath": "/api/notifications/read",
+      "controllerFn": "markAllNotificationsRead"
+    },
+    {
+      "file": "notificationRoutes.ts",
+      "method": "put",
+      "subPath": "/:id/read",
+      "fullPath": "/api/notifications/{id}/read",
+      "controllerFn": "markNotificationRead"
+    },
+    {
+      "file": "paymentRoutes.ts",
+      "method": "get",
+      "subPath": "/scalev-webhook",
+      "fullPath": "/api/payment/scalev-webhook",
+      "controllerFn": "res"
+    },
+    {
+      "file": "paymentRoutes.ts",
+      "method": "post",
+      "subPath": "/scalev-webhook",
+      "fullPath": "/api/payment/scalev-webhook",
+      "controllerFn": "processScalevWebhook"
+    },
+    {
+      "file": "quizRoutes.ts",
+      "method": "get",
+      "subPath": "/type/:typeCode",
+      "fullPath": "/api/quizzes/type/{typeCode}",
+      "controllerFn": "getAssessmentsByType"
+    },
+    {
+      "file": "quizRoutes.ts",
+      "method": "get",
+      "subPath": "/attempts/history",
+      "fullPath": "/api/quizzes/attempts/history",
+      "controllerFn": "getAttemptHistory"
+    },
+    {
+      "file": "quizRoutes.ts",
+      "method": "get",
+      "subPath": "/attempts/:attemptId",
+      "fullPath": "/api/quizzes/attempts/{attemptId}",
+      "controllerFn": "getAttemptDetails"
+    },
+    {
+      "file": "quizRoutes.ts",
+      "method": "get",
+      "subPath": "/:id",
+      "fullPath": "/api/quizzes/{id}",
+      "controllerFn": "getQuiz"
+    },
+    {
+      "file": "quizRoutes.ts",
+      "method": "post",
+      "subPath": "/submit",
+      "fullPath": "/api/quizzes/submit",
+      "controllerFn": "submitAttempt"
+    },
+    {
+      "file": "speakingRoutes.ts",
+      "method": "get",
+      "subPath": "/tts/voices",
+      "fullPath": "/api/speaking/tts/voices",
+      "controllerFn": "getTtsVoices"
+    },
+    {
+      "file": "speakingRoutes.ts",
+      "method": "post",
+      "subPath": "/tts/synthesize",
+      "fullPath": "/api/speaking/tts/synthesize",
+      "controllerFn": "synthesizeTts"
+    },
+    {
+      "file": "speakingRoutes.ts",
+      "method": "get",
+      "subPath": "/tts/synthesize",
+      "fullPath": "/api/speaking/tts/synthesize",
+      "controllerFn": "synthesizeTts"
+    },
+    {
+      "file": "speakingRoutes.ts",
+      "method": "get",
+      "subPath": "/tts/stream",
+      "fullPath": "/api/speaking/tts/stream",
+      "controllerFn": "synthesizeTts"
+    },
+    {
+      "file": "speakingRoutes.ts",
+      "method": "get",
+      "subPath": "/attempts/history",
+      "fullPath": "/api/speaking/attempts/history",
+      "controllerFn": "getSpeakingAttemptsHistory"
+    },
+    {
+      "file": "speakingRoutes.ts",
+      "method": "get",
+      "subPath": "/test/:testId/prompts",
+      "fullPath": "/api/speaking/test/{testId}/prompts",
+      "controllerFn": "getPrompts"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "get",
+      "subPath": "/notifications",
+      "fullPath": "/api/students/notifications",
+      "controllerFn": "getNotifications"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "put",
+      "subPath": "/notifications/:id/read",
+      "fullPath": "/api/students/notifications/{id}/read",
+      "controllerFn": "markNotificationRead"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "get",
+      "subPath": "/assignments",
+      "fullPath": "/api/students/assignments",
+      "controllerFn": "getAssignments"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "post",
+      "subPath": "/assignments/submissions",
+      "fullPath": "/api/students/assignments/submissions",
+      "controllerFn": "submitAssignment"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "get",
+      "subPath": "/discussions",
+      "fullPath": "/api/students/discussions",
+      "controllerFn": "getDiscussionTopics"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "post",
+      "subPath": "/discussions/topics",
+      "fullPath": "/api/students/discussions/topics",
+      "controllerFn": "createDiscussionTopic"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "get",
+      "subPath": "/discussions/topics/:id/replies",
+      "fullPath": "/api/students/discussions/topics/{id}/replies",
+      "controllerFn": "getDiscussionReplies"
+    },
+    {
+      "file": "studentRoutes.ts",
+      "method": "post",
+      "subPath": "/discussions/topics/:id/replies",
+      "fullPath": "/api/students/discussions/topics/{id}/replies",
+      "controllerFn": "createDiscussionReply"
+    },
+    {
+      "file": "studyRoutes.ts",
+      "method": "get",
+      "subPath": "/leaderboard",
+      "fullPath": "/api/study/leaderboard",
+      "controllerFn": "getLeaderboard"
+    },
+    {
+      "file": "studyRoutes.ts",
+      "method": "get",
+      "subPath": "/lesson/:id",
+      "fullPath": "/api/study/lesson/{id}",
+      "controllerFn": "getLesson"
+    },
+    {
+      "file": "studyRoutes.ts",
+      "method": "post",
+      "subPath": "/video-progress",
+      "fullPath": "/api/study/video-progress",
+      "controllerFn": "updateVideoProgress"
+    },
+    {
+      "file": "studyRoutes.ts",
+      "method": "post",
+      "subPath": "/progress",
+      "fullPath": "/api/study/progress",
+      "controllerFn": "updateLessonProgress"
+    },
+    {
+      "file": "studyRoutes.ts",
+      "method": "post",
+      "subPath": "/lesson/:id/bookmark",
+      "fullPath": "/api/study/lesson/{id}/bookmark",
+      "controllerFn": "toggleBookmark"
+    },
+    {
+      "file": "studyRoutes.ts",
+      "method": "get",
+      "subPath": "/bookmarks",
+      "fullPath": "/api/study/bookmarks",
+      "controllerFn": "getBookmarkedLessons"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "get",
+      "subPath": "/pending-summary",
+      "fullPath": "/api/tasks/pending-summary",
+      "controllerFn": "getPendingTasksSummary"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "post",
+      "subPath": "/",
+      "fullPath": "/api/tasks",
+      "controllerFn": "createTask"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "get",
+      "subPath": "/",
+      "fullPath": "/api/tasks",
+      "controllerFn": "listTasks"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "put",
+      "subPath": "/:id",
+      "fullPath": "/api/tasks/{id}",
+      "controllerFn": "updateTask"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "delete",
+      "subPath": "/:id",
+      "fullPath": "/api/tasks/{id}",
+      "controllerFn": "deleteTask"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "post",
+      "subPath": "/:id/submit",
+      "fullPath": "/api/tasks/{id}/submit",
+      "controllerFn": "submitTaskAnswer"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "get",
+      "subPath": "/:id/submissions",
+      "fullPath": "/api/tasks/{id}/submissions",
+      "controllerFn": "listTaskSubmissions"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "put",
+      "subPath": "/submission/:id/grade",
+      "fullPath": "/api/tasks/submission/{id}/grade",
+      "controllerFn": "gradeSubmission"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "post",
+      "subPath": "/assign",
+      "fullPath": "/api/tasks/assign",
+      "controllerFn": "assignTask"
+    },
+    {
+      "file": "taskRoutes.ts",
+      "method": "put",
+      "subPath": "/:id/status",
+      "fullPath": "/api/tasks/{id}/status",
+      "controllerFn": "updateTaskStatus"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "get",
+      "subPath": "/submissions",
+      "fullPath": "/api/tutor/submissions",
+      "controllerFn": "getStudentSubmissions"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/submissions/:attemptId/review",
+      "fullPath": "/api/tutor/submissions/{attemptId}/review",
+      "controllerFn": "submitTutorReview"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "get",
+      "subPath": "/lessons",
+      "fullPath": "/api/tutor/lessons",
+      "controllerFn": "getAllLessons"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "get",
+      "subPath": "/courses/:id/lessons",
+      "fullPath": "/api/tutor/courses/{id}/lessons",
+      "controllerFn": "getLessonsByCourse"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/lessons",
+      "fullPath": "/api/tutor/lessons",
+      "controllerFn": "createLesson"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/lessons/:id",
+      "fullPath": "/api/tutor/lessons/{id}",
+      "controllerFn": "updateLesson"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "delete",
+      "subPath": "/lessons/:id",
+      "fullPath": "/api/tutor/lessons/{id}",
+      "controllerFn": "deleteLesson"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "get",
+      "subPath": "/lessons/:lessonId/contents",
+      "fullPath": "/api/tutor/lessons/{lessonId}/contents",
+      "controllerFn": "getLessonContents"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "get",
+      "subPath": "/lessons/contents/:id/attachments",
+      "fullPath": "/api/tutor/lessons/contents/{id}/attachments",
+      "controllerFn": "getLessonContentAttachments"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/lessons/:lessonId/contents",
+      "fullPath": "/api/tutor/lessons/{lessonId}/contents",
+      "controllerFn": "createLessonContent"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/lessons/:lessonId/contents/reorder",
+      "fullPath": "/api/tutor/lessons/{lessonId}/contents/reorder",
+      "controllerFn": "reorderLessonContents"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/lessons/contents/:id",
+      "fullPath": "/api/tutor/lessons/contents/{id}",
+      "controllerFn": "updateLessonContent"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "delete",
+      "subPath": "/lessons/contents/:id",
+      "fullPath": "/api/tutor/lessons/contents/{id}",
+      "controllerFn": "deleteLessonContent"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "get",
+      "subPath": "/quizzes",
+      "fullPath": "/api/tutor/quizzes",
+      "controllerFn": "getAllQuizzes"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes",
+      "fullPath": "/api/tutor/quizzes",
+      "controllerFn": "createQuiz"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/:id",
+      "fullPath": "/api/tutor/quizzes/{id}",
+      "controllerFn": "updateQuiz"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "delete",
+      "subPath": "/quizzes/:id",
+      "fullPath": "/api/tutor/quizzes/{id}",
+      "controllerFn": "deleteQuiz"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "get",
+      "subPath": "/quizzes/:quizId/questions",
+      "fullPath": "/api/tutor/quizzes/{quizId}/questions",
+      "controllerFn": "getQuizQuestions"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/:quizId/questions",
+      "fullPath": "/api/tutor/quizzes/{quizId}/questions",
+      "controllerFn": "createQuizQuestion"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/:questionId",
+      "fullPath": "/api/tutor/quizzes/questions/{questionId}",
+      "controllerFn": "updateQuizQuestion"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "delete",
+      "subPath": "/quizzes/questions/:questionId",
+      "fullPath": "/api/tutor/quizzes/questions/{questionId}",
+      "controllerFn": "deleteQuizQuestion"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/questions/:questionId/options",
+      "fullPath": "/api/tutor/quizzes/questions/{questionId}/options",
+      "controllerFn": "createQuestionOption"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/questions/:questionId/options/bulk",
+      "fullPath": "/api/tutor/quizzes/questions/{questionId}/options/bulk",
+      "controllerFn": "bulkSetQuestionOptions"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "post",
+      "subPath": "/quizzes/questions/:questionId/matching-pairs",
+      "fullPath": "/api/tutor/quizzes/questions/{questionId}/matching-pairs",
+      "controllerFn": "bulkSetMatchingPairs"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/options/:optionId",
+      "fullPath": "/api/tutor/quizzes/questions/options/{optionId}",
+      "controllerFn": "updateQuestionOption"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "delete",
+      "subPath": "/quizzes/questions/options/:optionId",
+      "fullPath": "/api/tutor/quizzes/questions/options/{optionId}",
+      "controllerFn": "deleteQuestionOption"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/:questionId/image",
+      "fullPath": "/api/tutor/quizzes/questions/{questionId}/image",
+      "controllerFn": "updateQuestionImage"
+    },
+    {
+      "file": "tutorRoutes.ts",
+      "method": "put",
+      "subPath": "/quizzes/questions/options/:optionId/image",
+      "fullPath": "/api/tutor/quizzes/questions/options/{optionId}/image",
+      "controllerFn": "updateQuestionOptionImage"
+    },
+    {
+      "file": "app.ts",
+      "method": "get",
+      "subPath": "/health",
+      "fullPath": "/health",
+      "controllerFn": "health"
+    }
+  ]
+}
