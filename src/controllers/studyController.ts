@@ -4,6 +4,8 @@ import { AuthRequest } from '../middleware/auth';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { addXpTransaction } from '../utils/xp';
 import { updateProgressHelper, checkSequentialLessonLock } from '../utils/progress';
+import { getActiveSeason, checkAndProcessSeasonExpiry } from '../services/seasonService';
+import { getAllLevels } from '../services/levelService';
 
 export const getLesson = async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
@@ -152,6 +154,7 @@ export const getLesson = async (req: AuthRequest, res: Response) => {
     }
 
     let assessmentProgress: any = null;
+    let quizSessions: any[] = [];
     let speakingProgress: any = null;
 
     if (assessmentId) {
@@ -160,6 +163,17 @@ export const getLesson = async (req: AuthRequest, res: Response) => {
         [req.user.id, assessmentId]
       );
       assessmentProgress = apRows[0] || null;
+
+      // Fetch all quiz sessions (attempts) for this assessment and user
+      const [sessionRows] = await pool.query<RowDataPacket[]>(
+        `SELECT id as attempt_id, started_at, submitted_at, duration_seconds, score, 
+                total_correct, total_wrong, total_unanswered, percentage, passed, status, created_at
+         FROM assessment_attempts 
+         WHERE user_id = ? AND assessment_id = ? 
+         ORDER BY id DESC`,
+        [req.user.id, assessmentId]
+      );
+      quizSessions = sessionRows;
     }
 
     if (speakingTestId) {
@@ -184,6 +198,7 @@ export const getLesson = async (req: AuthRequest, res: Response) => {
       assessmentId,
       speakingTestId,
       assessmentProgress,
+      quizSessions,
       speakingProgress
     });
   } catch (error: any) {
@@ -359,8 +374,14 @@ export const getBookmarkedLessons = async (req: AuthRequest, res: Response) => {
 
 export const getLeaderboard = async (req: AuthRequest, res: Response) => {
   try {
+    await checkAndProcessSeasonExpiry();
+    const activeSeason = await getActiveSeason();
+    const levels = await getAllLevels();
+    const levelMap = new Map<number, { name: string; badge_icon: string | null }>();
+    levels.forEach(l => levelMap.set(l.level_number, { name: l.name, badge_icon: l.badge_icon }));
+
     const [ranks] = await pool.query<RowDataPacket[]>(
-      `SELECT u.id, u.full_name, u.email, COALESCE(us.xp, 0) as xp, COALESCE(us.level, 1) as level,
+      `SELECT u.id, u.full_name, u.email, u.avatar, COALESCE(us.xp, 0) as xp, COALESCE(us.level, 1) as level,
               (SELECT COUNT(*) FROM enrollments WHERE user_id = u.id AND status = 'ACTIVE') as coursesCount,
               (SELECT COUNT(*) FROM certificates WHERE user_id = u.id AND status = 'ACTIVE') as certsCount
        FROM users u
@@ -369,8 +390,301 @@ export const getLeaderboard = async (req: AuthRequest, res: Response) => {
        ORDER BY xp DESC, level DESC
        LIMIT 50`
     );
-    res.json(ranks);
+
+    const now = new Date();
+    const endDate = activeSeason ? new Date(activeSeason.end_date) : null;
+    const remainingDays = endDate ? Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))) : 0;
+
+    const enrichedRanks = ranks.map((r: any, idx: number) => {
+      const lvlInfo = levelMap.get(Number(r.level)) || { name: `Level ${r.level}`, badge_icon: '⭐' };
+      return {
+        ...r,
+        rank: idx + 1,
+        level_name: lvlInfo.name,
+        badge_icon: lvlInfo.badge_icon,
+        season_id: activeSeason?.id,
+        season_title: activeSeason?.title,
+        season_end_date: activeSeason?.end_date,
+        season_days_left: remainingDays
+      };
+    });
+
+    if (req.query.format === 'rich') {
+      res.json({
+        season: activeSeason,
+        remainingDays,
+        rankings: enrichedRanks
+      });
+      return;
+    }
+
+    res.json(enrichedRanks);
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
 };
+
+export const getActiveSeasonInfo = async (req: AuthRequest, res: Response) => {
+  try {
+    await checkAndProcessSeasonExpiry();
+    const activeSeason = await getActiveSeason();
+    const now = new Date();
+    const endDate = new Date(activeSeason.end_date);
+    const diffMs = Math.max(0, endDate.getTime() - now.getTime());
+    const remainingDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const remainingHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    res.json({
+      season: activeSeason,
+      remainingDays,
+      remainingHours,
+      isExpired: diffMs <= 0
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};
+
+export const getPublicLevels = async (req: AuthRequest, res: Response) => {
+  try {
+    const levels = await getAllLevels();
+    res.json(levels);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};
+
+/**
+ * Get personal season history for logged-in student (Riwayat Season Saya)
+ */
+export const getMySeasonHistory = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    // 1. Fetch completed season history for this student
+    const [historyRows] = await pool.query<RowDataPacket[]>(`
+      SELECT h.id, h.season_id, h.final_rank, h.final_xp, h.final_level, h.level_name, h.created_at,
+             s.title as season_title,
+             s.code as season_code,
+             s.start_date,
+             s.end_date,
+             s.status as season_status,
+             (SELECT COUNT(*) FROM leaderboard_season_history WHERE season_id = s.id) as total_participants
+      FROM leaderboard_season_history h
+      JOIN leaderboard_seasons s ON h.season_id = s.id
+      WHERE h.user_id = ?
+      ORDER BY s.id DESC
+    `, [userId]);
+
+    // 2. Fetch current active season standing
+    await checkAndProcessSeasonExpiry();
+    const activeSeason = await getActiveSeason();
+    let currentSeasonStanding: any = null;
+
+    if (activeSeason) {
+      const [currentStats] = await pool.query<RowDataPacket[]>(
+        'SELECT xp, level FROM user_statistics WHERE user_id = ?',
+        [userId]
+      );
+      const studentXp = Number(currentStats[0]?.xp || 0);
+      const studentLevel = Number(currentStats[0]?.level || 1);
+
+      // Rank among all students in current season
+      const [rankRows] = await pool.query<RowDataPacket[]>(`
+        SELECT COUNT(*) + 1 as current_rank
+        FROM user_statistics us
+        JOIN users u ON us.user_id = u.id
+        WHERE u.role_id = 4 AND us.xp > ?
+      `, [studentXp]);
+
+      const [totalActiveRows] = await pool.query<RowDataPacket[]>(
+        'SELECT COUNT(*) as total FROM users WHERE role_id = 4 AND status = "ACTIVE"'
+      );
+
+      const now = new Date();
+      const endDate = new Date(activeSeason.end_date);
+      const remainingDays = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+      currentSeasonStanding = {
+        season: activeSeason,
+        xp: studentXp,
+        level: studentLevel,
+        currentRank: rankRows[0]?.current_rank || 1,
+        totalParticipants: totalActiveRows[0]?.total || 0,
+        remainingDays
+      };
+    }
+
+    // 3. Calculate career statistics
+    const totalSeasons = historyRows.length;
+    const bestRank = totalSeasons > 0 ? historyRows.reduce((min, cur) => cur.final_rank < min ? cur.final_rank : min, historyRows[0].final_rank) : null;
+    const podiumCount = historyRows.filter(h => h.final_rank <= 3).length;
+    const totalArchivedXp = historyRows.reduce((sum, cur) => sum + Number(cur.final_xp || 0), 0);
+
+    const enrichedHistory = historyRows.map(h => {
+      let medal = '🎖️';
+      let badgeTitle = 'Participant';
+      if (h.final_rank === 1) {
+        medal = '🥇';
+        badgeTitle = 'Gold Champion (Juara 1)';
+      } else if (h.final_rank === 2) {
+        medal = '🥈';
+        badgeTitle = 'Silver Runner-Up (Juara 2)';
+      } else if (h.final_rank === 3) {
+        medal = '🥉';
+        badgeTitle = 'Bronze Podium (Juara 3)';
+      } else if (h.final_rank <= 10) {
+        medal = '⭐';
+        badgeTitle = 'Top 10 Finisher';
+      }
+
+      return {
+        ...h,
+        medal,
+        badge_title: badgeTitle
+      };
+    });
+
+    res.json({
+      summary: {
+        totalSeasonsParticipated: totalSeasons,
+        bestRank,
+        podiumCount,
+        totalArchivedXp
+      },
+      currentSeasonStanding,
+      history: enrichedHistory
+    });
+  } catch (error: any) {
+    console.error('Failed to get student season history:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};
+
+/**
+ * Get public leaderboard of an archived past season
+ */
+export const getPastSeasonLeaderboard = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const seasonId = Number(req.params.id);
+    if (!seasonId) {
+      res.status(400).json({ error: 'Invalid season ID' });
+      return;
+    }
+
+    const [seasonRows] = await pool.query<RowDataPacket[]>(
+      'SELECT id, title, code, start_date, end_date, reset_schedule_type, status FROM leaderboard_seasons WHERE id = ?',
+      [seasonId]
+    );
+
+    if (!seasonRows || seasonRows.length === 0) {
+      res.status(404).json({ error: 'Season not found' });
+      return;
+    }
+
+    const [historyRows] = await pool.query<RowDataPacket[]>(`
+      SELECT h.id, h.season_id, h.user_id, h.final_rank, h.final_xp, h.final_level, h.level_name, h.created_at,
+             u.full_name, u.email, u.avatar
+      FROM leaderboard_season_history h
+      JOIN users u ON h.user_id = u.id
+      WHERE h.season_id = ?
+      ORDER BY h.final_rank ASC
+    `, [seasonId]);
+
+    const podium = historyRows.slice(0, 3).map((item, idx) => ({
+      ...item,
+      medal: idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉',
+      badge_title: idx === 0 ? 'Gold Champion' : idx === 1 ? 'Silver Runner-Up' : 'Bronze Podium'
+    }));
+
+    res.json({
+      season: seasonRows[0],
+      totalParticipants: historyRows.length,
+      podium,
+      rankings: historyRows
+    });
+  } catch (error: any) {
+    console.error('Failed to get past season leaderboard:', error);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};
+
+/**
+ * Get comprehensive learning progress for authenticated student
+ * Includes enrolled courses, completed modules, and full table of completed quiz sessions (attempts)
+ */
+export const getMyProgressSummary = async (req: AuthRequest, res: Response) => {
+  if (!req.user) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  try {
+    const userId = req.user.id;
+
+    // 1. Enrolled courses with overall progress
+    const [courses] = await pool.query<RowDataPacket[]>(
+      `SELECT e.course_id, c.title as course_title, c.slug as course_slug,
+              COALESCE(cp.overall_progress, 0) as overall_progress,
+              COALESCE(cp.completed_module, 0) as completed_module,
+              COALESCE(cp.total_module, 0) as total_module,
+              COALESCE(cp.certificate_ready, 0) as certificate_ready
+       FROM enrollments e
+       JOIN courses c ON e.course_id = c.id
+       LEFT JOIN course_progress cp ON c.id = cp.course_id AND cp.user_id = ?
+       WHERE e.user_id = ? AND (e.status = 'ACTIVE' OR LOWER(e.status) = 'active')`,
+      [userId, userId]
+    );
+
+    // 2. All quiz sessions completed by this student
+    const [quizSessions] = await pool.query<RowDataPacket[]>(
+      `SELECT aa.id as attempt_id, aa.assessment_id, 
+              a.title as quiz_title, a.passing_score,
+              l.id as lesson_id, l.title as lesson_title,
+              c.id as course_id, c.title as course_title, c.slug as course_slug,
+              aa.score, aa.percentage, aa.passed, 
+              aa.total_correct, aa.total_wrong, aa.total_unanswered,
+              aa.duration_seconds, aa.status, aa.started_at, aa.submitted_at
+       FROM assessment_attempts aa
+       JOIN assessments a ON aa.assessment_id = a.id
+       LEFT JOIN lessons l ON a.lesson_id = l.id
+       LEFT JOIN courses c ON a.course_id = c.id
+       WHERE aa.user_id = ?
+       ORDER BY aa.submitted_at DESC`,
+      [userId]
+    );
+
+    // 3. Quiz statistics calculation
+    const totalAttempts = quizSessions.length;
+    const passedAttempts = quizSessions.filter((s: any) => s.passed === 1 || s.passed === true).length;
+    const avgScore = totalAttempts > 0 
+      ? Number((quizSessions.reduce((acc: number, s: any) => acc + Number(s.percentage || 0), 0) / totalAttempts).toFixed(1))
+      : 0;
+    const highestScore = totalAttempts > 0
+      ? Math.max(...quizSessions.map((s: any) => Number(s.percentage || 0)))
+      : 0;
+
+    res.json({
+      userId,
+      courses,
+      quiz_sessions: quizSessions,
+      quizSessions, // camelCase alias for convenience
+      quizStats: {
+        totalAttempts,
+        passedAttempts,
+        failedAttempts: totalAttempts - passedAttempts,
+        averageScore: avgScore,
+        highestScore
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};
+
+
+

@@ -23,8 +23,13 @@ import h5pRoutes from './routes/h5pRoutes';
 import mediaRoutes from './routes/mediaRoutes';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerDocument, swaggerUiOptions } from './docs/swagger';
+import { runSeasonAndLevelMigration } from './migrations/season_and_level_setup';
+import { runStudentVocabularyMigration } from './migrations/student_vocabulary_setup';
+import { initSeasonScheduler } from './services/seasonService';
+
 
 dotenv.config();
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -136,9 +141,17 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 app.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT} (Bound to 0.0.0.0 for LAN/IP access)`);
   pool.getConnection()
-    .then((conn) => {
+    .then(async (conn) => {
       conn.release();
       console.log('✅ Database connected successfully to MySQL');
+      try {
+        await runSeasonAndLevelMigration();
+        await runStudentVocabularyMigration();
+        initSeasonScheduler();
+      } catch (migrationErr: any) {
+        console.warn('⚠️  Setup warning:', migrationErr.message);
+      }
+
     })
     .catch((err: any) => {
       const dbHost = process.env.DB_HOST || '127.0.0.1';
@@ -146,5 +159,6 @@ app.listen(Number(PORT), '0.0.0.0', () => {
       console.warn(`⚠️  Database info: Belum terhubung ke MySQL di ${dbHost}:${dbPort} (${err.code || err.message}). Pastikan service MySQL/XAMPP/Docker sudah aktif.`);
     });
 });
+
 
 export default app;

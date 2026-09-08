@@ -582,12 +582,55 @@ export const deleteLesson = async (req: Request, res: Response) => {
 // QUIZZES (ASSESSMENTS) CRUD
 // ==========================================
 export const createQuiz = async (req: Request, res: Response) => {
-  const { lessonId, moduleId, courseId, assessmentTypeId, title, description, instruction, passingScore, durationMinutes, totalQuestion, totalScore, maxAttempt, status } = req.body;
+  const {
+    lessonId, moduleId, courseId, assessmentTypeId, title, description, instruction,
+    passingScore, durationMinutes, totalQuestion, totalScore, maxAttempt, status,
+    randomQuestion, random_question,
+    shuffleOption, shuffle_option,
+    showResult, show_result,
+    showAnswer, show_answer,
+    allowRetry, allow_retry
+  } = req.body;
   try {
+    const rawRandomQ = randomQuestion !== undefined ? randomQuestion : random_question;
+    const rawShuffleOpt = shuffleOption !== undefined ? shuffleOption : shuffle_option;
+    const rawShowResult = showResult !== undefined ? showResult : show_result;
+    const rawShowAnswer = showAnswer !== undefined ? showAnswer : show_answer;
+    const rawAllowRetry = allowRetry !== undefined ? allowRetry : allow_retry;
+
+    // Detect legacy hidden markers in instruction or description
+    const hasShuffleQuestionsMarker = Boolean(
+      (instruction && /\[SHUFFLE_QUESTIONS?\]|<!--\s*SHUFFLE_QUESTIONS?\s*-->|\[RANDOM_QUESTIONS?\]/i.test(instruction)) ||
+      (description && /\[SHUFFLE_QUESTIONS?\]|<!--\s*SHUFFLE_QUESTIONS?\s*-->|\[RANDOM_QUESTIONS?\]/i.test(description))
+    );
+
+    const hasShuffleOptionsMarker = Boolean(
+      (instruction && /\[SHUFFLE_OPTIONS?\]|<!--\s*SHUFFLE_OPTIONS?\s*-->/i.test(instruction)) ||
+      (description && /\[SHUFFLE_OPTIONS?\]|<!--\s*SHUFFLE_OPTIONS?\s*-->/i.test(description))
+    );
+
+    const finalRandomQ = rawRandomQ !== undefined ? (rawRandomQ ? 1 : 0) : (hasShuffleQuestionsMarker ? 1 : 0);
+    const finalShuffleOpt = rawShuffleOpt !== undefined ? (rawShuffleOpt ? 1 : 0) : (hasShuffleOptionsMarker ? 1 : 0);
+    const finalShowResult = rawShowResult !== undefined ? (rawShowResult ? 1 : 0) : 1;
+    const finalShowAnswer = rawShowAnswer !== undefined ? (rawShowAnswer ? 1 : 0) : 1;
+    const finalAllowRetry = rawAllowRetry !== undefined ? (rawAllowRetry ? 1 : 0) : 1;
+
+    // Clean any legacy hidden-markers from instruction & description
+    const cleanInstruction = instruction ? instruction.replace(/\[SHUFFLE_QUESTIONS?\]|\[RANDOM_QUESTIONS?\]|\[SHUFFLE_OPTIONS?\]|<!--\s*SHUFFLE_[A-Z]+\s*-->/gi, '').trim() : null;
+    const cleanDescription = description ? description.replace(/\[SHUFFLE_QUESTIONS?\]|\[RANDOM_QUESTIONS?\]|\[SHUFFLE_OPTIONS?\]|<!--\s*SHUFFLE_[A-Z]+\s*-->/gi, '').trim() : null;
+
     const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO assessments (lesson_id, module_id, course_id, assessment_type_id, title, description, instruction, passing_score, duration_minutes, total_question, total_score, max_attempt, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [lessonId || null, moduleId || null, courseId || null, assessmentTypeId || 1, title, description, instruction, passingScore || 70, durationMinutes || 30, totalQuestion || 0, totalScore || 100, maxAttempt !== undefined ? maxAttempt : null, status || 'DRAFT']
+      `INSERT INTO assessments (
+        lesson_id, module_id, course_id, assessment_type_id, title, description, instruction,
+        passing_score, duration_minutes, total_question, total_score, max_attempt, status,
+        random_question, shuffle_option, show_result, show_answer, allow_retry
+      ) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        lessonId || null, moduleId || null, courseId || null, assessmentTypeId || 1, title, cleanDescription, cleanInstruction,
+        passingScore || 70, durationMinutes || 30, totalQuestion || 0, totalScore || 100, maxAttempt !== undefined ? maxAttempt : null, status || 'DRAFT',
+        finalRandomQ, finalShuffleOpt, finalShowResult, finalShowAnswer, finalAllowRetry
+      ]
     );
     res.status(201).json({ message: 'Quiz created successfully', quizId: result.insertId });
   } catch (error: any) {
@@ -597,7 +640,14 @@ export const createQuiz = async (req: Request, res: Response) => {
 
 export const updateQuiz = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { title, description, instruction, passingScore, durationMinutes, totalQuestion, totalScore, maxAttempt, max_attempt, status } = req.body;
+  const {
+    title, description, instruction, passingScore, durationMinutes, totalQuestion, totalScore, maxAttempt, max_attempt, status,
+    randomQuestion, random_question,
+    shuffleOption, shuffle_option,
+    showResult, show_result,
+    showAnswer, show_answer,
+    allowRetry, allow_retry
+  } = req.body;
   const finalMaxAttempt = maxAttempt !== undefined ? maxAttempt : max_attempt;
   try {
     const updates: string[] = [];
@@ -611,8 +661,58 @@ export const updateQuiz = async (req: Request, res: Response) => {
     };
 
     addUpdate('title', title);
-    addUpdate('description', description);
-    addUpdate('instruction', instruction);
+
+    // Clean legacy markers if present in description or instruction and auto-convert to column flags
+    let autoRandomQ: number | undefined = undefined;
+    let autoShuffleOpt: number | undefined = undefined;
+
+    if (description !== undefined) {
+      if (/\[SHUFFLE_QUESTIONS?\]|<!--\s*SHUFFLE_QUESTIONS?\s*-->|\[RANDOM_QUESTIONS?\]/i.test(description)) {
+        autoRandomQ = 1;
+      }
+      if (/\[SHUFFLE_OPTIONS?\]|<!--\s*SHUFFLE_OPTIONS?\s*-->/i.test(description)) {
+        autoShuffleOpt = 1;
+      }
+      const cleanDesc = description ? description.replace(/\[SHUFFLE_QUESTIONS?\]|\[RANDOM_QUESTIONS?\]|\[SHUFFLE_OPTIONS?\]|<!--\s*SHUFFLE_[A-Z]+\s*-->/gi, '').trim() : null;
+      addUpdate('description', cleanDesc);
+    }
+
+    if (instruction !== undefined) {
+      if (/\[SHUFFLE_QUESTIONS?\]|<!--\s*SHUFFLE_QUESTIONS?\s*-->|\[RANDOM_QUESTIONS?\]/i.test(instruction)) {
+        autoRandomQ = 1;
+      }
+      if (/\[SHUFFLE_OPTIONS?\]|<!--\s*SHUFFLE_OPTIONS?\s*-->/i.test(instruction)) {
+        autoShuffleOpt = 1;
+      }
+      const cleanInst = instruction ? instruction.replace(/\[SHUFFLE_QUESTIONS?\]|\[RANDOM_QUESTIONS?\]|\[SHUFFLE_OPTIONS?\]|<!--\s*SHUFFLE_[A-Z]+\s*-->/gi, '').trim() : null;
+      addUpdate('instruction', cleanInst);
+    }
+
+    const rawRandomQ = randomQuestion !== undefined ? randomQuestion : (random_question !== undefined ? random_question : autoRandomQ);
+    if (rawRandomQ !== undefined) {
+      addUpdate('random_question', rawRandomQ ? 1 : 0);
+    }
+
+    const rawShuffleOpt = shuffleOption !== undefined ? shuffleOption : (shuffle_option !== undefined ? shuffle_option : autoShuffleOpt);
+    if (rawShuffleOpt !== undefined) {
+      addUpdate('shuffle_option', rawShuffleOpt ? 1 : 0);
+    }
+
+    const rawShowResult = showResult !== undefined ? showResult : show_result;
+    if (rawShowResult !== undefined) {
+      addUpdate('show_result', rawShowResult ? 1 : 0);
+    }
+
+    const rawShowAnswer = showAnswer !== undefined ? showAnswer : show_answer;
+    if (rawShowAnswer !== undefined) {
+      addUpdate('show_answer', rawShowAnswer ? 1 : 0);
+    }
+
+    const rawAllowRetry = allowRetry !== undefined ? allowRetry : allow_retry;
+    if (rawAllowRetry !== undefined) {
+      addUpdate('allow_retry', rawAllowRetry ? 1 : 0);
+    }
+
     addUpdate('passing_score', passingScore);
     addUpdate('duration_minutes', durationMinutes);
     addUpdate('total_question', totalQuestion);
@@ -938,9 +1038,28 @@ export const getUserProgressSummary = async (req: Request, res: Response) => {
          ORDER BY m.module_order ASC`,
         [userId, crs.course_id]
       );
+
+      // Fetch quiz sessions (attempts) completed by student for this course
+      const [courseQuizSessions] = await pool.query<RowDataPacket[]>(
+        `SELECT aa.id as attempt_id, aa.assessment_id, 
+                a.title as quiz_title, a.passing_score,
+                l.id as lesson_id, l.title as lesson_title,
+                aa.score, aa.percentage, aa.passed, 
+                aa.total_correct, aa.total_wrong, aa.total_unanswered,
+                aa.duration_seconds, aa.status, aa.started_at, aa.submitted_at
+         FROM assessment_attempts aa
+         JOIN assessments a ON aa.assessment_id = a.id
+         LEFT JOIN lessons l ON a.lesson_id = l.id
+         WHERE aa.user_id = ? AND a.course_id = ?
+         ORDER BY aa.submitted_at DESC`,
+        [userId, crs.course_id]
+      );
+
       result.push({
         ...crs,
-        modules
+        modules,
+        quiz_sessions: courseQuizSessions,
+        quizSessions: courseQuizSessions
       });
     }
 
@@ -1061,7 +1180,7 @@ export const getQuizQuestions = async (req: Request, res: Response) => {
 
     // 2. Fetch questions
     const [questions] = await pool.query<RowDataPacket[]>(
-      `SELECT id, assessment_section_id, question_type_id, question_code, question_text, explanation, point, question_order, status, question_image 
+      `SELECT id, assessment_section_id, question_type_id, question_code, question_text, explanation, point, question_order, shuffle_option, status, question_image 
        FROM questions 
        WHERE assessment_section_id IN (${sectionIds.map(() => '?').join(',')}) AND status = 'ACTIVE' 
        ORDER BY question_order ASC`,
@@ -1107,6 +1226,7 @@ export const createQuizQuestion = async (req: Request, res: Response) => {
     questionOrder, question_order,
     status,
     questionImage, question_image,
+    shuffleOption, shuffle_option,
     options, pairs, matchingPairs, matching_pairs
   } = req.body;
 
@@ -1117,6 +1237,9 @@ export const createQuizQuestion = async (req: Request, res: Response) => {
   const finalOrder = questionOrder ?? question_order ?? 1;
   const finalStatus = status || 'ACTIVE';
   const img = questionImage !== undefined ? questionImage : question_image || null;
+
+  const rawShuffleOpt = shuffleOption !== undefined ? shuffleOption : (shuffle_option !== undefined ? shuffle_option : 1);
+  const finalShuffleOption = rawShuffleOpt ? 1 : 0;
 
   const connection = await pool.getConnection();
   try {
@@ -1139,9 +1262,9 @@ export const createQuizQuestion = async (req: Request, res: Response) => {
     }
 
     const [result] = await connection.query<ResultSetHeader>(
-      `INSERT INTO questions (assessment_section_id, question_type_id, question_code, question_text, explanation, point, question_order, status, question_image) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [sectionId, finalTypeId, finalCode, finalText, explanation || '', finalPoint, finalOrder, finalStatus, img]
+      `INSERT INTO questions (assessment_section_id, question_type_id, question_code, question_text, explanation, point, question_order, shuffle_option, status, question_image) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [sectionId, finalTypeId, finalCode, finalText, explanation || '', finalPoint, finalOrder, finalShuffleOption, finalStatus, img]
     );
     const questionId = result.insertId;
 
@@ -1191,6 +1314,7 @@ export const updateQuizQuestion = async (req: Request, res: Response) => {
     questionOrder, question_order,
     status,
     questionImage, question_image,
+    shuffleOption, shuffle_option,
     options, pairs, matchingPairs, matching_pairs
   } = req.body;
 
@@ -1220,6 +1344,12 @@ export const updateQuizQuestion = async (req: Request, res: Response) => {
     addUpdate('point', point !== undefined ? Number(point) : undefined);
     addUpdate('question_order', finalOrder);
     addUpdate('status', status);
+
+    const rawShuffleOpt = shuffleOption !== undefined ? shuffleOption : shuffle_option;
+    if (rawShuffleOpt !== undefined) {
+      addUpdate('shuffle_option', rawShuffleOpt ? 1 : 0);
+    }
+
     if (questionImage !== undefined) {
       addUpdate('question_image', questionImage);
     } else if (question_image !== undefined) {

@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import pool from '../config/db';
 import { AuthRequest } from '../middleware/auth';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
+import { getLevelByXp } from '../services/levelService';
+import { getActiveSeason } from '../services/seasonService';
 
 const sendVerificationEmail = async (email: string, fullName: string, code: string) => {
   const smtpHost = process.env.SMTP_HOST || 'mail.erwinsyahrudin.online';
@@ -336,29 +338,34 @@ export const login = async (req: AuthRequest, res: Response) => {
       { expiresIn: '24h' }
     );
 
+    const activeSeason = await getActiveSeason();
+
     // Fetch user statistics (XP and level)
     const [statsRows] = await pool.query<RowDataPacket[]>(
       'SELECT xp, level FROM user_statistics WHERE user_id = ?',
       [user.id]
     );
     let xp = Number(statsRows[0]?.xp || 0);
-    let level = Number(statsRows[0]?.level || 1);
 
-    if (xp === 0) {
+    // If XP is 0 in stats, check if there are current-season transactions
+    if (xp === 0 && activeSeason) {
       const [txRows] = await pool.query<RowDataPacket[]>(
-        'SELECT COALESCE(SUM(xp), 0) as total_xp FROM xp_transactions WHERE user_id = ?',
-        [user.id]
+        'SELECT COALESCE(SUM(xp), 0) as total_xp FROM xp_transactions WHERE user_id = ? AND season_id = ?',
+        [user.id, activeSeason.id]
       );
       const totalTxXp = Number(txRows[0]?.total_xp || 0);
       if (totalTxXp > 0) {
         xp = totalTxXp;
-        level = Math.floor(xp / 200) + 1;
-        await pool.query(
-          'INSERT INTO user_statistics (user_id, xp, level) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE xp = ?, level = ?',
-          [user.id, xp, level, xp, level]
-        );
       }
     }
+
+    const progression = await getLevelByXp(xp);
+    const level = progression.level;
+
+    await pool.query(
+      'INSERT INTO user_statistics (user_id, xp, level) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE xp = ?, level = ?',
+      [user.id, xp, level, xp, level]
+    );
 
     res.json({
       message: 'Login successful',
@@ -370,7 +377,12 @@ export const login = async (req: AuthRequest, res: Response) => {
         email: user.email,
         username: user.username,
         xp,
-        level
+        level,
+        levelName: progression.levelName,
+        badgeIcon: progression.badgeIcon,
+        nextLevel: progression.nextLevel,
+        nextLevelName: progression.nextLevelName,
+        levelProgressPercent: progression.progressPercent
       }
     });
   } catch (error: any) {
@@ -399,10 +411,12 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
        return;
     }
 
-    // Fetch & calculate user statistics (derive from official XP transactions and user stats)
+    const activeSeason = await getActiveSeason();
+
+    // Fetch & calculate user statistics for current season
     const [txRows] = await pool.query<RowDataPacket[]>(
-      'SELECT COALESCE(SUM(xp), 0) as total_tx_xp FROM xp_transactions WHERE user_id = ?',
-      [req.user.id]
+      'SELECT COALESCE(SUM(xp), 0) as total_tx_xp FROM xp_transactions WHERE user_id = ? AND (season_id = ? OR season_id IS NULL)',
+      [req.user.id, activeSeason?.id || 0]
     );
     const totalTxXp = Number(txRows[0]?.total_tx_xp || 0);
 
@@ -414,7 +428,8 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
 
     // Total XP is derived strictly from official transactions or recorded user_statistics
     const xp = Math.max(dbStatsXp, totalTxXp);
-    const level = Math.max(1, Math.floor(xp / 200) + 1);
+    const progression = await getLevelByXp(xp);
+    const level = progression.level;
 
     // Upsert into user_statistics to keep database synchronized
     await pool.query(
@@ -438,6 +453,20 @@ export const getProfile = async (req: AuthRequest, res: Response) => {
       ...profileData[0],
       xp,
       level,
+      levelName: progression.levelName,
+      badgeIcon: progression.badgeIcon,
+      nextLevel: progression.nextLevel,
+      nextLevelName: progression.nextLevelName,
+      nextLevelMinXp: progression.nextLevelMinXp,
+      xpNeededForNext: progression.xpNeededForNext,
+      levelProgressPercent: progression.progressPercent,
+      activeSeason: activeSeason ? {
+        id: activeSeason.id,
+        title: activeSeason.title,
+        code: activeSeason.code,
+        endDate: activeSeason.end_date,
+        resetScheduleType: activeSeason.reset_schedule_type
+      } : null,
       enrollments: enrollmentRows
     });
   } catch (error: any) {
@@ -720,6 +749,8 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     );
 
     const [statsRows] = await pool.query<RowDataPacket[]>('SELECT xp, level FROM user_statistics WHERE user_id = ?', [userId]);
+    const currentXp = Number(statsRows[0]?.xp || 0);
+    const progression = await getLevelByXp(currentXp);
 
     res.json({
       message: 'Profil berhasil diperbarui!',
@@ -731,8 +762,13 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
         username: updatedData[0].username,
         phone: updatedData[0].phone,
         avatar: updatedData[0].avatar,
-        xp: Number(statsRows[0]?.xp || 0),
-        level: Number(statsRows[0]?.level || 1),
+        xp: currentXp,
+        level: progression.level,
+        levelName: progression.levelName,
+        badgeIcon: progression.badgeIcon,
+        nextLevel: progression.nextLevel,
+        nextLevelName: progression.nextLevelName,
+        levelProgressPercent: progression.progressPercent,
         profile: updatedData[0]
       }
     });

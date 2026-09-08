@@ -144,13 +144,16 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
       },
       QuizCreateDto: {
         type: 'object',
-        required: ['title', 'courseId'],
+        required: ['title'],
         properties: {
           title: { type: 'string', example: 'Unit 1 Grammar Mastery Quiz' },
           description: { type: 'string', example: 'Evaluate your understanding of unit 1 concepts.' },
+          instruction: { type: 'string', example: 'Pilihlah jawaban yang paling tepat.' },
           courseId: { type: 'integer', example: 1 },
           lessonId: { type: 'integer', example: 1 },
           assessmentTypeCode: { type: 'string', enum: ['QUIZ', 'EXAM', 'PLACEMENT', 'MINI_QUIZ'], example: 'QUIZ' },
+          random_question: { type: 'boolean', default: true, description: 'Acak urutan soal (pertanyaan) untuk student' },
+          shuffle_option: { type: 'boolean', default: true, description: 'Acak opsi pilihan jawaban untuk semua soal dalam kuis ini' },
           timeLimitMinutes: { type: 'integer', example: 20 },
           passingScore: { type: 'integer', example: 70 },
           maxAttempts: { type: 'integer', example: 3 }
@@ -163,6 +166,7 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
           questionText: { type: 'string', example: 'What is the correct past tense of "go"?' },
           questionType: { type: 'string', enum: ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'MATCHING', 'FILL_BLANK', 'ESSAY'], example: 'MULTIPLE_CHOICE' },
           points: { type: 'number', example: 10 },
+          shuffle_option: { type: 'boolean', default: true, description: 'Acak opsi pilihan untuk butir soal spesifik ini' },
           explanation: { type: 'string', example: '"Went" is the irregular past tense form of "go".' },
           options: {
             type: 'array',
@@ -277,6 +281,35 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
           isActive: { type: 'boolean', example: true },
           sortOrder: { type: 'integer', example: 1 }
         }
+      },
+      VocabularyCreateDto: {
+        type: 'object',
+        required: ['term'],
+        properties: {
+          term: { type: 'string', example: 'Phenomenal' },
+          translation: { type: 'string', example: 'Luar biasa' },
+          phoneticIpa: { type: 'string', example: '/fəˈnɑmənəɫ/' },
+          contextSentence: { type: 'string', example: 'She gave a phenomenal speech.' },
+          notes: { type: 'string', example: 'Kata sifat tingkat tinggi' },
+          masteryLevel: { type: 'string', enum: ['NEW', 'LEARNING', 'MASTERED'], default: 'NEW' }
+        }
+      },
+      VocabularyUpdateDto: {
+        type: 'object',
+        properties: {
+          translation: { type: 'string', example: 'Luar biasa / istimewa' },
+          phoneticIpa: { type: 'string', example: '/fəˈnɑmənəɫ/' },
+          contextSentence: { type: 'string', example: 'She gave a phenomenal speech.' },
+          notes: { type: 'string', example: 'Sudah sangat hafal.' },
+          masteryLevel: { type: 'string', enum: ['NEW', 'LEARNING', 'MASTERED'], example: 'MASTERED' }
+        }
+      },
+      VocabularyCheckDuplicateDto: {
+        type: 'object',
+        required: ['term'],
+        properties: {
+          term: { type: 'string', example: 'Phenomenal' }
+        }
       }
     }
   },
@@ -286,6 +319,7 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
     { name: 'Courses', description: 'Browse courses, landing page, reviews, announcements & attachments' },
     { name: 'Payment & Orders', description: 'Checkout, Flip gateway, Scalev webhooks, & manual proofs' },
     { name: 'Study & Learning', description: 'Lesson viewer, video progress tracking, bookmarks, leaderboard' },
+    { name: 'Room Vocabulary (Kamus Pribadi)', description: 'Personal vocabulary room for each student. Automatically collects words from all quiz types and AI Speaking, tracks duplicate encounters with timeline logging, and allows mastery management.' },
     { name: 'Quizzes & Assessments', description: 'Interactive quizzes, question formats & attempt submissions' },
     { name: 'Speaking AI & Pronunciation', description: 'Speaking tests, Edge TTS voice synthesis, voices list & STT' },
     { name: 'Certificates', description: 'Claim course certificate & public QR verification' },
@@ -295,8 +329,10 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
     { name: 'H5P Interactive Content', description: 'H5P rich media editor, media upload, interactive quizzes & scoring' },
     { name: 'Media Library', description: 'TTS audio generator, multi-speaker dialogue builder & uploads' },
     { name: 'Tutor Portal', description: 'Tutor reviews, grading submissions & full content authoring' },
-    { name: 'Admin Panel', description: 'Full platform management: users, courses, modules, lessons, quizzes, speaking, certs, email hub, scalev, analytics' }
+    { name: 'Admin Panel', description: 'Full platform management: users, courses, modules, lessons, quizzes, speaking, certs, email hub, scalev, analytics' },
+    { name: 'Gamification & Seasons', description: 'Leaderboard seasons, auto & manual resets, student personal season history, and dynamic level progression ladders' }
   ],
+
   paths: {
     // ----------------------------------------------------
     // HEALTH
@@ -588,6 +624,78 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
         responses: { 200: { description: 'Lesson study details' } }
       }
     },
+    '/api/study/my-progress': {
+      get: {
+        tags: ['Study & Learning'],
+        summary: 'Get student overall learning progress, course completion, and completed quiz sessions table',
+        description: 'Returns the full learning progress for the authenticated student including enrolled courses, module progress, quiz statistics, and the complete table of finished quiz sessions (attempts).',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'Student learning progress and quiz sessions',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    userId: { type: 'integer', example: 5 },
+                    courses: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          course_id: { type: 'integer' },
+                          course_title: { type: 'string' },
+                          course_slug: { type: 'string' },
+                          overall_progress: { type: 'number' },
+                          completed_module: { type: 'integer' },
+                          total_module: { type: 'integer' }
+                        }
+                      }
+                    },
+                    quiz_sessions: {
+                      type: 'array',
+                      description: 'Tabel sesi kuis yang telah dikerjakan oleh student',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          attempt_id: { type: 'integer', example: 42 },
+                          assessment_id: { type: 'integer', example: 10 },
+                          quiz_title: { type: 'string', example: 'Past Tense Mastery Quiz' },
+                          passing_score: { type: 'number', example: 70 },
+                          course_title: { type: 'string', example: 'General English Foundation' },
+                          lesson_title: { type: 'string', example: 'Simple Past Practice' },
+                          score: { type: 'number', example: 85 },
+                          percentage: { type: 'number', example: 85.0 },
+                          passed: { type: 'boolean', example: true },
+                          total_correct: { type: 'integer', example: 8 },
+                          total_wrong: { type: 'integer', example: 2 },
+                          total_unanswered: { type: 'integer', example: 0 },
+                          duration_seconds: { type: 'integer', example: 240 },
+                          status: { type: 'string', example: 'FINISHED' },
+                          started_at: { type: 'string', format: 'date-time' },
+                          submitted_at: { type: 'string', format: 'date-time' }
+                        }
+                      }
+                    },
+                    quizStats: {
+                      type: 'object',
+                      properties: {
+                        totalAttempts: { type: 'integer', example: 12 },
+                        passedAttempts: { type: 'integer', example: 10 },
+                        failedAttempts: { type: 'integer', example: 2 },
+                        averageScore: { type: 'number', example: 82.5 },
+                        highestScore: { type: 'number', example: 100 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     '/api/study/video-progress': {
       post: {
         tags: ['Study & Learning'],
@@ -631,12 +739,54 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
     },
     '/api/study/leaderboard': {
       get: {
-        tags: ['Study & Learning'],
-        summary: 'Get user leaderboard rankings and XP',
+        tags: ['Gamification & Seasons', 'Study & Learning'],
+        summary: 'Get live leaderboard rankings for current active season',
+        description: 'Returns list of students ranked by current season XP with level number, dynamic level name, badge icon, and season metadata.',
         security: [{ bearerAuth: [] }],
-        responses: { 200: { description: 'Leaderboard list' } }
+        parameters: [
+          { name: 'format', in: 'query', required: false, schema: { type: 'string', enum: ['array', 'rich'] }, description: 'Use "rich" to get season info and rankings object' }
+        ],
+        responses: { 200: { description: 'Leaderboard list with dynamic level names and season details' } }
       }
     },
+    '/api/study/season/current': {
+      get: {
+        tags: ['Gamification & Seasons'],
+        summary: 'Get active season details and countdown',
+        description: 'Returns active season title, code, schedule type, and countdown of remaining days/hours.',
+        security: [{ bearerAuth: [] }],
+        responses: { 200: { description: 'Active season details' } }
+      }
+    },
+    '/api/study/seasons/my-history': {
+      get: {
+        tags: ['Gamification & Seasons', 'Student Portal'],
+        summary: 'Riwayat Season Saya (Get logged-in student personal season history)',
+        description: 'Returns all completed seasons the student participated in with final rank, final XP, level name, podium medal, career stats, and current live standing.',
+        security: [{ bearerAuth: [] }],
+        responses: { 200: { description: 'Student personal season history and career summary' } }
+      }
+    },
+    '/api/study/seasons/{id}/leaderboard': {
+      get: {
+        tags: ['Gamification & Seasons'],
+        summary: 'View past season archived leaderboard and podium',
+        description: 'View full leaderboard and podium rankings from an archived past season.',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' }, description: 'Season ID' }],
+        responses: { 200: { description: 'Past season leaderboard and podium' } }
+      }
+    },
+    '/api/study/levels': {
+      get: {
+        tags: ['Gamification & Seasons'],
+        summary: 'Get public level progression ladder',
+        description: 'Returns all configured levels (Level 1, 2, 3...) with required min XP, badge icons, and titles configured by admin.',
+        security: [{ bearerAuth: [] }],
+        responses: { 200: { description: 'List of gamification levels' } }
+      }
+    },
+
 
     // ----------------------------------------------------
     // QUIZZES & ASSESSMENTS
@@ -685,17 +835,32 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
                     studentAnswer: { type: 'string', example: 'Good morning ➔ Selamat pagi' },
                     correctAnswer: { type: 'string', example: 'Good morning ➔ Selamat pagi' },
                     explanation: { type: 'string', example: 'Good morning is a greeting used until noon.' },
-                    feedback: { type: 'string', example: '🎉 Jawaban Anda Benar! Kerja bagus.' },
+                    feedback: { type: 'string', example: '🎉 Luar biasa! Semua pasangan (3/3) berhasil dicocokkan dengan benar!' },
+                    matchingStats: {
+                      type: 'object',
+                      properties: {
+                        totalPairs: { type: 'integer', example: 3 },
+                        correctPairs: { type: 'integer', example: 3 },
+                        incorrectPairs: { type: 'integer', example: 0 },
+                        accuracyPercent: { type: 'number', example: 100 }
+                      }
+                    },
                     pairs: {
                       type: 'array',
+                      description: 'Kolom feedback & status per-pasangan untuk soal Matching Pairs',
                       items: {
                         type: 'object',
                         properties: {
-                          id: { type: 'integer' },
-                          label: { type: 'string' },
-                          studentMatch: { type: 'string' },
-                          correctMatch: { type: 'string' },
-                          isPairMatch: { type: 'boolean' }
+                          id: { type: 'integer', example: 15 },
+                          label: { type: 'string', example: 'Good morning' },
+                          premise: { type: 'string', example: 'Good morning' },
+                          studentMatch: { type: 'string', example: 'Selamat pagi' },
+                          correctMatch: { type: 'string', example: 'Selamat pagi' },
+                          isPairMatch: { type: 'boolean', example: true },
+                          status: { type: 'string', enum: ['CORRECT', 'INCORRECT', 'UNMATCHED'], example: 'CORRECT' },
+                          feedback: { type: 'string', example: '✅ Benar! "Good morning" berpasangan tepat dengan "Selamat pagi".' },
+                          pairFeedback: { type: 'string', example: '✅ Benar! "Good morning" berpasangan tepat dengan "Selamat pagi".' },
+                          earnedPoint: { type: 'number', example: 10 }
                         }
                       }
                     },
@@ -736,9 +901,52 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
     '/api/quizzes/attempts/history': {
       get: {
         tags: ['Quizzes & Assessments'],
-        summary: 'Get student quiz attempt history',
+        summary: 'Get student quiz session & attempt history (filterable)',
+        description: 'Returns the list of quiz sessions completed by the student with detailed scores, completion status, elapsed duration, and answer counts. Allows filtering by assessmentId, courseId, lessonId, and for Admin/Tutor, by userId.',
         security: [{ bearerAuth: [] }],
-        responses: { 200: { description: 'Attempts history' } }
+        parameters: [
+          { name: 'assessmentId', in: 'query', required: false, schema: { type: 'integer' }, description: 'Filter by specific quiz/assessment ID' },
+          { name: 'courseId', in: 'query', required: false, schema: { type: 'integer' }, description: 'Filter by course ID' },
+          { name: 'lessonId', in: 'query', required: false, schema: { type: 'integer' }, description: 'Filter by lesson ID' },
+          { name: 'userId', in: 'query', required: false, schema: { type: 'integer' }, description: 'View specific student sessions (Admin & Tutor only)' }
+        ],
+        responses: {
+          200: {
+            description: 'List of completed quiz sessions (attempts)',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'integer', example: 101 },
+                      attempt_id: { type: 'integer', example: 101 },
+                      assessment_id: { type: 'integer', example: 10 },
+                      quiz_title: { type: 'string', example: 'Unit 2 Mastery Quiz' },
+                      passing_score: { type: 'number', example: 70 },
+                      course_id: { type: 'integer', example: 1 },
+                      course_title: { type: 'string', example: 'General English Foundation' },
+                      course_slug: { type: 'string', example: 'general-english' },
+                      lesson_id: { type: 'integer', example: 5 },
+                      lesson_title: { type: 'string', example: 'Simple Past Practice' },
+                      score: { type: 'number', example: 90 },
+                      percentage: { type: 'number', example: 90.0 },
+                      passed: { type: 'boolean', example: true },
+                      total_correct: { type: 'integer', example: 9 },
+                      total_wrong: { type: 'integer', example: 1 },
+                      total_unanswered: { type: 'integer', example: 0 },
+                      duration_seconds: { type: 'integer', example: 320 },
+                      status: { type: 'string', example: 'FINISHED' },
+                      started_at: { type: 'string', format: 'date-time' },
+                      submitted_at: { type: 'string', format: 'date-time' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     '/api/quizzes/attempts/{attemptId}': {
@@ -2423,9 +2631,407 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
         security: [{ bearerAuth: [] }],
         responses: { 200: { description: 'Analytics breakdown' } }
       }
+    },
+
+    // ----------------------------------------------------
+    // GAMIFICATION: SEASONS & LEVELS (ADMIN)
+    // ----------------------------------------------------
+    '/api/admin/seasons': {
+      get: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'List all seasons and active season status (Admin)',
+        description: 'Returns all past and active leaderboard seasons with participant counts.',
+        security: [{ bearerAuth: [] }],
+        responses: { 200: { description: 'List of seasons' } }
+      }
+    },
+    '/api/admin/seasons/current': {
+      get: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'Get current active season details, participant count, and countdown (Admin)',
+        security: [{ bearerAuth: [] }],
+        responses: { 200: { description: 'Active season metadata and countdown' } }
+      }
+    },
+    '/api/admin/seasons/schedule': {
+      put: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'Update active season schedule dates & recurrence type (Admin)',
+        description: 'Allows Admin to change title, start_date, end_date, or reset_schedule_type (MONTHLY, QUARTERLY, CUSTOM).',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string', example: 'Season 3 - Musim Belajar Q4' },
+                  start_date: { type: 'string', format: 'date-time' },
+                  end_date: { type: 'string', format: 'date-time' },
+                  reset_schedule_type: { type: 'string', enum: ['MANUAL', 'MONTHLY', 'QUARTERLY', 'CUSTOM'], example: 'MONTHLY' }
+                }
+              }
+            }
+          }
+        },
+        responses: { 200: { description: 'Season schedule updated' } }
+      }
+    },
+    '/api/admin/seasons/reset': {
+      post: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'Manual Reset Season Leaderboard (Admin)',
+        description: 'Manually archives current rankings to history, resets ALL students XP to 0 and level to 1, and initializes a new active season immediately.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: false,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  title: { type: 'string', example: 'Season 4 - Musim Baru Penuh Semangat' },
+                  code: { type: 'string', example: 'SEASON-2026-10' },
+                  reset_schedule_type: { type: 'string', enum: ['MANUAL', 'MONTHLY', 'QUARTERLY', 'CUSTOM'] },
+                  start_date: { type: 'string', format: 'date-time' },
+                  end_date: { type: 'string', format: 'date-time' }
+                }
+              }
+            }
+          }
+        },
+        responses: { 200: { description: 'Season reset executed, student XP reset to 0, and new season active' } }
+      }
+    },
+    '/api/admin/seasons/{id}/history': {
+      get: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'Get detailed season history, podium champions, and analytics (Admin)',
+        description: 'View full archive of an expired season with top 3 podium medals, total XP analytics, and student ranking records.',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' }, description: 'Season ID' }],
+        responses: { 200: { description: 'Detailed season history and rankings' } }
+      }
+    },
+    '/api/admin/seasons/student/{userId}': {
+      get: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'Get complete season history for a specific student (Admin)',
+        description: 'Admin can inspect past season performance, podium finishes, best rank, and current standing of any student.',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'userId', in: 'path', required: true, schema: { type: 'integer' }, description: 'Student User ID' }],
+        responses: { 200: { description: 'Student season history report' } }
+      }
+    },
+    '/api/admin/levels': {
+      get: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'Get all configured gamification levels (Admin)',
+        description: 'Lists all levels (1, 2, 3...) sorted ascending with names, min XP, and badges.',
+        security: [{ bearerAuth: [] }],
+        responses: { 200: { description: 'List of gamification levels' } }
+      },
+      post: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'Create a new gamification level (Admin)',
+        description: 'Admin adds a new level tier with custom name, min XP threshold, badge icon, and description.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['level_number', 'name', 'min_xp'],
+                properties: {
+                  level_number: { type: 'integer', example: 11 },
+                  name: { type: 'string', example: 'Mythic Master' },
+                  min_xp: { type: 'integer', example: 8000 },
+                  badge_icon: { type: 'string', example: '👑' },
+                  description: { type: 'string', example: 'Tingkat tertinggi kemampuan bahasa Inggris' }
+                }
+              }
+            }
+          }
+        },
+        responses: { 201: { description: 'Level created successfully' } }
+      }
+    },
+    '/api/admin/levels/bulk': {
+      post: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'Bulk save entire gamification levels ladder (Admin)',
+        description: 'Admin can reorder, rename, or adjust all levels in a single request.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['levels'],
+                properties: {
+                  levels: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      required: ['level_number', 'name', 'min_xp'],
+                      properties: {
+                        id: { type: 'integer' },
+                        level_number: { type: 'integer' },
+                        name: { type: 'string' },
+                        min_xp: { type: 'integer' },
+                        badge_icon: { type: 'string' },
+                        description: { type: 'string' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: { 200: { description: 'All levels updated successfully' } }
+      }
+    },
+    '/api/admin/levels/{id}': {
+      put: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'Update an existing level name and threshold (Admin)',
+        description: 'Admin modifies level name, min XP, badge icon, or description by ID.',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['level_number', 'name', 'min_xp'],
+                properties: {
+                  level_number: { type: 'integer', example: 1 },
+                  name: { type: 'string', example: 'Pejuang Pemula' },
+                  min_xp: { type: 'integer', example: 0 },
+                  badge_icon: { type: 'string', example: '🌱' },
+                  description: { type: 'string', example: 'Deskripsi baru' }
+                }
+              }
+            }
+          }
+        },
+        responses: { 200: { description: 'Level updated successfully' } }
+      },
+      delete: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'Delete a level tier (Admin)',
+        description: 'Deletes a level tier (Level 1 cannot be deleted).',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'Level deleted successfully' } }
+      }
+    },
+    '/api/study/vocabulary': {
+      get: {
+        tags: ['Room Vocabulary (Kamus Pribadi)'],
+        summary: 'Get Student Room Vocabulary & Metrics',
+        description: 'Mengambil seluruh daftar kosakata di room vocabulary milik student yang login. Otomatis terakumulasi dari Quiz & AI Speaking. Mendukung filter duplikasi, sumber, tingkat penguasaan, pencarian, dan pagination.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'search', in: 'query', required: false, schema: { type: 'string' }, description: 'Cari kata atau terjemahan' },
+          { name: 'source_type', in: 'query', required: false, schema: { type: 'string', enum: ['QUIZ', 'SPEAKING', 'MANUAL'] }, description: 'Filter berdasarkan asal perjumpaan' },
+          { name: 'mastery_level', in: 'query', required: false, schema: { type: 'string', enum: ['NEW', 'LEARNING', 'MASTERED'] }, description: 'Filter tingkat penguasaan' },
+          { name: 'only_duplicates', in: 'query', required: false, schema: { type: 'boolean' }, description: 'Set true untuk melihat hanya kata/kalimat yang pernah duplikat/ditemui berulang kali' },
+          { name: 'page', in: 'query', required: false, schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', required: false, schema: { type: 'integer', default: 20 } }
+        ],
+        responses: {
+          200: {
+            description: 'Room vocabulary list and room summary',
+            content: {
+              'application/json': {
+                example: {
+                  success: true,
+                  message: 'Room vocabulary retrieved successfully',
+                  data: {
+                    summary: {
+                      totalWords: 15,
+                      duplicateWordsCount: 4,
+                      quizWordsCount: 10,
+                      speakingWordsCount: 4,
+                      manualWordsCount: 1,
+                      masteredCount: 3,
+                      learningCount: 7,
+                      newCount: 5
+                    },
+                    items: [
+                      {
+                        id: 1,
+                        term: 'Phenomenal',
+                        normalizedTerm: 'phenomenal',
+                        translation: 'Luar biasa',
+                        phoneticIpa: '/fəˈnɑmənəɫ/',
+                        contextSentence: 'She gave a phenomenal speech.',
+                        sourceType: 'SPEAKING',
+                        encounterCount: 3,
+                        isDuplicate: true,
+                        masteryLevel: 'LEARNING',
+                        duplicateNotice: 'Kata / kalimat "phenomenal" sudah pernah dijumpai 3 kali!'
+                      }
+                    ],
+                    pagination: { page: 1, limit: 20, total: 15, totalPages: 1 }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      post: {
+        tags: ['Room Vocabulary (Kamus Pribadi)'],
+        summary: 'Add Vocabulary Item Manually to Room',
+        description: 'Menambahkan kata/frasa baru secara manual ke dalam room vocabulary pribadi student.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['term'],
+                properties: {
+                  term: { type: 'string', example: 'Serendipity' },
+                  translation: { type: 'string', example: 'Keberuntungan yang tidak disengaja' },
+                  phoneticIpa: { type: 'string', example: '/ˌsɛrənˈdɪpɪti/' },
+                  contextSentence: { type: 'string', example: 'Finding this book was pure serendipity.' },
+                  notes: { type: 'string', example: 'Kata indah untuk esai bahasa Inggris.' },
+                  masteryLevel: { type: 'string', enum: ['NEW', 'LEARNING', 'MASTERED'], default: 'NEW' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          201: { description: 'Vocabulary added to room' },
+          400: { description: 'Term required' }
+        }
+      }
+    },
+    '/api/study/vocabulary/check': {
+      post: {
+        tags: ['Room Vocabulary (Kamus Pribadi)'],
+        summary: 'Check if Word/Sentence is Already in Student Room (Duplicate Check)',
+        description: 'Memeriksa apakah kata atau kalimat sudah pernah tersimpan di room vocabulary student, lengkap dengan jumlah kali ditemui.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['term'],
+                properties: {
+                  term: { type: 'string', example: 'Phenomenal' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Duplicate status check result',
+            content: {
+              'application/json': {
+                example: {
+                  success: true,
+                  data: {
+                    term: 'Phenomenal',
+                    normalizedTerm: 'phenomenal',
+                    isDuplicate: true,
+                    encounterCount: 3,
+                    message: 'Kata "Phenomenal" sudah tersimpan di kamus vocab Anda dan pernah dijumpai 3 kali.',
+                    existingItem: {
+                      id: 1,
+                      translation: 'Luar biasa',
+                      phoneticIpa: '/fəˈnɑmənəɫ/',
+                      masteryLevel: 'LEARNING'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/study/vocabulary/{id}': {
+      get: {
+        tags: ['Room Vocabulary (Kamus Pribadi)'],
+        summary: 'Get Vocabulary Detail with Encounter Timeline',
+        description: 'Melihat detail item kosakata beserta riwayat jejak pertemuan (quiz attempt, speaking test prompt, dll).',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: {
+          200: { description: 'Vocabulary details with encounter logs' },
+          404: { description: 'Vocabulary item not found' }
+        }
+      },
+      put: {
+        tags: ['Room Vocabulary (Kamus Pribadi)'],
+        summary: 'Update Vocabulary Item in Room',
+        description: 'Memperbarui arti/terjemahan, catatan pribadi, kalimat konteks, atau tingkat penguasaan (NEW, LEARNING, MASTERED).',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  translation: { type: 'string', example: 'Luar biasa / istimewa' },
+                  contextSentence: { type: 'string', example: 'We had phenomenal weather.' },
+                  notes: { type: 'string', example: 'Hafalkan untuk speaking test part 3.' },
+                  masteryLevel: { type: 'string', enum: ['NEW', 'LEARNING', 'MASTERED'], example: 'MASTERED' }
+                }
+              }
+            }
+          }
+        },
+        responses: { 200: { description: 'Vocabulary updated successfully' } }
+      },
+      delete: {
+        tags: ['Room Vocabulary (Kamus Pribadi)'],
+        summary: 'Delete Vocabulary Item from Room',
+        description: 'Menghapus kata dari room vocabulary student.',
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'Vocabulary item deleted successfully' } }
+      }
+    },
+    '/api/admin/vocabulary/student/{userId}': {
+      get: {
+        tags: ['Room Vocabulary (Kamus Pribadi)', 'Admin Panel'],
+        summary: 'View Student Vocabulary Room (Admin)',
+        description: 'Admin dapat memeriksa isi kamus vocabulary dan progres penguasaan kata dari seorang student tertentu.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'userId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID Student' },
+          { name: 'search', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'source_type', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'mastery_level', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'only_duplicates', in: 'query', required: false, schema: { type: 'boolean' } },
+          { name: 'page', in: 'query', required: false, schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', required: false, schema: { type: 'integer', default: 20 } }
+        ],
+        responses: {
+          200: { description: 'Target student vocabulary room data' }
+        }
+      }
     }
   }
 };
+
 
 // Custom Swagger UI styling for sleek, modern appearance
 export const swaggerUiOptions: swaggerUi.SwaggerOptions = {

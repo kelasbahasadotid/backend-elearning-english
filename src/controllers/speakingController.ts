@@ -9,6 +9,8 @@ import { addXpTransaction } from '../utils/xp';
 import { transcribeAndAnalyze } from '../utils/speechEngine';
 import { updateProgressHelper, checkSequentialLessonLock } from '../utils/progress';
 import { resolveVoice, CURATED_VOICES } from '../utils/voiceUtils';
+import { extractVocabFromSpeaking } from '../services/vocabularyService';
+
 
 const TTS_CACHE_DIR = path.join(process.cwd(), 'uploads', 'tts_cache');
 if (!fs.existsSync(TTS_CACHE_DIR)) {
@@ -313,6 +315,22 @@ export const submitAttempt = async (req: AuthRequest, res: Response) => {
     }
 
     await connection.commit();
+
+    // Auto-capture speaking prompt & words into student's personal vocabulary room
+    let vocabCaptured: any[] = [];
+    try {
+      vocabCaptured = await extractVocabFromSpeaking(
+        req.user.id,
+        Number(promptId),
+        testMetaRows[0]?.test_title || `Speaking Test #${speakingTestId}`,
+        promptText,
+        analysis.transcription,
+        analysis.wordDetails || []
+      );
+    } catch (vErr: any) {
+      console.warn('[Vocabulary] Speaking auto-capture error:', vErr.message);
+    }
+
     res.status(201).json({
       message: 'Speaking attempt analyzed successfully',
       attempt: {
@@ -335,8 +353,19 @@ export const submitAttempt = async (req: AuthRequest, res: Response) => {
         },
         wordDetails: analysis.wordDetails || [],
         pronunciationTips: analysis.pronunciationTips || []
+      },
+      vocabularyCollected: {
+        total: vocabCaptured.length,
+        items: vocabCaptured.map(v => ({
+          id: v.item.id,
+          term: v.item.term,
+          isDuplicate: v.isDuplicate,
+          encounterCount: v.item.encounter_count,
+          duplicateMessage: v.duplicateInfo?.message || null
+        }))
       }
     });
+
   } catch (error: any) {
     await connection.rollback();
     res.status(500).json({ error: error.message || 'Internal server error' });

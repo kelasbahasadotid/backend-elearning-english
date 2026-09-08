@@ -60,6 +60,16 @@ import {
   getEmailMessages, createOrSendEmailMessage, updateMessageFolder, deleteEmailMessage,
   syncRoundcubeEmails
 } from '../controllers/emailController';
+import {
+  getSeasons, getCurrentSeason, updateActiveSeasonSchedule, manualResetSeason, getSeasonHistory, getStudentSeasonHistoryAdmin
+} from '../controllers/seasonAdminController';
+
+import {
+  getLevels, createLevel, updateLevel, deleteLevel, bulkUpdateLevels
+} from '../controllers/levelAdminController';
+import { getStudentVocabularyAdmin } from '../controllers/vocabularyController';
+
+
 
 // PPTX LibreOffice Conversion Route
 router.post('/convert-pptx', contentCreator, convertPptxToPdf);
@@ -198,4 +208,25 @@ router.post('/users/bulk-action', adminOnly, bulkUserAction);
 // Analytics Monitoring (Admin Only)
 router.get('/analytics', adminOnly, getAdminAnalytics);
 
+// Gamification: Leaderboard Seasons Management & Reset (Admin Only)
+router.get('/seasons', adminOnly, getSeasons);
+router.get('/seasons/current', adminOnly, getCurrentSeason);
+router.put('/seasons/schedule', adminOnly, updateActiveSeasonSchedule);
+router.post('/seasons/reset', adminOnly, manualResetSeason);
+router.get('/seasons/:id/history', adminOnly, getSeasonHistory);
+router.get('/seasons/student/:userId', adminOnly, getStudentSeasonHistoryAdmin);
+
+
+// Gamification: Levels Progression & Naming (Admin Only)
+router.get('/levels', adminOnly, getLevels);
+router.post('/levels', adminOnly, createLevel);
+router.put('/levels/:id', adminOnly, updateLevel);
+router.delete('/levels/:id', adminOnly, deleteLevel);
+router.post('/levels/bulk', adminOnly, bulkUpdateLevels);
+
+// Student Vocabulary Room Monitoring (Admin Only)
+router.get('/vocabulary/student/:userId', adminOnly, getStudentVocabularyAdmin);
+
 export default router;
+
+
