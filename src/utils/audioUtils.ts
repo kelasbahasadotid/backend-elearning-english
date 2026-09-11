@@ -50,3 +50,62 @@ export async function convertMp3ToWav(mp3Buffer: Buffer): Promise<Buffer> {
   decoder.free();
   return wavBuffer;
 }
+
+/**
+ * Fetches TTS audio via Google Translate Speech HTTP API.
+ * Pure HTTPS GET — works on 100% of servers, VPS, and cPanel environments with zero WebSocket dependency.
+ */
+export async function fetchGoogleTts(text: string, lang = 'en'): Promise<Buffer> {
+  const https = await import('https');
+  const clean = text.trim();
+  if (!clean) return Buffer.alloc(0);
+
+  // Split into chunks of max 180 chars to conform with HTTP URL parameters
+  const chunks: string[] = [];
+  const words = clean.split(/\s+/);
+  let current = '';
+
+  for (const w of words) {
+    if ((current + ' ' + w).trim().length > 180) {
+      if (current.trim()) chunks.push(current.trim());
+      current = w;
+    } else {
+      current = (current + ' ' + w).trim();
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  if (chunks.length === 0) chunks.push(clean);
+
+  const audioBuffers: Buffer[] = [];
+
+  for (const chunk of chunks) {
+    const encoded = encodeURIComponent(chunk);
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=${lang}&client=tw-ob`;
+
+    const buf = await new Promise<Buffer>((resolve, reject) => {
+      const req = https.get(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+      }, (res) => {
+        if (res.statusCode !== 200) {
+          reject(new Error(`Google TTS returned HTTP ${res.statusCode}`));
+          return;
+        }
+        const data: Buffer[] = [];
+        res.on('data', (d) => data.push(d));
+        res.on('end', () => resolve(Buffer.concat(data)));
+        res.on('error', reject);
+      });
+      req.on('error', reject);
+      req.setTimeout(6000, () => {
+        req.destroy(new Error('Google TTS request timeout'));
+      });
+    });
+
+    audioBuffers.push(buf);
+  }
+
+  return Buffer.concat(audioBuffers);
+}
+

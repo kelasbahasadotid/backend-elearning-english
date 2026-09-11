@@ -977,9 +977,9 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
         summary: 'Synthesize speech from text (Edge-TTS POST)',
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object', properties: { text: { type: 'string' }, voice: { type: 'string' }, rate: { type: 'string' }, pitch: { type: 'string' }, format: { type: 'string', example: 'wav' } } } } }
+          content: { 'application/json': { schema: { type: 'object', properties: { text: { type: 'string' }, voice: { type: 'string' }, rate: { type: 'string' }, pitch: { type: 'string' }, format: { type: 'string', example: 'aac' } } } } }
         },
-        responses: { 200: { description: 'Audio stream (audio/wav)' } }
+        responses: { 200: { description: 'Audio stream (audio/aac)' } }
       },
       get: {
         tags: ['Speaking AI & Pronunciation'],
@@ -989,9 +989,9 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
           { name: 'voice', in: 'query', schema: { type: 'string' } },
           { name: 'rate', in: 'query', schema: { type: 'string' } },
           { name: 'pitch', in: 'query', schema: { type: 'string' } },
-          { name: 'format', in: 'query', schema: { type: 'string', example: 'wav' } }
+          { name: 'format', in: 'query', schema: { type: 'string', example: 'aac' } }
         ],
-        responses: { 200: { description: 'Audio stream (audio/wav)' } }
+        responses: { 200: { description: 'Audio stream (audio/aac)' } }
       }
     },
     '/api/speaking/tts/stream': {

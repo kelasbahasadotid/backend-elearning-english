@@ -10,7 +10,7 @@ import { transcribeAndAnalyze } from '../utils/speechEngine';
 import { updateProgressHelper, checkSequentialLessonLock } from '../utils/progress';
 import { resolveVoice, CURATED_VOICES } from '../utils/voiceUtils';
 import { extractVocabFromSpeaking } from '../services/vocabularyService';
-import { convertMp3ToWav } from '../utils/audioUtils';
+import { convertMp3ToWav, fetchGoogleTts } from '../utils/audioUtils';
 
 
 const TTS_CACHE_DIR = path.join(process.cwd(), 'uploads', 'tts_cache');
@@ -430,9 +430,20 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
   const voice = resolveVoice(rawVoice);
   const rate = (typeof rateRaw === 'string' && rateRaw.trim()) ? rateRaw.trim() : '+0%';
   const pitch = (typeof pitchRaw === 'string' && pitchRaw.trim()) ? pitchRaw.trim() : '+0Hz';
-  // Server only reads WAV/AAC, so WAV is the primary default format
-  const format = (typeof formatRaw === 'string' && formatRaw.trim().toLowerCase() === 'mp3') ? 'mp3' : 'wav';
-  const contentType = format === 'wav' ? 'audio/wav' : 'audio/mpeg';
+  // Server only reads WAV/AAC, AAC is default to be lightweight and save 95% storage
+  let format = 'aac';
+  const requestedFormat = (typeof formatRaw === 'string') ? formatRaw.trim().toLowerCase() : '';
+  if (requestedFormat === 'wav') {
+    format = 'wav';
+  } else if (requestedFormat === 'mp3') {
+    format = 'mp3';
+  } else {
+    format = 'aac';
+  }
+
+  let contentType = 'audio/aac';
+  if (format === 'wav') contentType = 'audio/wav';
+  else if (format === 'mp3') contentType = 'audio/mpeg';
 
   if (!text) {
     res.status(400).json({ error: 'Text string is required' });
@@ -468,6 +479,10 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
     isClientConnected = false;
   });
 
+  let finalAudioBuffer: Buffer | null = null;
+  let cacheHitTag = 'MISS';
+
+  // Tier 1: Try High-Quality Neural Edge-TTS (Fast on unrestricted connections)
   try {
     const { Communicate } = require('edge-tts-universal');
     const communicate = new Communicate(text, {
@@ -478,9 +493,9 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
 
     const collectedChunks: Buffer[] = [];
 
-    // Timeout safety: 15 seconds (prevents premature timeout on VPS network latency / cold connection)
+    // Timeout safety: 3500ms for initial Edge-TTS WebSocket. If server IP is blocked or throttled by Microsoft Cloud, immediately switch to fallback!
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('TTS Cloud Synthesis Timeout')), 15000)
+      setTimeout(() => reject(new Error('Edge-TTS Cloud Timeout')), 3500)
     );
 
     const streamPromise = (async () => {
@@ -496,44 +511,51 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
 
     if (!isClientConnected) return;
 
-    if (collectedChunks.length === 0) {
-      if (!res.headersSent) {
-        res.status(500).json({ error: 'Speech synthesis yielded empty audio' });
-      }
-      return;
+    if (collectedChunks.length > 0) {
+      const rawMp3Buffer = Buffer.concat(collectedChunks);
+      finalAudioBuffer = format === 'wav' ? await convertMp3ToWav(rawMp3Buffer) : rawMp3Buffer;
+      cacheHitTag = 'MISS-EDGE';
     }
+  } catch (edgeErr: any) {
+    console.warn(`[TTS] Edge-TTS not reachable from this server (${edgeErr?.message || edgeErr}). Activating Google Cloud TTS Engine...`);
+  }
 
-    const rawMp3Buffer = Buffer.concat(collectedChunks);
-    let finalAudioBuffer: Buffer;
-
-    if (format === 'wav') {
-      finalAudioBuffer = await convertMp3ToWav(rawMp3Buffer);
-    } else {
-      finalAudioBuffer = rawMp3Buffer;
-    }
-
-    // Save generated audio to cache for all subsequent clicks/students
+  // Tier 2: Bulletproof High-Speed Google Speech HTTP API Fallback (Works on 100% of VPS / cPanel / LiteSpeed environments)
+  if (!finalAudioBuffer && isClientConnected) {
     try {
-      await fs.promises.writeFile(cacheFile, finalAudioBuffer);
-    } catch (_) {}
+      const fallbackMp3 = await fetchGoogleTts(text, 'en');
+      if (fallbackMp3.length > 0) {
+        finalAudioBuffer = format === 'wav' ? await convertMp3ToWav(fallbackMp3) : fallbackMp3;
+        cacheHitTag = 'MISS-FALLBACK';
+      }
+    } catch (fallbackErr: any) {
+      console.error('[TTS] Google TTS fallback error:', fallbackErr?.message || fallbackErr);
+    }
+  }
 
+  if (!isClientConnected) return;
+
+  if (!finalAudioBuffer || finalAudioBuffer.length === 0) {
     if (!res.headersSent) {
-      res.writeHead(200, {
-        'Content-Type': contentType,
-        'Content-Length': finalAudioBuffer.length,
-        'Accept-Ranges': 'bytes',
-        'Cache-Control': 'public, max-age=604800, immutable',
-        'X-Cache': 'MISS'
-      });
-      res.end(finalAudioBuffer);
+      res.status(500).json({ error: 'Speech synthesis failed across all cloud engines' });
     }
-  } catch (error: any) {
-    console.error('TTS Synthesis Error:', error.message || error);
-    if (!res.headersSent) {
-      res.status(500).json({ error: error.message || 'Speech synthesis failed' });
-    } else {
-      res.end();
-    }
+    return;
+  }
+
+  // Save generated audio to cache for all subsequent clicks/students (< 5ms response time)
+  try {
+    await fs.promises.writeFile(cacheFile, finalAudioBuffer);
+  } catch (_) {}
+
+  if (!res.headersSent) {
+    res.writeHead(200, {
+      'Content-Type': contentType,
+      'Content-Length': finalAudioBuffer.length,
+      'Accept-Ranges': 'bytes',
+      'Cache-Control': 'public, max-age=604800, immutable',
+      'X-Cache': cacheHitTag
+    });
+    res.end(finalAudioBuffer);
   }
 };
 

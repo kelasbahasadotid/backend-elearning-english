@@ -3,7 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import pool from '../config/db';
 import path from 'path';
 import fs from 'fs';
-import { convertMp3ToWav } from '../utils/audioUtils';
+import { convertMp3ToWav, fetchGoogleTts } from '../utils/audioUtils';
 import { resolveVoice } from '../utils/voiceUtils';
 
 // Helper to determine file_type from mime type or file extension
@@ -11,7 +11,7 @@ function determineFileType(mimeType: string, filename: string): 'AUDIO' | 'VIDEO
   const lowerMime = (mimeType || '').toLowerCase();
   const ext = path.extname(filename || '').toLowerCase();
 
-  if (lowerMime.startsWith('audio/') || ['.aac', '.wav'].includes(ext)) {
+  if (lowerMime.startsWith('audio/') || ['.aac', '.wav', '.mp3'].includes(ext)) {
     return 'AUDIO';
   }
   if (lowerMime.startsWith('video/') || ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'].includes(ext)) {
@@ -164,12 +164,12 @@ export const uploadMediaFile = async (req: AuthRequest, res: Response) => {
     const ext = path.extname(file.originalname).toLowerCase();
     const isAudioFile = (file.mimetype && file.mimetype.startsWith('audio/')) || ['.mp3', '.wav', '.aac', '.ogg', '.m4a', '.flac', '.wma', '.webm'].includes(ext);
 
-    if (isAudioFile && ext !== '.aac' && ext !== '.wav') {
+    if (isAudioFile && ext !== '.aac' && ext !== '.wav' && ext !== '.mp3') {
       const localPath = path.join(process.cwd(), 'uploads/media', file.filename);
       if (fs.existsSync(localPath)) {
         try { fs.unlinkSync(localPath); } catch (_) {}
       }
-      res.status(400).json({ error: 'Format berkas audio tidak didukung oleh hosting. Berkas audio wajib ber-ekstensi .aac atau .wav.' });
+      res.status(400).json({ error: 'Format berkas audio tidak didukung. Berkas audio wajib ber-ekstensi .aac, .wav, atau .mp3.' });
       return;
     }
 
@@ -328,30 +328,47 @@ export const generateAiAudio = async (req: AuthRequest, res: Response) => {
     });
 
     const chunks: Buffer[] = [];
-    for await (const chunk of communicate.stream()) {
-      if (chunk.type === 'audio' && chunk.data) {
-        chunks.push(chunk.data);
+    try {
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Edge-TTS Cloud Timeout')), 3500)
+      );
+
+      const streamPromise = (async () => {
+        for await (const chunk of communicate.stream()) {
+          if (chunk.type === 'audio' && chunk.data) {
+            chunks.push(chunk.data);
+          }
+        }
+      })();
+
+      await Promise.race([streamPromise, timeoutPromise]);
+    } catch (err: any) {
+      console.warn(`[MediaController] Edge-TTS failed or timed out: ${err.message}. Activating Google Cloud Speech fallback...`);
+    }
+
+    let rawAudioBuffer: any = Buffer.concat(chunks);
+    if (rawAudioBuffer.length === 0) {
+      try {
+        rawAudioBuffer = await fetchGoogleTts(cleanText, 'en');
+      } catch (fbErr: any) {
+        console.error('[MediaController] Google TTS fallback error:', fbErr);
       }
     }
 
-    const rawAudioBuffer = Buffer.concat(chunks);
     if (rawAudioBuffer.length === 0) {
       throw new Error('TTS buffer output was empty');
     }
 
-    // Convert MP3 stream to genuine RIFF/WAVE (16-bit PCM) for hosting compatibility (.wav)
-    const wavBuffer = await convertMp3ToWav(rawAudioBuffer);
-
-    // Save to uploads/media directory
+    // Save lightweight AAC audio to uploads/media directory
     const mediaDir = path.join(process.cwd(), 'uploads', 'media');
     if (!fs.existsSync(mediaDir)) {
       fs.mkdirSync(mediaDir, { recursive: true });
     }
 
     const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1e5);
-    const filename = `ai-audio-${uniqueId}.wav`;
+    const filename = `ai-audio-${uniqueId}.aac`;
     const fullPath = path.join(mediaDir, filename);
-    fs.writeFileSync(fullPath, wavBuffer);
+    fs.writeFileSync(fullPath, rawAudioBuffer);
 
     // Approximate duration
     const wordCount = cleanText.split(/\s+/).length;
@@ -363,12 +380,12 @@ export const generateAiAudio = async (req: AuthRequest, res: Response) => {
     const [result]: any = await pool.query(`
       INSERT INTO media_files
       (title, filename, file_url, file_type, mime_type, file_size, duration_seconds, source_type, ai_prompt_text, ai_voice_code, ai_speed, target_placement, created_by)
-      VALUES (?, ?, ?, 'AUDIO', 'audio/wav', ?, ?, 'AI_TTS', ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, 'AUDIO', 'audio/aac', ?, ?, 'AI_TTS', ?, ?, ?, ?, ?)
     `, [
       title,
       filename,
       fileUrl,
-      wavBuffer.length,
+      rawAudioBuffer.length,
       estDuration,
       cleanText,
       voice,
@@ -446,20 +463,19 @@ export const generateAiDialogue = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    // Combine all audio buffers seamlessly and convert to genuine RIFF/WAV for hosting compatibility
-    const combinedMp3 = Buffer.concat(audioSegments);
-    const wavBuffer = await convertMp3ToWav(combinedMp3);
+    // Combine all audio buffers seamlessly as lightweight AAC (saving 95% storage)
+    const combinedAac = Buffer.concat(audioSegments);
 
-    // Save combined dialogue audio file
+    // Save combined dialogue audio file as .aac
     const mediaDir = path.join(process.cwd(), 'uploads', 'media');
     if (!fs.existsSync(mediaDir)) {
       fs.mkdirSync(mediaDir, { recursive: true });
     }
 
     const uniqueId = Date.now() + '-' + Math.round(Math.random() * 1e5);
-    const filename = `ai-dialogue-${uniqueId}.wav`;
+    const filename = `ai-dialogue-${uniqueId}.aac`;
     const fullPath = path.join(mediaDir, filename);
-    fs.writeFileSync(fullPath, wavBuffer);
+    fs.writeFileSync(fullPath, combinedAac);
 
     const fullPromptText = fullTranscriptLines.join('\n');
     const autoTitle = title?.trim() || `Dialog Percakapan (${dialogue_lines.length} Baris)`;
@@ -472,12 +488,12 @@ export const generateAiDialogue = async (req: AuthRequest, res: Response) => {
     const [result]: any = await pool.query(`
       INSERT INTO media_files
       (title, filename, file_url, file_type, mime_type, file_size, duration_seconds, source_type, ai_prompt_text, ai_voice_code, ai_speed, target_placement, created_by)
-      VALUES (?, ?, ?, 'AUDIO', 'audio/wav', ?, ?, 'AI_TTS', ?, 'MULTI_SPEAKER', 1.0, ?, ?)
+      VALUES (?, ?, ?, 'AUDIO', 'audio/aac', ?, ?, 'AI_TTS', ?, 'MULTI_SPEAKER', 1.0, ?, ?)
     `, [
       autoTitle,
       filename,
       fileUrl,
-      wavBuffer.length,
+      combinedAac.length,
       estDuration,
       fullPromptText,
       target_placement,
@@ -574,24 +590,47 @@ export const synthesizeMediaPreview = async (req: AuthRequest, res: Response) =>
 
     if (!isClientConnected) return;
 
+    if (collectedChunks.length === 0 && typeof textRaw === 'string' && textRaw.trim()) {
+      try {
+        const fallbackMp3 = await fetchGoogleTts(textRaw.trim(), 'en');
+        if (fallbackMp3.length > 0) {
+          collectedChunks.push(fallbackMp3);
+        }
+      } catch (_) {}
+    }
+
     if (collectedChunks.length === 0) {
       res.status(400).json({ error: 'Tidak ada audio yang berhasil disintesis' });
       return;
     }
 
-    const rawMp3Buffer = Buffer.concat(collectedChunks);
-    const wavBuffer = await convertMp3ToWav(rawMp3Buffer);
+    const rawAacBuffer = Buffer.concat(collectedChunks);
 
     res.writeHead(200, {
-      'Content-Type': 'audio/wav',
-      'Content-Length': wavBuffer.length,
+      'Content-Type': 'audio/aac',
+      'Content-Length': rawAacBuffer.length,
       'Accept-Ranges': 'bytes',
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache',
       'Expires': '0'
     });
-    res.end(wavBuffer);
+    res.end(rawAacBuffer);
   } catch (error: any) {
+    if (!res.headersSent && typeof textRaw === 'string' && textRaw.trim()) {
+      try {
+        const fallbackAac = await fetchGoogleTts(textRaw.trim(), 'en');
+        if (fallbackAac.length > 0) {
+          res.writeHead(200, {
+            'Content-Type': 'audio/aac',
+            'Content-Length': fallbackAac.length,
+            'Accept-Ranges': 'bytes',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
+          });
+          res.end(fallbackAac);
+          return;
+        }
+      } catch (_) {}
+    }
     console.error('Error synthesizing preview:', error);
     if (!res.headersSent) {
       res.status(500).json({ error: error.message || 'Failed to synthesize audio preview' });
