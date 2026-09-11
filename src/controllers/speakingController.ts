@@ -10,6 +10,7 @@ import { transcribeAndAnalyze } from '../utils/speechEngine';
 import { updateProgressHelper, checkSequentialLessonLock } from '../utils/progress';
 import { resolveVoice, CURATED_VOICES } from '../utils/voiceUtils';
 import { extractVocabFromSpeaking } from '../services/vocabularyService';
+import { convertMp3ToWav } from '../utils/audioUtils';
 
 
 const TTS_CACHE_DIR = path.join(process.cwd(), 'uploads', 'tts_cache');
@@ -422,28 +423,32 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
   const voiceRaw = isGet ? req.query.voice : req.body.voice;
   const rateRaw = isGet ? req.query.rate : req.body.rate;
   const pitchRaw = isGet ? req.query.pitch : req.body.pitch;
+  const formatRaw = isGet ? req.query.format : req.body.format;
 
   const text = typeof textRaw === 'string' ? textRaw.trim() : '';
   const rawVoice = (typeof voiceRaw === 'string' && voiceRaw.trim()) ? voiceRaw.trim() : 'en-US-AvaNeural';
   const voice = resolveVoice(rawVoice);
   const rate = (typeof rateRaw === 'string' && rateRaw.trim()) ? rateRaw.trim() : '+0%';
   const pitch = (typeof pitchRaw === 'string' && pitchRaw.trim()) ? pitchRaw.trim() : '+0Hz';
+  // Server only reads WAV/AAC, so WAV is the primary default format
+  const format = (typeof formatRaw === 'string' && formatRaw.trim().toLowerCase() === 'mp3') ? 'mp3' : 'wav';
+  const contentType = format === 'wav' ? 'audio/wav' : 'audio/mpeg';
 
   if (!text) {
     res.status(400).json({ error: 'Text string is required' });
     return;
   }
 
-  // 1. Check Server Disk & Memory Cache for Instant (0ms - 5ms) Response
-  const cacheKey = crypto.createHash('md5').update(`${voice}__${rate}__${pitch}__${text}`).digest('hex');
-  const cacheFile = path.join(TTS_CACHE_DIR, `${cacheKey}.mp3`);
+  // 1. Check Server Disk Cache for Instant (< 5ms) Response
+  const cacheKey = crypto.createHash('md5').update(`${voice}__${rate}__${pitch}__${text}__${format}`).digest('hex');
+  const cacheFile = path.join(TTS_CACHE_DIR, `${cacheKey}.${format}`);
 
   if (fs.existsSync(cacheFile)) {
     try {
       const stats = fs.statSync(cacheFile);
       if (stats.size > 0) {
         res.writeHead(200, {
-          'Content-Type': 'audio/mpeg',
+          'Content-Type': contentType,
           'Content-Length': stats.size,
           'Accept-Ranges': 'bytes',
           'Cache-Control': 'public, max-age=604800, immutable',
@@ -471,53 +476,56 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
       pitch
     });
 
-    let headersSent = false;
     const collectedChunks: Buffer[] = [];
 
-    // Timeout safety: if Edge-TTS takes > 4.5 seconds, abort so client does not hang
+    // Timeout safety: 15 seconds (prevents premature timeout on VPS network latency / cold connection)
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('TTS Cloud Synthesis Timeout')), 4500)
+      setTimeout(() => reject(new Error('TTS Cloud Synthesis Timeout')), 15000)
     );
 
     const streamPromise = (async () => {
       for await (const chunk of communicate.stream()) {
         if (!isClientConnected) break;
-
         if (chunk.type === 'audio' && chunk.data) {
           collectedChunks.push(chunk.data);
-          if (!headersSent) {
-            res.writeHead(200, {
-              'Content-Type': 'audio/mpeg',
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-              'Expires': '0',
-              'Transfer-Encoding': 'chunked',
-              'Connection': 'keep-alive',
-              'X-Content-Type-Options': 'nosniff',
-              'Accept-Ranges': 'none',
-              'X-Cache': 'MISS'
-            });
-            headersSent = true;
-          }
-          res.write(chunk.data);
         }
       }
     })();
 
     await Promise.race([streamPromise, timeoutPromise]);
 
-    if (isClientConnected) {
-      if (!headersSent) {
+    if (!isClientConnected) return;
+
+    if (collectedChunks.length === 0) {
+      if (!res.headersSent) {
         res.status(500).json({ error: 'Speech synthesis yielded empty audio' });
-      } else {
-        res.end();
       }
+      return;
+    }
+
+    const rawMp3Buffer = Buffer.concat(collectedChunks);
+    let finalAudioBuffer: Buffer;
+
+    if (format === 'wav') {
+      finalAudioBuffer = await convertMp3ToWav(rawMp3Buffer);
+    } else {
+      finalAudioBuffer = rawMp3Buffer;
     }
 
     // Save generated audio to cache for all subsequent clicks/students
-    if (collectedChunks.length > 0) {
-      const combined = Buffer.concat(collectedChunks);
-      fs.writeFile(cacheFile, combined, () => {});
+    try {
+      await fs.promises.writeFile(cacheFile, finalAudioBuffer);
+    } catch (_) {}
+
+    if (!res.headersSent) {
+      res.writeHead(200, {
+        'Content-Type': contentType,
+        'Content-Length': finalAudioBuffer.length,
+        'Accept-Ranges': 'bytes',
+        'Cache-Control': 'public, max-age=604800, immutable',
+        'X-Cache': 'MISS'
+      });
+      res.end(finalAudioBuffer);
     }
   } catch (error: any) {
     console.error('TTS Synthesis Error:', error.message || error);

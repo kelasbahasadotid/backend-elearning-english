@@ -2270,12 +2270,57 @@ export const getAdminAnalytics = async (req: Request, res: Response) => {
        LEFT JOIN course_progress cp ON e.user_id = cp.user_id AND e.course_id = cp.course_id`
     );
 
+    // Gamification & Leaderboard Analytics
+    const [topXpStudents] = await pool.query<RowDataPacket[]>(
+      `SELECT u.id as user_id, u.full_name, u.email, u.avatar,
+              COALESCE(us.xp, 0) as xp, COALESCE(us.level, 1) as level,
+              gl.name as level_name, gl.badge_icon,
+              COALESCE((SELECT SUM(xp) FROM xp_transactions WHERE user_id = u.id), 0) as all_time_xp
+       FROM users u
+       LEFT JOIN user_statistics us ON u.id = us.user_id
+       LEFT JOIN gamification_levels gl ON us.level = gl.level_number
+       WHERE u.role_id = 4
+       ORDER BY xp DESC, all_time_xp DESC
+       LIMIT 10`
+    );
+
+    const [xpActivitySummary] = await pool.query<RowDataPacket[]>(
+      `SELECT activity_type, CAST(SUM(xp) AS SIGNED) as total_xp, COUNT(*) as count
+       FROM xp_transactions
+       GROUP BY activity_type
+       ORDER BY total_xp DESC`
+    );
+
+    const [activeSeasonRows] = await pool.query<RowDataPacket[]>(
+      `SELECT id, title, code, start_date, end_date, reset_schedule_type
+       FROM leaderboard_seasons
+       WHERE status = 'ACTIVE'
+       ORDER BY id DESC LIMIT 1`
+    );
+
+    const [gamificationTotals] = await pool.query<RowDataPacket[]>(
+      `SELECT 
+         COUNT(u.id) as total_students,
+         CAST(COALESCE(SUM(us.xp), 0) AS SIGNED) as total_season_xp,
+         CAST(COALESCE(AVG(us.xp), 0) AS SIGNED) as avg_season_xp,
+         (SELECT CAST(COALESCE(SUM(xp), 0) AS SIGNED) FROM xp_transactions) as total_all_time_xp
+       FROM users u
+       LEFT JOIN user_statistics us ON u.id = us.user_id
+       WHERE u.role_id = 4`
+    );
+
     res.json({
       salesOverview,
       courseEnrollments,
       roleDistribution,
       monthlyRegistrations,
-      completionRate: completionRateRows[0] || { total: 0, enrolled: 0, completed: 0, inProgress: 0, inactive: 0, cancelled: 0 }
+      completionRate: completionRateRows[0] || { total: 0, enrolled: 0, completed: 0, inProgress: 0, inactive: 0, cancelled: 0 },
+      leaderboard: {
+        activeSeason: activeSeasonRows[0] || null,
+        totals: gamificationTotals[0] || { total_students: 0, total_season_xp: 0, avg_season_xp: 0, total_all_time_xp: 0 },
+        topStudents: topXpStudents,
+        xpByActivity: xpActivitySummary
+      }
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });

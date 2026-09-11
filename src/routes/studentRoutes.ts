@@ -10,11 +10,19 @@ import {
   createDiscussionReply
 } from '../controllers/studentController';
 import { getStudentOrders } from '../controllers/paymentController';
+import { getMyXpAnalytics } from '../controllers/studyController';
+import { getMyExpiringCourses } from '../controllers/enrollmentExpiryController';
 import { authenticateToken } from '../middleware/auth';
 
 const router = Router();
 
 router.use(authenticateToken as any);
+
+// Course Expiration & Renewal Alerts
+router.get('/expiring-courses', getMyExpiringCourses);
+
+// Personal XP & Gamification Charts (Student Only)
+router.get('/my-xp-analytics', getMyXpAnalytics);
 
 // Orders History & Payment Status
 router.get('/orders', getStudentOrders as any);

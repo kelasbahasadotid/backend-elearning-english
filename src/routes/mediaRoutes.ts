@@ -8,7 +8,9 @@ import {
   synthesizeMediaPreview,
   updateMedia,
   deleteMedia,
-  getSpeakingTargets
+  getSpeakingTargets,
+  importYouTubeCsv,
+  getYouTubeCsvTemplateEndpoint
 } from '../controllers/mediaController';
 import { authenticateToken, requireRole } from '../middleware/auth';
 import { uploadLibraryMedia } from '../middleware/upload';
@@ -22,6 +24,10 @@ router.get('/synthesize-preview', synthesizeMediaPreview);
 // Protect media management endpoints: Admin (1, 2), Tutor (3), Content Manager (5)
 router.use(authenticateToken);
 router.use(requireRole([1, 2, 3, 5]));
+
+// YouTube CSV Import & Template
+router.get('/template-youtube-csv', getYouTubeCsvTemplateEndpoint);
+router.post('/import-youtube-csv', uploadLibraryMedia.single('file'), importYouTubeCsv);
 
 // Media Library CRUD & Generator
 router.get('/', getMediaList);

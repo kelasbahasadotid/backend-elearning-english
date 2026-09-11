@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { toIPA } from 'phonemize';
+import { convertMp3ToWav } from './audioUtils';
 
 let voskLoaded = false;
 let VoskModel: any = null;
@@ -544,7 +545,19 @@ export async function transcribeAndAnalyze(
       console.log(`[VOSK Speech Engine] Transcribing file: ${audioPath}`);
       const recognizer = new VoskRecognizer({ model: model, sampleRate: 16000 });
 
-      const fileBuffer = fs.readFileSync(audioPath);
+      let fileBuffer: Buffer = fs.readFileSync(audioPath);
+      // Auto-convert MP3 to WAV if the uploaded file is MP3 (Vosk requires 16-bit PCM WAV)
+      if (
+        audioPath.toLowerCase().endsWith('.mp3') ||
+        (fileBuffer.length > 4 && (fileBuffer.toString('utf8', 0, 3) === 'ID3' || (fileBuffer[0] === 0xff && (fileBuffer[1] & 0xe0) === 0xe0)))
+      ) {
+        try {
+          const converted = await convertMp3ToWav(fileBuffer);
+          fileBuffer = Buffer.from(converted);
+        } catch (convErr) {
+          console.warn('[VOSK Speech Engine] Audio convert to WAV warning:', convErr);
+        }
+      }
       recognizer.acceptWaveform(fileBuffer);
 
       const res = recognizer.result();

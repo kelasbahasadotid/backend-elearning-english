@@ -1,23 +1,31 @@
+const { Communicate } = require('edge-tts-universal');
+
 async function testTts() {
+  console.log('Testing Edge-TTS Communicate...');
+  const start = Date.now();
   try {
-    const { Communicate } = require('edge-tts-universal');
-    const text = 'Good morning! How are you today?';
-    const communicate = new Communicate(text, {
-      voice: 'en-GB-SoniaNeural',
-      rate: '+0%',
-      pitch: '+0Hz'
+    const communicate = new Communicate('Hello world, this is an English speaking practice test.', {
+      voice: 'en-US-AvaNeural'
     });
 
-    const chunks: Buffer[] = [];
+    let chunkCount = 0;
+    let totalBytes = 0;
+
     for await (const chunk of communicate.stream()) {
-      if (chunk.type === 'audio') {
-        chunks.push(chunk.data);
+      if (chunk.type === 'audio' && chunk.data) {
+        if (chunkCount === 0) {
+          console.log(`First audio chunk received in ${Date.now() - start} ms!`);
+        }
+        chunkCount++;
+        totalBytes += chunk.data.length;
       }
     }
-    const audioBuffer = Buffer.concat(chunks);
-    console.log('Synthesized SoniaNeural audio buffer size:', audioBuffer.length, 'bytes');
-  } catch (e) {
-    console.error('TTS error:', e);
+
+    console.log(`TTS finished in ${Date.now() - start} ms! Total chunks: ${chunkCount}, Total bytes: ${totalBytes}`);
+  } catch (err: any) {
+    console.error(`TTS failed after ${Date.now() - start} ms:`, err.message);
   }
+  process.exit(0);
 }
+
 testTts();

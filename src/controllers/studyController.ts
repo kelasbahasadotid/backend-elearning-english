@@ -5,7 +5,7 @@ import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { addXpTransaction } from '../utils/xp';
 import { updateProgressHelper, checkSequentialLessonLock } from '../utils/progress';
 import { getActiveSeason, checkAndProcessSeasonExpiry } from '../services/seasonService';
-import { getAllLevels } from '../services/levelService';
+import { getAllLevels, getLevelByXp } from '../services/levelService';
 
 export const getLesson = async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
@@ -682,6 +682,216 @@ export const getMyProgressSummary = async (req: AuthRequest, res: Response) => {
       }
     });
   } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+};
+
+/**
+ * GET /api/study/my-xp-analytics
+ * Personal Student Gamification & XP Charts Analytics
+ * Allows the logged-in student to view their OWN personal XP graphs and trends,
+ * without exposing other students' private data.
+ */
+export const getMyXpAnalytics = async (req: AuthRequest, res: Response): Promise<void> => {
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  try {
+    const rangeDays = req.query.range === '7d' ? 7 : req.query.range === '90d' ? 90 : req.query.range === 'all' ? 3650 : 30;
+
+    // 1. Fetch student info and current user_statistics
+    const [userRows] = await pool.query<RowDataPacket[]>(`
+      SELECT u.id, u.full_name, u.email, u.avatar, u.created_at,
+             COALESCE(us.xp, 0) as current_season_xp,
+             COALESCE(us.level, 1) as level,
+             COALESCE(us.total_learning_minutes, 0) as total_learning_minutes,
+             COALESCE(us.total_quiz, 0) as total_quiz,
+             COALESCE(us.total_speaking, 0) as total_speaking,
+             (SELECT COUNT(*) FROM certificates WHERE user_id = u.id AND status = 'ACTIVE') as certs_count,
+             (SELECT CAST(COALESCE(SUM(xp), 0) AS SIGNED) FROM xp_transactions WHERE user_id = u.id) as all_time_xp
+      FROM users u
+      LEFT JOIN user_statistics us ON u.id = us.user_id
+      WHERE u.id = ?
+    `, [userId]);
+
+    if (!userRows || userRows.length === 0) {
+      res.status(404).json({ error: 'User tidak ditemukan' });
+      return;
+    }
+
+    const student = userRows[0];
+    const currentSeasonXp = Number(student.current_season_xp || 0);
+    const allTimeXp = Number(student.all_time_xp || 0);
+
+    // 2. Level progression using levelService
+    const progression = await getLevelByXp(currentSeasonXp);
+
+    // 3. Current season ranking & standing
+    await checkAndProcessSeasonExpiry();
+    const activeSeason = await getActiveSeason();
+
+    const [rankRows] = await pool.query<RowDataPacket[]>(`
+      SELECT COUNT(*) + 1 as current_rank
+      FROM user_statistics us
+      JOIN users u ON us.user_id = u.id
+      WHERE u.role_id = 4 AND us.xp > ?
+    `, [currentSeasonXp]);
+
+    const [totalActiveRows] = await pool.query<RowDataPacket[]>(
+      'SELECT COUNT(*) as total FROM users WHERE role_id = 4'
+    );
+    const totalParticipants = totalActiveRows[0]?.total || 1;
+    const currentRank = rankRows[0]?.current_rank || 1;
+    const percentile = Math.max(1, Math.round((currentRank / totalParticipants) * 100));
+
+    // Season countdown
+    const now = new Date();
+    const endDate = activeSeason ? new Date(activeSeason.end_date) : null;
+    const diffMs = endDate ? Math.max(0, endDate.getTime() - now.getTime()) : 0;
+    const remainingDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const remainingHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+    // 4. Personal XP Breakdown by Activity Type (Donut/Pie Chart)
+    const [activityRows] = await pool.query<RowDataPacket[]>(`
+      SELECT activity_type,
+             CAST(SUM(xp) AS SIGNED) as total_xp,
+             COUNT(*) as count
+      FROM xp_transactions
+      WHERE user_id = ?
+      GROUP BY activity_type
+      ORDER BY total_xp DESC
+    `, [userId]);
+
+    const studentTotalXp = activityRows.reduce((acc, cur) => acc + Number(cur.total_xp || 0), 0);
+    const xpByActivity = activityRows.map(row => ({
+      activityType: row.activity_type,
+      totalXp: Number(row.total_xp || 0),
+      count: Number(row.count || 0),
+      percentage: studentTotalXp > 0
+        ? Math.round((Number(row.total_xp || 0) / studentTotalXp) * 1000) / 10
+        : 0
+    }));
+
+    // 5. Personal Daily XP Trend & Cumulative Curve (Area/Line Chart)
+    const [trendRows] = await pool.query<RowDataPacket[]>(`
+      SELECT DATE_FORMAT(created_at, '%Y-%m-%d') as date,
+             DATE_FORMAT(created_at, '%d %b') as label,
+             CAST(SUM(xp) AS SIGNED) as daily_xp,
+             COUNT(*) as activity_count
+      FROM xp_transactions
+      WHERE user_id = ?
+        ${rangeDays < 3650 ? 'AND created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)' : ''}
+      GROUP BY date, label
+      ORDER BY date ASC
+    `, rangeDays < 3650 ? [userId, rangeDays] : [userId]);
+
+    let runningTotal = 0;
+    const dailyXpTrend = trendRows.map(row => {
+      runningTotal += Number(row.daily_xp || 0);
+      return {
+        date: row.date,
+        label: row.label,
+        dailyXp: Number(row.daily_xp || 0),
+        activityCount: Number(row.activity_count || 0),
+        cumulativeXp: runningTotal
+      };
+    });
+
+    // 6. Personal Day-of-Week Learning Rhythm (Radar / Bar Chart)
+    const [dowRows] = await pool.query<RowDataPacket[]>(`
+      SELECT DAYOFWEEK(created_at) as dow,
+             DAYNAME(created_at) as day_name,
+             CAST(SUM(xp) AS SIGNED) as total_xp,
+             COUNT(*) as count
+      FROM xp_transactions
+      WHERE user_id = ?
+      GROUP BY dow, day_name
+      ORDER BY dow ASC
+    `, [userId]);
+
+    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const dayOfWeekPattern = [1, 2, 3, 4, 5, 6, 7].map(dow => {
+      const match = dowRows.find(r => Number(r.dow) === dow);
+      return {
+        dayIndex: dow,
+        dayName: dayNames[dow - 1],
+        totalXp: match ? Number(match.total_xp || 0) : 0,
+        activityCount: match ? Number(match.count || 0) : 0
+      };
+    });
+
+    // 7. Recent XP Transactions (last 20)
+    const [recentTxRows] = await pool.query<RowDataPacket[]>(`
+      SELECT id, activity_type, xp, description, created_at
+      FROM xp_transactions
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      LIMIT 20
+    `, [userId]);
+
+    // 8. Past seasons participation summary
+    const [pastSeasonRows] = await pool.query<RowDataPacket[]>(`
+      SELECT COUNT(*) as seasons_count,
+             MIN(final_rank) as best_rank,
+             COUNT(CASE WHEN final_rank <= 3 THEN 1 END) as podium_count
+      FROM leaderboard_season_history
+      WHERE user_id = ?
+    `, [userId]);
+
+    res.json({
+      student: {
+        userId: student.id,
+        fullName: student.full_name,
+        email: student.email,
+        avatar: student.avatar,
+        currentSeasonXp,
+        allTimeXp,
+        level: progression.level,
+        levelName: progression.levelName,
+        badgeIcon: progression.badgeIcon,
+        currentLevelMinXp: progression.currentLevelMinXp,
+        nextLevel: progression.nextLevel,
+        nextLevelName: progression.nextLevelName,
+        nextLevelMinXp: progression.nextLevelMinXp,
+        xpNeededForNext: progression.xpNeededForNext,
+        progressPercent: progression.progressPercent
+      },
+      seasonStanding: {
+        season: activeSeason ? {
+          id: activeSeason.id,
+          title: activeSeason.title,
+          code: activeSeason.code,
+          startDate: activeSeason.start_date,
+          endDate: activeSeason.end_date
+        } : null,
+        currentRank,
+        totalParticipants,
+        percentileBadge: `Top ${percentile}%`,
+        countdown: {
+          remainingDays,
+          remainingHours,
+          isExpired: diffMs <= 0
+        }
+      },
+      learningStats: {
+        totalLearningMinutes: Number(student.total_learning_minutes || 0),
+        totalQuiz: Number(student.total_quiz || 0),
+        totalSpeaking: Number(student.total_speaking || 0),
+        certsCount: Number(student.certs_count || 0),
+        seasonsParticipated: Number(pastSeasonRows[0]?.seasons_count || 0),
+        bestRank: pastSeasonRows[0]?.best_rank || null,
+        podiumCount: Number(pastSeasonRows[0]?.podium_count || 0)
+      },
+      xpByActivity,
+      dailyXpTrend,
+      dayOfWeekPattern,
+      recentTransactions: recentTxRows
+    });
+  } catch (error: any) {
+    console.error('Failed to get student personal XP analytics:', error);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
 };

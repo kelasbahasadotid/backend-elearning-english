@@ -68,6 +68,21 @@ import {
   getLevels, createLevel, updateLevel, deleteLevel, bulkUpdateLevels
 } from '../controllers/levelAdminController';
 import { getStudentVocabularyAdmin } from '../controllers/vocabularyController';
+import {
+  getLeaderboardChartAnalytics,
+  getStudentsXpAnalytics,
+  getStudentXpDetailHistory
+} from '../controllers/gamificationAdminController';
+import {
+  getExpiringEnrollmentsAdmin,
+  triggerManualExpiryCheck
+} from '../controllers/enrollmentExpiryController';
+import {
+  getAdminConversationsList,
+  getStudentConversationAdmin,
+  sendAdminMessage,
+  markAdminChatRead
+} from '../controllers/chatController';
 
 
 
@@ -99,7 +114,15 @@ router.get('/orders/manual-proofs', contentCreator, getManualPaymentProofs);
 router.post('/orders/manual-proofs/:id/verify', contentCreator, verifyManualPaymentProof);
 router.post('/enrollments/manual', contentCreator, directManualEnroll);
 router.get('/enrollments', adminOnly, getAllEnrollments);
+router.get('/enrollments/expiring', adminOnly, getExpiringEnrollmentsAdmin);
+router.post('/enrollments/check-expiries', adminOnly, triggerManualExpiryCheck);
 router.delete('/enrollments/:id', adminOnly, deleteEnrollment);
+
+// Realtime Chat Management (Admin Only)
+router.get('/chat/conversations', adminOnly, getAdminConversationsList);
+router.get('/chat/conversations/:studentId/messages', adminOnly, getStudentConversationAdmin);
+router.post('/chat/conversations/:studentId/messages', adminOnly, sendAdminMessage);
+router.put('/chat/conversations/:studentId/read', adminOnly, markAdminChatRead);
 
 // Users Management (Admin Only)
 router.get('/users', adminOnly, getAllUsers);
@@ -226,6 +249,11 @@ router.post('/levels/bulk', adminOnly, bulkUpdateLevels);
 
 // Student Vocabulary Room Monitoring (Admin Only)
 router.get('/vocabulary/student/:userId', adminOnly, getStudentVocabularyAdmin);
+
+// Gamification: Leaderboard Charts & Student XP Analytics (Admin Only)
+router.get('/leaderboard/analytics', adminOnly, getLeaderboardChartAnalytics);
+router.get('/students/xp-stats', adminOnly, getStudentsXpAnalytics);
+router.get('/students/:userId/xp-history', adminOnly, getStudentXpDetailHistory);
 
 export default router;
 

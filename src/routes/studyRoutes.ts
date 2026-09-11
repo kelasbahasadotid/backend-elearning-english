@@ -10,7 +10,8 @@ import {
   getPublicLevels,
   getMySeasonHistory,
   getPastSeasonLeaderboard,
-  getMyProgressSummary
+  getMyProgressSummary,
+  getMyXpAnalytics
 } from '../controllers/studyController';
 import { authenticateToken } from '../middleware/auth';
 
@@ -22,10 +23,14 @@ import {
   updateVocabulary,
   deleteVocabulary
 } from '../controllers/vocabularyController';
+import { getMyExpiringCourses } from '../controllers/enrollmentExpiryController';
 
 const router = Router();
 
 router.use(authenticateToken as any);
+
+// Course Expiration & Renewal Alerts
+router.get('/expiring-courses', getMyExpiringCourses);
 
 // Room Vocabulary (Personal Student Dictionary)
 router.get('/vocabulary', getMyVocabularyRoom);
@@ -40,6 +45,7 @@ router.get('/season/current', getActiveSeasonInfo);
 router.get('/seasons/my-history', getMySeasonHistory);
 router.get('/seasons/:id/leaderboard', getPastSeasonLeaderboard);
 router.get('/levels', getPublicLevels);
+router.get('/my-xp-analytics', getMyXpAnalytics);
 
 router.get('/my-progress', getMyProgressSummary);
 router.get('/lesson/:id', getLesson);

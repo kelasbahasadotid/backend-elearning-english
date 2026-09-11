@@ -523,9 +523,9 @@ export const synthesizeMediaPreview = async (req: AuthRequest, res: Response) =>
   try {
     const { Communicate } = require('edge-tts-universal');
 
-    if (mode === 'dialogue' && Array.isArray(dialogue_lines)) {
-      let headersSent = false;
+    const collectedChunks: Buffer[] = [];
 
+    if (mode === 'dialogue' && Array.isArray(dialogue_lines)) {
       for (const line of dialogue_lines) {
         if (!isClientConnected) break;
         const lineText = (line.text || '').trim();
@@ -545,77 +545,52 @@ export const synthesizeMediaPreview = async (req: AuthRequest, res: Response) =>
         for await (const chunk of comm.stream()) {
           if (!isClientConnected) break;
           if (chunk.type === 'audio' && chunk.data) {
-            if (!headersSent) {
-              res.writeHead(200, {
-                'Content-Type': 'audio/mpeg',
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0',
-                'Transfer-Encoding': 'chunked',
-                'Connection': 'keep-alive',
-                'X-Content-Type-Options': 'nosniff',
-                'Accept-Ranges': 'none'
-              });
-              headersSent = true;
-            }
-            res.write(chunk.data);
+            collectedChunks.push(chunk.data);
           }
         }
       }
+    } else {
+      // Single voice preview
+      const cleanText = (typeof textRaw === 'string' ? textRaw : '').trim();
+      if (!cleanText) {
+        res.status(400).json({ error: 'Text required' });
+        return;
+      }
 
-      if (isClientConnected) {
-        if (!headersSent) {
-          res.status(400).json({ error: 'Tidak ada baris percakapan teks yang dapat disintesis' });
-        } else {
-          res.end();
+      const { pitch, rateStr } = getEmotionPitchAndRate(emotion, speed);
+      const comm = new Communicate(cleanText, {
+        voice,
+        rate: rateStr,
+        pitch
+      });
+
+      for await (const chunk of comm.stream()) {
+        if (!isClientConnected) break;
+        if (chunk.type === 'audio' && chunk.data) {
+          collectedChunks.push(chunk.data);
         }
       }
+    }
+
+    if (!isClientConnected) return;
+
+    if (collectedChunks.length === 0) {
+      res.status(400).json({ error: 'Tidak ada audio yang berhasil disintesis' });
       return;
     }
 
-    // Single voice preview
-    const cleanText = (typeof textRaw === 'string' ? textRaw : '').trim();
-    if (!cleanText) {
-      res.status(400).json({ error: 'Text required' });
-      return;
-    }
+    const rawMp3Buffer = Buffer.concat(collectedChunks);
+    const wavBuffer = await convertMp3ToWav(rawMp3Buffer);
 
-    const { pitch, rateStr } = getEmotionPitchAndRate(emotion, speed);
-    const comm = new Communicate(cleanText, {
-      voice,
-      rate: rateStr,
-      pitch
+    res.writeHead(200, {
+      'Content-Type': 'audio/wav',
+      'Content-Length': wavBuffer.length,
+      'Accept-Ranges': 'bytes',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
     });
-
-    let headersSent = false;
-
-    for await (const chunk of comm.stream()) {
-      if (!isClientConnected) break;
-      if (chunk.type === 'audio' && chunk.data) {
-        if (!headersSent) {
-          res.writeHead(200, {
-            'Content-Type': 'audio/mpeg',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            'Transfer-Encoding': 'chunked',
-            'Connection': 'keep-alive',
-            'X-Content-Type-Options': 'nosniff',
-            'Accept-Ranges': 'none'
-          });
-          headersSent = true;
-        }
-        res.write(chunk.data);
-      }
-    }
-
-    if (isClientConnected) {
-      if (!headersSent) {
-        res.status(500).json({ error: 'Failed to synthesize audio preview' });
-      } else {
-        res.end();
-      }
-    }
+    res.end(wavBuffer);
   } catch (error: any) {
     console.error('Error synthesizing preview:', error);
     if (!res.headersSent) {
@@ -760,5 +735,99 @@ export const getTargetLessons = async (req: AuthRequest, res: Response) => {
 
 // Alias for backward compatibility
 export const getSpeakingTargets = getTargetLessons;
+
+import {
+  parseYouTubeCsv,
+  importYouTubeVideos,
+  importLocalCourse24Csv,
+  getYouTubeCsvTemplate
+} from '../services/youtubeImportService';
+
+/**
+ * POST /api/media/import-youtube-csv
+ * Import YouTube videos from CSV file (e.g. course24_youtube_links.csv) or direct upload
+ */
+export const importYouTubeCsv = async (req: AuthRequest, res: Response) => {
+  try {
+    const adminUserId = req.user?.id || 1;
+    const attachToLessonContent = req.body?.attach_to_lesson !== 'false' && req.body?.attach_to_lesson !== false;
+
+    if (req.file) {
+      const csvContent = fs.readFileSync(req.file.path, 'utf-8');
+      const rows = parseYouTubeCsv(csvContent);
+      const result = await importYouTubeVideos(rows, adminUserId, { attachToLessonContent });
+
+      try { fs.unlinkSync(req.file.path); } catch (_) {}
+
+      res.status(200).json({
+        success: true,
+        message: `Berhasil memproses ${result.totalRows} baris CSV. ${result.insertedMedia} video baru ditambahkan, ${result.updatedMedia} diperbarui.`,
+        data: result
+      });
+      return;
+    }
+
+    if (req.body?.csv_text) {
+      const rows = parseYouTubeCsv(req.body.csv_text);
+      const result = await importYouTubeVideos(rows, adminUserId, { attachToLessonContent });
+      res.status(200).json({
+        success: true,
+        message: `Berhasil memproses ${result.totalRows} baris CSV teks.`,
+        data: result
+      });
+      return;
+    }
+
+    // Default fallback: import local course24_youtube_links.csv
+    const result = await importLocalCourse24Csv();
+    res.status(200).json({
+      success: true,
+      message: `Berhasil mengimpor file lokal course24_youtube_links.csv (${result.totalRows} video).`,
+      data: result
+    });
+  } catch (error: any) {
+    console.error('Error importing YouTube CSV:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Gagal mengimpor file CSV YouTube'
+    });
+  }
+};
+
+/**
+ * GET /api/media/template-youtube-csv
+ * Download or view template for YouTube CSV upload
+ */
+export const getYouTubeCsvTemplateEndpoint = async (req: AuthRequest, res: Response) => {
+  const template = getYouTubeCsvTemplate();
+  const format = req.query.format;
+
+  if (format === 'json') {
+    res.json({
+      columns: ['topic', 'lesson_id', 'lesson', 'youtube_url'],
+      sample: [
+        {
+          topic: 'Introduction (Pengenalan Kursus)',
+          lesson_id: 84,
+          lesson: 'Course Overview',
+          youtube_url: 'https://youtu.be/BPbgYfL__yQ'
+        },
+        {
+          topic: 'Topic 1: “Aleksander”?',
+          lesson_id: 98,
+          lesson: 'Vaccine Registration',
+          youtube_url: 'https://youtu.be/yPvA95OCZwY'
+        }
+      ],
+      rawTemplate: template
+    });
+    return;
+  }
+
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', 'attachment; filename="youtube_media_template.csv"');
+  res.send(template);
+};
+
 
 

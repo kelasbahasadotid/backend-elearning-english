@@ -330,7 +330,9 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
     { name: 'Media Library', description: 'TTS audio generator, multi-speaker dialogue builder & uploads' },
     { name: 'Tutor Portal', description: 'Tutor reviews, grading submissions & full content authoring' },
     { name: 'Admin Panel', description: 'Full platform management: users, courses, modules, lessons, quizzes, speaking, certs, email hub, scalev, analytics' },
-    { name: 'Gamification & Seasons', description: 'Leaderboard seasons, auto & manual resets, student personal season history, and dynamic level progression ladders' }
+    { name: 'Gamification & Seasons', description: 'Leaderboard seasons, auto & manual resets, student personal season history, and dynamic level progression ladders' },
+    { name: 'Realtime Chat (Students & Admin)', description: 'Direct 1-on-1 realtime support chat between Students and Admin/Superadmin with WebSocket & unread counter' },
+    { name: 'Course Expiry & Notifications', description: 'Automated 7-day, 3-day, 1-day course expiry notices, renewal links, and admin monitoring' }
   ],
 
   paths: {
@@ -975,20 +977,21 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
         summary: 'Synthesize speech from text (Edge-TTS POST)',
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object', properties: { text: { type: 'string' }, voice: { type: 'string' }, rate: { type: 'string' }, pitch: { type: 'string' } } } } }
+          content: { 'application/json': { schema: { type: 'object', properties: { text: { type: 'string' }, voice: { type: 'string' }, rate: { type: 'string' }, pitch: { type: 'string' }, format: { type: 'string', example: 'wav' } } } } }
         },
-        responses: { 200: { description: 'Audio stream (audio/mpeg)' } }
+        responses: { 200: { description: 'Audio stream (audio/wav)' } }
       },
       get: {
         tags: ['Speaking AI & Pronunciation'],
-        summary: 'Direct progressive audio stream (Edge-TTS GET)',
+        summary: 'Direct progressive audio stream (Edge-TTS GET - Recommended)',
         parameters: [
           { name: 'text', in: 'query', required: true, schema: { type: 'string' } },
           { name: 'voice', in: 'query', schema: { type: 'string' } },
           { name: 'rate', in: 'query', schema: { type: 'string' } },
-          { name: 'pitch', in: 'query', schema: { type: 'string' } }
+          { name: 'pitch', in: 'query', schema: { type: 'string' } },
+          { name: 'format', in: 'query', schema: { type: 'string', example: 'wav' } }
         ],
-        responses: { 200: { description: 'Progressive audio stream (audio/mpeg)' } }
+        responses: { 200: { description: 'Audio stream (audio/wav)' } }
       }
     },
     '/api/speaking/tts/stream': {
@@ -3027,6 +3030,306 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
         responses: {
           200: { description: 'Target student vocabulary room data' }
         }
+      }
+    },
+
+    // ----------------------------------------------------
+    // YOUTUBE MEDIA IMPORT (MEDIA LIBRARY)
+    // ----------------------------------------------------
+    '/api/media/template-youtube-csv': {
+      get: {
+        tags: ['Media Library', 'Admin Panel'],
+        summary: 'Download / view YouTube links CSV template',
+        description: 'Mengunduh atau melihat format kolom CSV standar (topic,lesson_id,lesson,youtube_url) untuk mengimpor video YouTube ke media library.',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'CSV template headers or CSV file content',
+            content: { 'text/csv': { schema: { type: 'string', example: 'topic,lesson_id,lesson,youtube_url\nIntroduction,84,Course Overview,https://youtu.be/BPbgYfL__yQ' } } }
+          }
+        }
+      }
+    },
+    '/api/media/import-youtube-csv': {
+      post: {
+        tags: ['Media Library', 'Admin Panel'],
+        summary: 'Import YouTube CSV links to Media Files and Lessons',
+        description: 'Mengunggah file CSV berisikan daftar video YouTube (kolom: topic, lesson_id, lesson, youtube_url) untuk diimpor otomatis ke pustaka media (media_files) dan dihubungkan ke materi pelajaran.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                type: 'object',
+                required: ['file'],
+                properties: {
+                  file: {
+                    type: 'string',
+                    format: 'binary',
+                    description: 'File CSV dengan kolom topic, lesson_id, lesson, youtube_url'
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Hasil ringkasan impor video YouTube',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    message: { type: 'string', example: 'Impor video YouTube selesai: 16 berhasil, 0 gagal dari total 16 baris' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        totalRows: { type: 'integer', example: 16 },
+                        successCount: { type: 'integer', example: 16 },
+                        failedCount: { type: 'integer', example: 0 },
+                        linkedLessonsCount: { type: 'integer', example: 16 }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    // ----------------------------------------------------
+    // REALTIME CHAT (STUDENTS & ADMIN)
+    // ----------------------------------------------------
+    '/api/chat/my-conversation': {
+      get: {
+        tags: ['Realtime Chat (Students & Admin)'],
+        summary: 'Get Student Own Chat Conversation',
+        description: 'Siswa mengambil ruang obrolan (thread) dan riwayat pesan chat miliknya dengan Admin/Superadmin.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'limit', in: 'query', required: false, schema: { type: 'integer', default: 50 }, description: 'Jumlah pesan per halaman' },
+          { name: 'beforeId', in: 'query', required: false, schema: { type: 'integer' }, description: 'ID pesan terakhir untuk pagination' }
+        ],
+        responses: {
+          200: { description: 'Data percakapan siswa dan daftar pesan' }
+        }
+      }
+    },
+    '/api/chat/messages': {
+      post: {
+        tags: ['Realtime Chat (Students & Admin)'],
+        summary: 'Send Student Chat Message to Admin',
+        description: 'Siswa mengirim pesan teks atau lampiran ke Admin/Superadmin secara realtime.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['message'],
+                properties: {
+                  message: { type: 'string', example: 'Halo Admin, saya ingin bertanya tentang materi kuis unit 2.' },
+                  attachmentUrl: { type: 'string', example: 'https://example.com/uploads/screenshot.png' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          201: { description: 'Pesan berhasil dikirim dan di-broadcast ke Socket.IO' }
+        }
+      }
+    },
+    '/api/chat/read': {
+      put: {
+        tags: ['Realtime Chat (Students & Admin)'],
+        summary: 'Mark Messages as Read (Student)',
+        description: 'Siswa menandai semua pesan dari Admin sebagai sudah dibaca.',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: 'Semua pesan ditandai telah dibaca' }
+        }
+      }
+    },
+    '/api/admin/chat/conversations': {
+      get: {
+        tags: ['Realtime Chat (Students & Admin)', 'Admin Panel'],
+        summary: 'List All Student Conversations (Admin)',
+        description: 'Admin melihat daftar seluruh percakapan siswa, jumlah pesan belum dibaca (unread count), status online, dan pesan terakhir.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'search', in: 'query', required: false, schema: { type: 'string' }, description: 'Cari nama siswa atau email' },
+          { name: 'status', in: 'query', required: false, schema: { type: 'string', enum: ['ALL', 'UNREAD', 'RESOLVED'] } },
+          { name: 'page', in: 'query', required: false, schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', required: false, schema: { type: 'integer', default: 20 } }
+        ],
+        responses: {
+          200: { description: 'Daftar percakapan siswa untuk admin' }
+        }
+      }
+    },
+    '/api/admin/chat/conversations/{studentId}/messages': {
+      get: {
+        tags: ['Realtime Chat (Students & Admin)', 'Admin Panel'],
+        summary: 'Get Specific Student Messages (Admin)',
+        description: 'Admin membuka thread percakapan dengan student tertentu.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'studentId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID Student' },
+          { name: 'limit', in: 'query', required: false, schema: { type: 'integer', default: 50 } },
+          { name: 'beforeId', in: 'query', required: false, schema: { type: 'integer' } }
+        ],
+        responses: {
+          200: { description: 'Detail percakapan dan riwayat pesan siswa' }
+        }
+      },
+      post: {
+        tags: ['Realtime Chat (Students & Admin)', 'Admin Panel'],
+        summary: 'Send Admin Reply to Student',
+        description: 'Admin membalas pesan siswa secara realtime via WebSockets.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'studentId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID Student tujuan' }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['message'],
+                properties: {
+                  message: { type: 'string', example: 'Halo! Tentu, untuk kuis unit 2 Anda bisa mengulang setelah jeda 1 jam.' },
+                  attachmentUrl: { type: 'string', example: '' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          201: { description: 'Balasan admin berhasil dikirim dan di-broadcast ke siswa' }
+        }
+      }
+    },
+    '/api/admin/chat/conversations/{studentId}/read': {
+      put: {
+        tags: ['Realtime Chat (Students & Admin)', 'Admin Panel'],
+        summary: 'Mark Student Messages as Read (Admin)',
+        description: 'Admin menandai seluruh pesan siswa tertentu sebagai telah dibaca.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'studentId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID Student' }
+        ],
+        responses: {
+          200: { description: 'Pesan siswa ditandai sudah dibaca' }
+        }
+      }
+    },
+
+    // ----------------------------------------------------
+    // COURSE EXPIRATION & NOTIFICATIONS
+    // ----------------------------------------------------
+    '/api/student/expiring-courses': {
+      get: {
+        tags: ['Course Expiry & Notifications', 'Student Portal'],
+        summary: 'Get Student Expiring Courses & Renewal Alerts',
+        description: 'Mengambil daftar kursus siswa yang akan kedaluwarsa (H-7, H-3, H-1) atau sudah lewat masa aktif beserta tautan perpanjangan (renewal link).',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: 'Daftar kursus kedaluwarsa siswa dengan label urgensi' }
+        }
+      }
+    },
+    '/api/admin/enrollments/expiring': {
+      get: {
+        tags: ['Course Expiry & Notifications', 'Admin Panel'],
+        summary: 'Admin Expiring Enrollments Monitoring',
+        description: 'Admin memantau seluruh pendaftaran siswa yang akan habis dalam N hari (default: 7 hari).',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'days', in: 'query', required: false, schema: { type: 'integer', default: 7 }, description: 'Batas hari menuju kedaluwarsa' },
+          { name: 'status', in: 'query', required: false, schema: { type: 'string', enum: ['ACTIVE', 'EXPIRED'] } },
+          { name: 'search', in: 'query', required: false, schema: { type: 'string' }, description: 'Cari nama siswa atau kursus' },
+          { name: 'page', in: 'query', required: false, schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', required: false, schema: { type: 'integer', default: 20 } }
+        ],
+        responses: {
+          200: { description: 'Daftar pendaftaran kursus siswa yang mendekati masa habis' }
+        }
+      }
+    },
+    '/api/admin/enrollments/check-expiries': {
+      post: {
+        tags: ['Course Expiry & Notifications', 'Admin Panel'],
+        summary: 'Trigger Manual Course Expiry Notifications Check',
+        description: 'Memicu pengecekan otomatis masa kedaluwarsa kursus sekarang juga (mengirimkan notifikasi H-7, H-3, H-1, dan mengubah status ke EXPIRED jika telah lewat waktu).',
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: 'Hasil pemeriksaan kedaluwarsa dan notifikasi yang terkirim' }
+        }
+      }
+    },
+
+    // ----------------------------------------------------
+    // STUDENT PERSONAL XP ANALYTICS & CHARTS
+    // ----------------------------------------------------
+    '/api/student/my-xp-analytics': {
+      get: {
+        tags: ['Gamification & Seasons', 'Student Portal'],
+        summary: 'Get Student Personal XP Analytics & Daily Trends',
+        description: 'Menampilkan analitik grafik XP pribadi siswa: akumulasi tren 7/30 hari terakhir, distribusi aktivitas (Quiz, Speaking, Lesson), ranking saat ini, serta progres menuju level berikutnya.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'days', in: 'query', required: false, schema: { type: 'integer', default: 14 }, description: 'Rentang hari grafik tren' }
+        ],
+        responses: {
+          200: { description: 'Statistik analitik grafik XP siswa' }
+        }
+      }
+    },
+
+    // ----------------------------------------------------
+    // GAMIFICATION & XP ANALYTICS (ADMIN)
+    // ----------------------------------------------------
+    '/api/admin/leaderboard/analytics': {
+      get: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'Admin Leaderboard & XP Analytics',
+        description: 'Statistik analitik platform: total XP beredar, distribusi perolehan aktivitas, rata-rata XP per siswa, dan tren harian.',
+        security: [{ bearerAuth: [] }],
+        responses: { 200: { description: 'Data analitik leaderboard dan gamifikasi' } }
+      }
+    },
+    '/api/admin/students/xp-stats': {
+      get: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'Admin List Students XP Stats',
+        description: 'Daftar statistik XP seluruh siswa dengan pencarian, filter level, dan paginasi.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'search', in: 'query', required: false, schema: { type: 'string' } },
+          { name: 'page', in: 'query', required: false, schema: { type: 'integer', default: 1 } },
+          { name: 'limit', in: 'query', required: false, schema: { type: 'integer', default: 20 } }
+        ],
+        responses: { 200: { description: 'Daftar statistik XP siswa' } }
+      }
+    },
+    '/api/admin/students/{userId}/xp-history': {
+      get: {
+        tags: ['Gamification & Seasons', 'Admin Panel'],
+        summary: 'Admin View Student XP Transactions History',
+        description: 'Riwayat transaksi perolehan XP lengkap dari seorang siswa (kuis, speaking, lesson, streak).',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'userId', in: 'path', required: true, schema: { type: 'integer' } }
+        ],
+        responses: { 200: { description: 'Log riwayat transaksi XP siswa' } }
       }
     }
   }

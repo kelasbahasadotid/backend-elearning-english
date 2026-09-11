@@ -1,3 +1,4 @@
+import http from 'http';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -16,6 +17,7 @@ import certificateRoutes from './routes/certificateRoutes';
 import adminRoutes from './routes/adminRoutes';
 import tutorRoutes from './routes/tutorRoutes';
 import studentRoutes from './routes/studentRoutes';
+import chatRoutes from './routes/chatRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import taskRoutes from './routes/taskRoutes';
 import discussionRoutes from './routes/discussionRoutes';
@@ -25,13 +27,18 @@ import swaggerUi from 'swagger-ui-express';
 import { swaggerDocument, swaggerUiOptions } from './docs/swagger';
 import { runSeasonAndLevelMigration } from './migrations/season_and_level_setup';
 import { runStudentVocabularyMigration } from './migrations/student_vocabulary_setup';
+import { runChatMigration } from './migrations/chat_setup';
 import { initSeasonScheduler } from './services/seasonService';
+import { initEnrollmentExpiryScheduler } from './services/enrollmentExpiryService';
+import { initChatSocket } from './socket/chatSocket';
 
 
 dotenv.config();
 
 
 const app = express();
+const server = http.createServer(app);
+const io = initChatSocket(server);
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -100,6 +107,7 @@ app.use('/api/certificates', certificateRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/tutor', tutorRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/discussions', discussionRoutes);
@@ -138,7 +146,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   });
 });
 
-app.listen(Number(PORT), '0.0.0.0', () => {
+server.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT} (Bound to 0.0.0.0 for LAN/IP access)`);
   pool.getConnection()
     .then(async (conn) => {
@@ -147,7 +155,9 @@ app.listen(Number(PORT), '0.0.0.0', () => {
       try {
         await runSeasonAndLevelMigration();
         await runStudentVocabularyMigration();
+        await runChatMigration();
         initSeasonScheduler();
+        initEnrollmentExpiryScheduler();
       } catch (migrationErr: any) {
         console.warn('⚠️  Setup warning:', migrationErr.message);
       }
@@ -161,4 +171,5 @@ app.listen(Number(PORT), '0.0.0.0', () => {
 });
 
 
+export { server, io };
 export default app;
