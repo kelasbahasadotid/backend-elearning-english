@@ -1,5 +1,5 @@
 node_modules/
-dist/
+# dist/ is included so compiled JavaScript is available for hosting deployment
 .env
 uploads/recordings/*
 !uploads/recordings/.gitkeep
@@ -7,5 +7,10 @@ uploads/certificates/*
 !uploads/certificates/.gitkeep
 uploads/templates/*
 !uploads/templates/.gitkeep
+uploads/tts_cache/*
+!uploads/tts_cache/.gitkeep
+*.zip
+.DS_Store
 src/controllers/h5pController.ts
 src/utils/progress.ts
+

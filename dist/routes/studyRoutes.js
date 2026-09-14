@@ -1,0 +1,31 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const studyController_1 = require("../controllers/studyController");
+const auth_1 = require("../middleware/auth");
+const vocabularyController_1 = require("../controllers/vocabularyController");
+const enrollmentExpiryController_1 = require("../controllers/enrollmentExpiryController");
+const router = (0, express_1.Router)();
+router.use(auth_1.authenticateToken);
+// Course Expiration & Renewal Alerts
+router.get('/expiring-courses', enrollmentExpiryController_1.getMyExpiringCourses);
+// Room Vocabulary (Personal Student Dictionary)
+router.get('/vocabulary', vocabularyController_1.getMyVocabularyRoom);
+router.post('/vocabulary/check', vocabularyController_1.checkVocabularyDuplicate);
+router.get('/vocabulary/:id', vocabularyController_1.getVocabularyDetails);
+router.post('/vocabulary', vocabularyController_1.createManualVocabulary);
+router.put('/vocabulary/:id', vocabularyController_1.updateVocabulary);
+router.delete('/vocabulary/:id', vocabularyController_1.deleteVocabulary);
+router.get('/leaderboard', studyController_1.getLeaderboard);
+router.get('/season/current', studyController_1.getActiveSeasonInfo);
+router.get('/seasons/my-history', studyController_1.getMySeasonHistory);
+router.get('/seasons/:id/leaderboard', studyController_1.getPastSeasonLeaderboard);
+router.get('/levels', studyController_1.getPublicLevels);
+router.get('/my-xp-analytics', studyController_1.getMyXpAnalytics);
+router.get('/my-progress', studyController_1.getMyProgressSummary);
+router.get('/lesson/:id', studyController_1.getLesson);
+router.post('/video-progress', studyController_1.updateVideoProgress);
+router.post('/progress', studyController_1.updateLessonProgress);
+router.post('/lesson/:id/bookmark', studyController_1.toggleBookmark);
+router.get('/bookmarks', studyController_1.getBookmarkedLessons);
+exports.default = router;

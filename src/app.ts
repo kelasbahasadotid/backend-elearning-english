@@ -116,16 +116,30 @@ app.use('/api', h5pRoutes);
 
 
 // OpenAPI 3.0 & Swagger UI Interactive API Documentation (/docs & /api-docs)
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerUiOptions));
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerUiOptions));
-app.get('/openapi.json', (req: Request, res: Response) => {
+const noCacheMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('X-LiteSpeed-Cache-Control', 'no-cache');
+  res.setHeader('Surrogate-Control', 'no-store');
+  next();
+};
+
+app.use('/docs', noCacheMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerUiOptions));
+app.use('/api-docs', noCacheMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerUiOptions));
+// Alternative cache-busted documentation URLs for browsers with stubborn disk cache
+app.use('/docs-v2', noCacheMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerUiOptions));
+app.use('/api-docs-v2', noCacheMiddleware, swaggerUi.serve, swaggerUi.setup(swaggerDocument, swaggerUiOptions));
+
+app.get('/openapi.json', noCacheMiddleware, (req: Request, res: Response) => {
   res.setHeader('Content-Type', 'application/json');
   res.json(swaggerDocument);
 });
-app.get('/docs/swagger.json', (req: Request, res: Response) => {
+app.get('/docs/swagger.json', noCacheMiddleware, (req: Request, res: Response) => {
   res.setHeader('Content-Type', 'application/json');
   res.json(swaggerDocument);
 });
+
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {

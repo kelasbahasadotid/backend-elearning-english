@@ -80,6 +80,10 @@ export const CURATED_VOICES = [
   { id: 'en-US-MichelleNeural', name: 'Michelle (US Female - Friendly)', gender: 'Female', locale: 'en-US', accent: 'American' },
   { id: 'en-US-RogerNeural', name: 'Roger (US Male - Formal)', gender: 'Male', locale: 'en-US', accent: 'American' },
   { id: 'en-US-SteffanNeural', name: 'Steffan (US Male - Energetic)', gender: 'Male', locale: 'en-US', accent: 'American' },
+  { id: 'en-US-AvaMultilingualNeural', name: 'Ava Multilingual (US Female - Natural & Fluent)', gender: 'Female', locale: 'en-US', accent: 'American' },
+  { id: 'en-US-AndrewMultilingualNeural', name: 'Andrew Multilingual (US Male - Professional)', gender: 'Male', locale: 'en-US', accent: 'American' },
+  { id: 'en-US-EmmaMultilingualNeural', name: 'Emma Multilingual (US Female - Warm Conversational)', gender: 'Female', locale: 'en-US', accent: 'American' },
+  { id: 'en-US-BrianMultilingualNeural', name: 'Brian Multilingual (US Male - Deep Clear Voice)', gender: 'Male', locale: 'en-US', accent: 'American' },
 
   // AU
   { id: 'en-AU-NatashaNeural', name: 'Natasha (AU Female - Australian Accent)', gender: 'Female', locale: 'en-AU', accent: 'Australian' },
@@ -91,6 +95,7 @@ export const CURATED_VOICES = [
 
   // IN
   { id: 'en-IN-NeerjaNeural', name: 'Neerja (IN Female - Indian Accent)', gender: 'Female', locale: 'en-IN', accent: 'Indian' },
+  { id: 'en-IN-PrabhatNeural', name: 'Prabhat (IN Male - Indian Accent)', gender: 'Male', locale: 'en-IN', accent: 'Indian' },
 
   // ID
   { id: 'id-ID-GadisNeural', name: 'Gadis (Indonesian Female)', gender: 'Female', locale: 'id-ID', accent: 'Indonesian' },
@@ -99,7 +104,7 @@ export const CURATED_VOICES = [
 
 export function resolveVoice(voiceName?: string): string {
   if (!voiceName) return 'en-US-AvaNeural';
-  const clean = voiceName.trim();
+  const clean = voiceName.trim().replace(/^['"]|['"]$/g, '').trim();
   if (VOICE_ALIAS_MAP[clean]) {
     return VOICE_ALIAS_MAP[clean];
   }

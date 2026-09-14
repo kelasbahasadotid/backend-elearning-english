@@ -109,3 +109,87 @@ export async function fetchGoogleTts(text: string, lang = 'en'): Promise<Buffer>
   return Buffer.concat(audioBuffers);
 }
 
+/**
+ * Fetches Neural TTS audio via Official Microsoft Azure Speech REST API.
+ * Pure HTTPS POST — zero WebSocket requirement, 100% allowed on all cPanel/LiteSpeed hosts!
+ * Uses the exact same Neural voices (en-GB-RyanNeural, en-US-JennyNeural, etc.)
+ */
+export async function fetchAzureTts(text: string, voice: string, key?: string, region?: string): Promise<Buffer> {
+  const apiKey = key || process.env.AZURE_SPEECH_KEY;
+  const apiRegion = region || process.env.AZURE_SPEECH_REGION || 'southeastasia';
+  if (!apiKey) return Buffer.alloc(0);
+
+  const https = await import('https');
+  const ssml = `<speak version='1.0' xml:lang='en-US'><voice name='${voice}'>${text}</voice></speak>`;
+
+  return new Promise<Buffer>((resolve, reject) => {
+    const options = {
+      hostname: `${apiRegion}.tts.speech.microsoft.com`,
+      path: '/cognitiveservices/v1',
+      method: 'POST',
+      headers: {
+        'Ocp-Apim-Subscription-Key': apiKey,
+        'Content-Type': 'application/ssml+xml',
+        'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
+        'User-Agent': 'backend-elearning-english',
+        'Content-Length': Buffer.byteLength(ssml)
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      if (res.statusCode !== 200) {
+        reject(new Error(`Azure TTS HTTP error ${res.statusCode}`));
+        return;
+      }
+      const chunks: Buffer[] = [];
+      res.on('data', (d) => chunks.push(d));
+      res.on('end', () => resolve(Buffer.concat(chunks)));
+      res.on('error', reject);
+    });
+
+    req.on('error', reject);
+    req.setTimeout(5000, () => {
+      req.destroy(new Error('Azure TTS timeout'));
+    });
+
+    req.write(ssml);
+    req.end();
+  });
+}
+
+/**
+ * Fetches binary audio buffer from a remote HTTPS URL (e.g. Cloudflare Worker bridge).
+ * Pure HTTPS GET — 100% allowed on all cPanel/LiteSpeed hosts.
+ */
+export async function fetchHttpBuffer(urlStr: string): Promise<Buffer> {
+  const https = await import('https');
+  const http = await import('http');
+  const url = new URL(urlStr);
+  const client = url.protocol === 'https:' ? https : http;
+
+  return new Promise<Buffer>((resolve, reject) => {
+    const req = client.get(urlStr, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    }, (res: any) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        return fetchHttpBuffer(res.headers.location).then(resolve).catch(reject);
+      }
+      if (res.statusCode !== 200) {
+        return reject(new Error(`HTTP Bridge returned status ${res.statusCode}`));
+      }
+      const chunks: Buffer[] = [];
+      res.on('data', (d: Buffer) => chunks.push(d));
+      res.on('end', () => resolve(Buffer.concat(chunks)));
+      res.on('error', reject);
+    });
+    req.on('error', reject);
+    req.setTimeout(8000, () => {
+      req.destroy(new Error('HTTP Bridge request timeout'));
+    });
+  });
+}
+
+
+

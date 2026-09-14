@@ -3,7 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import pool from '../config/db';
 import path from 'path';
 import fs from 'fs';
-import { convertMp3ToWav, fetchGoogleTts } from '../utils/audioUtils';
+import { convertMp3ToWav, fetchGoogleTts, fetchAzureTts, fetchHttpBuffer } from '../utils/audioUtils';
 import { resolveVoice } from '../utils/voiceUtils';
 
 // Helper to determine file_type from mime type or file extension
@@ -328,10 +328,23 @@ export const generateAiAudio = async (req: AuthRequest, res: Response) => {
     });
 
     const chunks: Buffer[] = [];
-    try {
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Edge-TTS Cloud Timeout')), 3500)
-      );
+
+    if (process.env.EDGE_TTS_BRIDGE_URL) {
+      try {
+        const bridgeBase = process.env.EDGE_TTS_BRIDGE_URL.replace(/\/$/, '');
+        const bridgeUrl = `${bridgeBase}?text=${encodeURIComponent(cleanText)}&voice=${encodeURIComponent(targetVoice)}&rate=${encodeURIComponent(rateStr)}&pitch=${encodeURIComponent(pitch)}&format=aac`;
+        const bridgeBuf = await fetchHttpBuffer(bridgeUrl);
+        if (bridgeBuf && bridgeBuf.length > 0) chunks.push(bridgeBuf);
+      } catch (bridgeErr: any) {
+        console.warn('[MediaController] Edge-TTS Bridge error:', bridgeErr.message);
+      }
+    }
+
+    if (chunks.length === 0) {
+      try {
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Edge-TTS Cloud Timeout')), 3000)
+        );
 
       const streamPromise = (async () => {
         for await (const chunk of communicate.stream()) {
@@ -344,12 +357,34 @@ export const generateAiAudio = async (req: AuthRequest, res: Response) => {
       await Promise.race([streamPromise, timeoutPromise]);
     } catch (err: any) {
       console.warn(`[MediaController] Edge-TTS failed or timed out: ${err.message}. Activating Google Cloud Speech fallback...`);
+      }
     }
 
     let rawAudioBuffer: any = Buffer.concat(chunks);
+
+    if (rawAudioBuffer.length === 0 && process.env.AZURE_SPEECH_KEY) {
+      try {
+        rawAudioBuffer = await fetchAzureTts(cleanText, targetVoice);
+      } catch (azErr: any) {
+        console.warn('[MediaController] Azure Speech REST fallback failed:', azErr?.message);
+      }
+    }
+
     if (rawAudioBuffer.length === 0) {
       try {
-        rawAudioBuffer = await fetchGoogleTts(cleanText, 'en');
+        let fallbackLang = 'en-us';
+        if (targetVoice.startsWith('en-GB') || targetVoice.includes('UK_') || targetVoice.includes('Sonia') || targetVoice.includes('Ryan') || targetVoice.includes('Libby') || targetVoice.includes('Maisie') || targetVoice.includes('Thomas') || targetVoice.includes('Oliver')) {
+          fallbackLang = 'en-gb';
+        } else if (targetVoice.startsWith('en-AU') || targetVoice.includes('AU_') || targetVoice.includes('Natasha') || targetVoice.includes('William')) {
+          fallbackLang = 'en-au';
+        } else if (targetVoice.startsWith('en-CA') || targetVoice.includes('CA_') || targetVoice.includes('Clara') || targetVoice.includes('Liam')) {
+          fallbackLang = 'en-ca';
+        } else if (targetVoice.startsWith('en-IN') || targetVoice.includes('IN_') || targetVoice.includes('Neerja') || targetVoice.includes('Prabhat')) {
+          fallbackLang = 'en-in';
+        } else if (targetVoice.startsWith('id-ID') || targetVoice.includes('ID_') || targetVoice.includes('Gadis') || targetVoice.includes('Ardi')) {
+          fallbackLang = 'id';
+        }
+        rawAudioBuffer = await fetchGoogleTts(cleanText, fallbackLang);
       } catch (fbErr: any) {
         console.error('[MediaController] Google TTS fallback error:', fbErr);
       }
@@ -574,25 +609,71 @@ export const synthesizeMediaPreview = async (req: AuthRequest, res: Response) =>
       }
 
       const { pitch, rateStr } = getEmotionPitchAndRate(emotion, speed);
-      const comm = new Communicate(cleanText, {
-        voice,
-        rate: rateStr,
-        pitch
-      });
 
-      for await (const chunk of comm.stream()) {
-        if (!isClientConnected) break;
-        if (chunk.type === 'audio' && chunk.data) {
-          collectedChunks.push(chunk.data);
+      if (process.env.EDGE_TTS_BRIDGE_URL) {
+        try {
+          const bridgeBase = process.env.EDGE_TTS_BRIDGE_URL.replace(/\/$/, '');
+          const bridgeUrl = `${bridgeBase}?text=${encodeURIComponent(cleanText)}&voice=${encodeURIComponent(voice)}&rate=${encodeURIComponent(rateStr)}&pitch=${encodeURIComponent(pitch)}&format=aac`;
+          const bridgeBuf = await fetchHttpBuffer(bridgeUrl);
+          if (bridgeBuf && bridgeBuf.length > 0) collectedChunks.push(bridgeBuf);
+        } catch (bridgeErr: any) {
+          console.warn('[MediaController] Edge-TTS Bridge preview error:', bridgeErr.message);
         }
+      }
+
+      if (collectedChunks.length === 0) {
+        const comm = new Communicate(cleanText, {
+          voice,
+          rate: rateStr,
+          pitch
+        });
+
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Edge-TTS Timeout')), 3000)
+        );
+
+        const streamPromise = (async () => {
+          for await (const chunk of comm.stream()) {
+            if (!isClientConnected) break;
+            if (chunk.type === 'audio' && chunk.data) {
+              collectedChunks.push(chunk.data);
+            }
+          }
+        })();
+
+        try {
+          await Promise.race([streamPromise, timeoutPromise]);
+        } catch (_) {}
       }
     }
 
     if (!isClientConnected) return;
 
+    if (collectedChunks.length === 0 && typeof textRaw === 'string' && textRaw.trim() && process.env.AZURE_SPEECH_KEY) {
+      try {
+        const azureMp3 = await fetchAzureTts(textRaw.trim(), voice);
+        if (azureMp3.length > 0) collectedChunks.push(azureMp3);
+      } catch (azErr: any) {
+        console.warn('[MediaController] Azure Speech REST fallback failed:', azErr?.message);
+      }
+    }
+
     if (collectedChunks.length === 0 && typeof textRaw === 'string' && textRaw.trim()) {
       try {
-        const fallbackMp3 = await fetchGoogleTts(textRaw.trim(), 'en');
+        let fallbackLang = 'en-us';
+        if (voice.startsWith('en-GB') || voice.includes('UK_') || voice.includes('Sonia') || voice.includes('Ryan') || voice.includes('Libby') || voice.includes('Maisie') || voice.includes('Thomas') || voice.includes('Oliver')) {
+          fallbackLang = 'en-gb';
+        } else if (voice.startsWith('en-AU') || voice.includes('AU_') || voice.includes('Natasha') || voice.includes('William')) {
+          fallbackLang = 'en-au';
+        } else if (voice.startsWith('en-CA') || voice.includes('CA_') || voice.includes('Clara') || voice.includes('Liam')) {
+          fallbackLang = 'en-ca';
+        } else if (voice.startsWith('en-IN') || voice.includes('IN_') || voice.includes('Neerja') || voice.includes('Prabhat')) {
+          fallbackLang = 'en-in';
+        } else if (voice.startsWith('id-ID') || voice.includes('ID_') || voice.includes('Gadis') || voice.includes('Ardi')) {
+          fallbackLang = 'id';
+        }
+
+        const fallbackMp3 = await fetchGoogleTts(textRaw.trim(), fallbackLang);
         if (fallbackMp3.length > 0) {
           collectedChunks.push(fallbackMp3);
         }

@@ -10,7 +10,7 @@ import { transcribeAndAnalyze } from '../utils/speechEngine';
 import { updateProgressHelper, checkSequentialLessonLock } from '../utils/progress';
 import { resolveVoice, CURATED_VOICES } from '../utils/voiceUtils';
 import { extractVocabFromSpeaking } from '../services/vocabularyService';
-import { convertMp3ToWav, fetchGoogleTts } from '../utils/audioUtils';
+import { convertMp3ToWav, fetchGoogleTts, fetchAzureTts, fetchHttpBuffer } from '../utils/audioUtils';
 
 
 const TTS_CACHE_DIR = path.join(process.cwd(), 'uploads', 'tts_cache');
@@ -426,7 +426,7 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
   const formatRaw = isGet ? req.query.format : req.body.format;
 
   const text = typeof textRaw === 'string' ? textRaw.trim() : '';
-  const rawVoice = (typeof voiceRaw === 'string' && voiceRaw.trim()) ? voiceRaw.trim() : 'en-US-AvaNeural';
+  const rawVoice = (typeof voiceRaw === 'string' && voiceRaw.trim()) ? voiceRaw.trim().replace(/^['"]|['"]$/g, '').trim() : 'en-US-AvaNeural';
   const voice = resolveVoice(rawVoice);
   const rate = (typeof rateRaw === 'string' && rateRaw.trim()) ? rateRaw.trim() : '+0%';
   const pitch = (typeof pitchRaw === 'string' && pitchRaw.trim()) ? pitchRaw.trim() : '+0Hz';
@@ -481,10 +481,27 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
 
   let finalAudioBuffer: Buffer | null = null;
   let cacheHitTag = 'MISS';
+  let edgeErrMsg = '';
+
+  // Tier 0.5: If EDGE_TTS_BRIDGE_URL is configured (e.g. Cloudflare Worker Edge-TTS Bridge), use pure HTTPS with 0 WebSocket restrictions!
+  if (process.env.EDGE_TTS_BRIDGE_URL) {
+    try {
+      const bridgeBase = process.env.EDGE_TTS_BRIDGE_URL.replace(/\/$/, '');
+      const bridgeUrl = `${bridgeBase}?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(voice)}&rate=${encodeURIComponent(rate)}&pitch=${encodeURIComponent(pitch)}&format=${format}`;
+      const bridgeAudio = await fetchHttpBuffer(bridgeUrl);
+      if (bridgeAudio && bridgeAudio.length > 0) {
+        finalAudioBuffer = format === 'wav' ? await convertMp3ToWav(bridgeAudio) : bridgeAudio;
+        cacheHitTag = 'MISS-EDGE-BRIDGE';
+      }
+    } catch (bridgeErr: any) {
+      console.warn('[TTS] Edge-TTS HTTPS Bridge error:', bridgeErr.message);
+    }
+  }
 
   // Tier 1: Try High-Quality Neural Edge-TTS (Fast on unrestricted connections)
-  try {
-    const { Communicate } = require('edge-tts-universal');
+  if (!finalAudioBuffer) {
+    try {
+      const { Communicate } = require('edge-tts-universal');
     const communicate = new Communicate(text, {
       voice,
       rate,
@@ -493,9 +510,9 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
 
     const collectedChunks: Buffer[] = [];
 
-    // Timeout safety: 3500ms for initial Edge-TTS WebSocket. If server IP is blocked or throttled by Microsoft Cloud, immediately switch to fallback!
+    // Timeout safety: 3000ms for Edge-TTS WebSocket. If server IP is blocked or throttled by hosting firewall, switch quickly to fallback!
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Edge-TTS Cloud Timeout')), 3500)
+      setTimeout(() => reject(new Error('Edge-TTS connection timeout (3000ms)')), 3000)
     );
 
     const streamPromise = (async () => {
@@ -517,13 +534,42 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
       cacheHitTag = 'MISS-EDGE';
     }
   } catch (edgeErr: any) {
-    console.warn(`[TTS] Edge-TTS not reachable from this server (${edgeErr?.message || edgeErr}). Activating Google Cloud TTS Engine...`);
+    edgeErrMsg = edgeErr?.message || String(edgeErr);
+    console.warn(`[TTS] Edge-TTS not reachable from this server (${edgeErrMsg}). Activating Cloud Speech Fallback Engine...`);
+    }
+  }
+
+  // Tier 1.5: Official Azure Speech REST API (Pure HTTPS POST, works on 100% of hosts if key provided)
+  if (!finalAudioBuffer && isClientConnected && process.env.AZURE_SPEECH_KEY) {
+    try {
+      const azureMp3 = await fetchAzureTts(text, voice);
+      if (azureMp3.length > 0) {
+        finalAudioBuffer = format === 'wav' ? await convertMp3ToWav(azureMp3) : azureMp3;
+        cacheHitTag = 'MISS-AZURE-HTTPS';
+      }
+    } catch (azErr: any) {
+      console.warn('[TTS] Azure Speech REST fallback failed:', azErr?.message);
+    }
   }
 
   // Tier 2: Bulletproof High-Speed Google Speech HTTP API Fallback (Works on 100% of VPS / cPanel / LiteSpeed environments)
   if (!finalAudioBuffer && isClientConnected) {
     try {
-      const fallbackMp3 = await fetchGoogleTts(text, 'en');
+      // Map requested voice locale to Google TTS language code so accents match the selected voice!
+      let fallbackLang = 'en-us';
+      if (voice.startsWith('en-GB') || voice.includes('UK_') || voice.includes('Sonia') || voice.includes('Ryan') || voice.includes('Libby') || voice.includes('Maisie') || voice.includes('Thomas') || voice.includes('Oliver')) {
+        fallbackLang = 'en-gb';
+      } else if (voice.startsWith('en-AU') || voice.includes('AU_') || voice.includes('Natasha') || voice.includes('William')) {
+        fallbackLang = 'en-au';
+      } else if (voice.startsWith('en-CA') || voice.includes('CA_') || voice.includes('Clara') || voice.includes('Liam')) {
+        fallbackLang = 'en-ca';
+      } else if (voice.startsWith('en-IN') || voice.includes('IN_') || voice.includes('Neerja') || voice.includes('Prabhat')) {
+        fallbackLang = 'en-in';
+      } else if (voice.startsWith('id-ID') || voice.includes('ID_') || voice.includes('Gadis') || voice.includes('Ardi')) {
+        fallbackLang = 'id';
+      }
+
+      const fallbackMp3 = await fetchGoogleTts(text, fallbackLang);
       if (fallbackMp3.length > 0) {
         finalAudioBuffer = format === 'wav' ? await convertMp3ToWav(fallbackMp3) : fallbackMp3;
         cacheHitTag = 'MISS-FALLBACK';
@@ -553,7 +599,9 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
       'Content-Length': finalAudioBuffer.length,
       'Accept-Ranges': 'bytes',
       'Cache-Control': 'public, max-age=604800, immutable',
-      'X-Cache': cacheHitTag
+      'X-Cache': cacheHitTag,
+      'X-Selected-Voice': voice,
+      'X-Edge-Status': edgeErrMsg ? `Fallback (${edgeErrMsg})` : 'OK'
     });
     res.end(finalAudioBuffer);
   }

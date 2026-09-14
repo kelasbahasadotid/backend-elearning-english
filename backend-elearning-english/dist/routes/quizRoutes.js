@@ -1,0 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const quizController_1 = require("../controllers/quizController");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+router.use(auth_1.authenticateToken);
+router.get('/type/:typeCode', quizController_1.getAssessmentsByType);
+router.get('/attempts/history', quizController_1.getAttemptHistory);
+router.get('/attempts/:attemptId', quizController_1.getAttemptDetails);
+router.post('/check-question', quizController_1.checkSingleQuestion);
+router.post('/:id/check-question', quizController_1.checkSingleQuestion);
+router.get('/:id', quizController_1.getQuiz);
+router.post('/submit', quizController_1.submitAttempt);
+exports.default = router;

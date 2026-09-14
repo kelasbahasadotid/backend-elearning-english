@@ -1,4 +1,7 @@
 import swaggerUi from 'swagger-ui-express';
+import { CURATED_VOICES } from '../utils/voiceUtils';
+
+const EDGE_TTS_VOICE_IDS = CURATED_VOICES.map(v => v.id);
 
 export const swaggerDocument: Record<string, any> = {
   openapi: '3.0.3',
@@ -967,7 +970,8 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
     '/api/speaking/tts/voices': {
       get: {
         tags: ['Speaking AI & Pronunciation'],
-        summary: 'Get all 29 Edge-TTS neural voices list',
+        summary: 'Get all 29 Edge-TTS neural voices list (+ Indonesian voices)',
+        description: 'Mendapatkan daftar lengkap 29 Edge-TTS neural voices resmi (US, UK, AU, CA, IN) ditambah 2 suara Bahasa Indonesia lengkap dengan atribut gender, locale, dan nama persona.',
         responses: { 200: { description: 'List of curated voices' } }
       }
     },
@@ -975,34 +979,160 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
       post: {
         tags: ['Speaking AI & Pronunciation'],
         summary: 'Synthesize speech from text (Edge-TTS POST)',
+        description: 'Sintesis audio dari teks menggunakan Microsoft Edge-TTS neural engine.',
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object', properties: { text: { type: 'string' }, voice: { type: 'string' }, rate: { type: 'string' }, pitch: { type: 'string' }, format: { type: 'string', example: 'aac' } } } } }
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['text'],
+                properties: {
+                  text: {
+                    type: 'string',
+                    example: 'Hello, welcome to English speaking practice.'
+                  },
+                  voice: {
+                    type: 'string',
+                    enum: EDGE_TTS_VOICE_IDS,
+                    default: 'en-US-AvaNeural',
+                    description: 'Pilih salah satu dari 29 Edge-TTS neural voice resmi atau 2 suara Indonesia'
+                  },
+                  rate: {
+                    type: 'string',
+                    default: '+0%',
+                    example: '+0%',
+                    description: 'Penyesuaian kecepatan bicara (contoh: +0%, +15%, -10%)'
+                  },
+                  pitch: {
+                    type: 'string',
+                    default: '+0Hz',
+                    example: '+0Hz',
+                    description: 'Penyesuaian tinggi nada suara (contoh: +0Hz, +2Hz, -2Hz)'
+                  },
+                  format: {
+                    type: 'string',
+                    enum: ['aac', 'mp3', 'wav'],
+                    default: 'aac',
+                    example: 'aac',
+                    description: 'Format output audio'
+                  }
+                }
+              }
+            }
+          }
         },
-        responses: { 200: { description: 'Audio stream (audio/aac)' } }
+        responses: {
+          200: {
+            description: 'Audio stream (audio/aac, audio/mpeg, audio/wav)',
+            content: {
+              'audio/aac': { schema: { type: 'string', format: 'binary' } },
+              'audio/mpeg': { schema: { type: 'string', format: 'binary' } },
+              'audio/wav': { schema: { type: 'string', format: 'binary' } }
+            }
+          }
+        }
       },
       get: {
         tags: ['Speaking AI & Pronunciation'],
         summary: 'Direct progressive audio stream (Edge-TTS GET - Recommended)',
+        description: 'Stream audio TTS progresif secara langsung melalui GET query. Sangat ideal untuk pengujian Swagger UI dan tag <audio> HTML5.',
         parameters: [
-          { name: 'text', in: 'query', required: true, schema: { type: 'string' } },
-          { name: 'voice', in: 'query', schema: { type: 'string' } },
-          { name: 'rate', in: 'query', schema: { type: 'string' } },
-          { name: 'pitch', in: 'query', schema: { type: 'string' } },
-          { name: 'format', in: 'query', schema: { type: 'string', example: 'aac' } }
+          {
+            name: 'text',
+            in: 'query',
+            required: true,
+            schema: { type: 'string' },
+            example: 'Hello, welcome to English speaking practice.',
+            description: 'Teks bahasa Inggris yang akan diucapkan'
+          },
+          {
+            name: 'voice',
+            in: 'query',
+            required: false,
+            schema: {
+              type: 'string',
+              enum: EDGE_TTS_VOICE_IDS,
+              default: 'en-US-AvaNeural'
+            },
+            description: 'Pilih salah satu dari 29 Edge-TTS neural voice (US, UK, AU, CA, IN) atau 2 suara Indonesia'
+          },
+          {
+            name: 'rate',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', default: '+0%' },
+            example: '+0%',
+            description: 'Kecepatan suara (contoh: +0%, +15%, -10%)'
+          },
+          {
+            name: 'pitch',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', default: '+0Hz' },
+            example: '+0Hz',
+            description: 'Tinggi nada suara (contoh: +0Hz, +2Hz, -2Hz)'
+          },
+          {
+            name: 'format',
+            in: 'query',
+            required: false,
+            schema: {
+              type: 'string',
+              enum: ['aac', 'mp3', 'wav'],
+              default: 'aac'
+            },
+            example: 'aac',
+            description: 'Format audio output (aac, mp3, atau wav)'
+          }
         ],
-        responses: { 200: { description: 'Audio stream (audio/aac)' } }
+        responses: {
+          200: {
+            description: 'Audio stream (audio/aac, audio/mpeg, audio/wav)',
+            content: {
+              'audio/aac': { schema: { type: 'string', format: 'binary' } },
+              'audio/mpeg': { schema: { type: 'string', format: 'binary' } },
+              'audio/wav': { schema: { type: 'string', format: 'binary' } }
+            }
+          }
+        }
       }
     },
     '/api/speaking/tts/stream': {
       get: {
         tags: ['Speaking AI & Pronunciation'],
         summary: 'Stream synthesized TTS audio stream directly',
+        description: 'Stream buffer langsung dari Microsoft Edge-TTS.',
         parameters: [
-          { name: 'text', in: 'query', required: true, schema: { type: 'string' } },
-          { name: 'voice', in: 'query', schema: { type: 'string' } }
+          {
+            name: 'text',
+            in: 'query',
+            required: true,
+            schema: { type: 'string' },
+            example: 'Hello, stream audio test.'
+          },
+          {
+            name: 'voice',
+            in: 'query',
+            required: false,
+            schema: {
+              type: 'string',
+              enum: EDGE_TTS_VOICE_IDS,
+              default: 'en-US-AvaNeural'
+            },
+            description: 'Pilih salah satu dari 29 Edge-TTS neural voice'
+          }
         ],
-        responses: { 200: { description: 'Stream buffer' } }
+        responses: {
+          200: {
+            description: 'Stream buffer',
+            content: {
+              'audio/mpeg': { schema: { type: 'string', format: 'binary' } },
+              'audio/aac': { schema: { type: 'string', format: 'binary' } },
+              'audio/wav': { schema: { type: 'string', format: 'binary' } }
+            }
+          }
+        }
       }
     },
     '/api/speaking/transcribe': {
@@ -1493,7 +1623,24 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object', properties: { text: { type: 'string' }, voice: { type: 'string' }, speed: { type: 'number' }, emotion: { type: 'string' } } } } }
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  text: { type: 'string', example: 'Welcome to this lesson audio.' },
+                  voice: {
+                    type: 'string',
+                    enum: EDGE_TTS_VOICE_IDS,
+                    default: 'en-US-EmmaNeural',
+                    description: 'Pilih salah satu dari 29 Edge-TTS neural voice resmi atau 2 suara Indonesia'
+                  },
+                  speed: { type: 'number', example: 1.0 },
+                  emotion: { type: 'string', example: 'neutral' }
+                }
+              }
+            }
+          }
         },
         responses: { 201: { description: 'AI audio created' } }
       }
@@ -1516,19 +1663,53 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
         summary: 'Live preview audio stream (POST, All Roles)',
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object', properties: { text: { type: 'string' }, voice: { type: 'string' }, speed: { type: 'number' } } } } }
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  text: { type: 'string', example: 'Preview sentence speech.' },
+                  voice: {
+                    type: 'string',
+                    enum: EDGE_TTS_VOICE_IDS,
+                    default: 'en-US-EmmaNeural'
+                  },
+                  speed: { type: 'number', example: 1.0 }
+                }
+              }
+            }
+          }
         },
-        responses: { 200: { description: 'Audio stream (audio/mpeg)' } }
+        responses: {
+          200: {
+            description: 'Audio stream (audio/mpeg)',
+            content: { 'audio/mpeg': { schema: { type: 'string', format: 'binary' } } }
+          }
+        }
       },
       get: {
         tags: ['Media Library'],
         summary: 'Live preview audio stream (GET, All Roles)',
         parameters: [
-          { name: 'text', in: 'query', schema: { type: 'string' } },
-          { name: 'voice', in: 'query', schema: { type: 'string' } },
-          { name: 'speed', in: 'query', schema: { type: 'number' } }
+          { name: 'text', in: 'query', schema: { type: 'string' }, example: 'Preview sentence speech.' },
+          {
+            name: 'voice',
+            in: 'query',
+            schema: {
+              type: 'string',
+              enum: EDGE_TTS_VOICE_IDS,
+              default: 'en-US-EmmaNeural'
+            },
+            description: 'Pilih salah satu dari 29 Edge-TTS neural voice'
+          },
+          { name: 'speed', in: 'query', schema: { type: 'number', default: 1.0 } }
         ],
-        responses: { 200: { description: 'Audio stream (audio/mpeg)' } }
+        responses: {
+          200: {
+            description: 'Audio stream (audio/mpeg)',
+            content: { 'audio/mpeg': { schema: { type: 'string', format: 'binary' } } }
+          }
+        }
       }
     },
     '/api/media/target-lessons': {
