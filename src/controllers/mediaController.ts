@@ -3,7 +3,7 @@ import { AuthRequest } from '../middleware/auth';
 import pool from '../config/db';
 import path from 'path';
 import fs from 'fs';
-import { convertMp3ToWav, fetchGoogleTts, fetchAzureTts, fetchHttpBuffer } from '../utils/audioUtils';
+import { convertMp3ToWav, fetchGoogleTts, fetchAzureTts, fetchHttpBuffer, fetchEdgeTtsBridge } from '../utils/audioUtils';
 import { resolveVoice } from '../utils/voiceUtils';
 
 // Helper to determine file_type from mime type or file extension
@@ -329,15 +329,12 @@ export const generateAiAudio = async (req: AuthRequest, res: Response) => {
 
     const chunks: Buffer[] = [];
 
-    if (process.env.EDGE_TTS_BRIDGE_URL) {
-      try {
-        const bridgeBase = process.env.EDGE_TTS_BRIDGE_URL.replace(/\/$/, '');
-        const bridgeUrl = `${bridgeBase}?text=${encodeURIComponent(cleanText)}&voice=${encodeURIComponent(targetVoice)}&rate=${encodeURIComponent(rateStr)}&pitch=${encodeURIComponent(pitch)}&format=aac`;
-        const bridgeBuf = await fetchHttpBuffer(bridgeUrl);
-        if (bridgeBuf && bridgeBuf.length > 0) chunks.push(bridgeBuf);
-      } catch (bridgeErr: any) {
-        console.warn('[MediaController] Edge-TTS Bridge error:', bridgeErr.message);
-      }
+    // Tier 1: Cloudflare Worker Edge-TTS Bridge (Pure HTTPS, works on all hosting/cPanel)
+    try {
+      const bridgeBuf = await fetchEdgeTtsBridge(cleanText, targetVoice, rateStr, pitch);
+      if (bridgeBuf && bridgeBuf.length > 0) chunks.push(bridgeBuf);
+    } catch (bridgeErr: any) {
+      console.warn('[MediaController] Edge-TTS Bridge error:', bridgeErr.message);
     }
 
     if (chunks.length === 0) {
@@ -457,7 +454,6 @@ export const generateAiDialogue = async (req: AuthRequest, res: Response) => {
       return;
     }
 
-    const { Communicate } = require('edge-tts-universal');
     const audioSegments: Buffer[] = [];
     const fullTranscriptLines: string[] = [];
 
@@ -475,21 +471,46 @@ export const generateAiDialogue = async (req: AuthRequest, res: Response) => {
 
       const { pitch, rateStr } = getEmotionPitchAndRate(lineEmotion, lineSpeed);
 
-      const communicate = new Communicate(lineText, {
-        voice: lineVoice,
-        rate: rateStr,
-        pitch: pitch
-      });
-
-      const lineChunks: Buffer[] = [];
-      for await (const chunk of communicate.stream()) {
-        if (chunk.type === 'audio') {
-          lineChunks.push(chunk.data);
-        }
+      // 1. Try Cloudflare Worker Bridge first (works on datacenter/hosting IP)
+      let lineBuf: Buffer | null = null;
+      try {
+        lineBuf = await fetchEdgeTtsBridge(lineText, lineVoice, rateStr, pitch);
+      } catch (bridgeErr: any) {
+        console.warn('[MediaController] Dialogue line bridge error:', bridgeErr.message);
       }
 
-      if (lineChunks.length > 0) {
-        audioSegments.push(Buffer.concat(lineChunks));
+      // 2. Try direct Edge-TTS Communicate
+      if (!lineBuf) {
+        try {
+          const { Communicate } = require('edge-tts-universal');
+          const communicate = new Communicate(lineText, {
+            voice: lineVoice,
+            rate: rateStr,
+            pitch: pitch
+          });
+
+          const lineChunks: Buffer[] = [];
+          for await (const chunk of communicate.stream()) {
+            if (chunk.type === 'audio') {
+              lineChunks.push(chunk.data);
+            }
+          }
+
+          if (lineChunks.length > 0) {
+            lineBuf = Buffer.concat(lineChunks);
+          }
+        } catch (_) {}
+      }
+
+      // 3. Fallback to Google TTS
+      if (!lineBuf) {
+        try {
+          lineBuf = await fetchGoogleTts(lineText, 'en');
+        } catch (_) {}
+      }
+
+      if (lineBuf && lineBuf.length > 0) {
+        audioSegments.push(lineBuf);
       }
     }
 
@@ -587,17 +608,24 @@ export const synthesizeMediaPreview = async (req: AuthRequest, res: Response) =>
         const lineEmotion = line.emotion || 'neutral';
         const { pitch, rateStr } = getEmotionPitchAndRate(lineEmotion, lineSpeed);
 
-        const comm = new Communicate(lineText, {
-          voice: lineVoice,
-          rate: rateStr,
-          pitch: pitch
-        });
+        let lineBuf = await fetchEdgeTtsBridge(lineText, lineVoice, rateStr, pitch);
+        if (!lineBuf) {
+          try {
+            const comm = new Communicate(lineText, {
+              voice: lineVoice,
+              rate: rateStr,
+              pitch: pitch
+            });
 
-        for await (const chunk of comm.stream()) {
-          if (!isClientConnected) break;
-          if (chunk.type === 'audio' && chunk.data) {
-            collectedChunks.push(chunk.data);
-          }
+            for await (const chunk of comm.stream()) {
+              if (!isClientConnected) break;
+              if (chunk.type === 'audio' && chunk.data) {
+                collectedChunks.push(chunk.data);
+              }
+            }
+          } catch (_) {}
+        } else {
+          collectedChunks.push(lineBuf);
         }
       }
     } else {
@@ -609,21 +637,19 @@ export const synthesizeMediaPreview = async (req: AuthRequest, res: Response) =>
       }
 
       const { pitch, rateStr } = getEmotionPitchAndRate(emotion, speed);
+      const targetVoice = resolveVoice(voice || 'en-US-EmmaNeural');
 
-      if (process.env.EDGE_TTS_BRIDGE_URL) {
-        try {
-          const bridgeBase = process.env.EDGE_TTS_BRIDGE_URL.replace(/\/$/, '');
-          const bridgeUrl = `${bridgeBase}?text=${encodeURIComponent(cleanText)}&voice=${encodeURIComponent(voice)}&rate=${encodeURIComponent(rateStr)}&pitch=${encodeURIComponent(pitch)}&format=aac`;
-          const bridgeBuf = await fetchHttpBuffer(bridgeUrl);
-          if (bridgeBuf && bridgeBuf.length > 0) collectedChunks.push(bridgeBuf);
-        } catch (bridgeErr: any) {
-          console.warn('[MediaController] Edge-TTS Bridge preview error:', bridgeErr.message);
-        }
+      // 1. Cloudflare Bridge first
+      try {
+        const bridgeBuf = await fetchEdgeTtsBridge(cleanText, targetVoice, rateStr, pitch);
+        if (bridgeBuf && bridgeBuf.length > 0) collectedChunks.push(bridgeBuf);
+      } catch (bridgeErr: any) {
+        console.warn('[MediaController] Edge-TTS Bridge preview error:', bridgeErr.message);
       }
 
       if (collectedChunks.length === 0) {
         const comm = new Communicate(cleanText, {
-          voice,
+          voice: targetVoice,
           rate: rateStr,
           pitch
         });

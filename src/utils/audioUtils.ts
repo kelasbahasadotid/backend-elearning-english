@@ -161,7 +161,7 @@ export async function fetchAzureTts(text: string, voice: string, key?: string, r
  * Fetches binary audio buffer from a remote HTTPS URL (e.g. Cloudflare Worker bridge).
  * Pure HTTPS GET — 100% allowed on all cPanel/LiteSpeed hosts.
  */
-export async function fetchHttpBuffer(urlStr: string): Promise<Buffer> {
+export async function fetchHttpBuffer(urlStr: string, timeoutMs = 10000): Promise<Buffer> {
   const https = await import('https');
   const http = await import('http');
   const url = new URL(urlStr);
@@ -170,11 +170,11 @@ export async function fetchHttpBuffer(urlStr: string): Promise<Buffer> {
   return new Promise<Buffer>((resolve, reject) => {
     const req = client.get(urlStr, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36'
       }
     }, (res: any) => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        return fetchHttpBuffer(res.headers.location).then(resolve).catch(reject);
+        return fetchHttpBuffer(res.headers.location, timeoutMs).then(resolve).catch(reject);
       }
       if (res.statusCode !== 200) {
         return reject(new Error(`HTTP Bridge returned status ${res.statusCode}`));
@@ -185,10 +185,41 @@ export async function fetchHttpBuffer(urlStr: string): Promise<Buffer> {
       res.on('error', reject);
     });
     req.on('error', reject);
-    req.setTimeout(8000, () => {
-      req.destroy(new Error('HTTP Bridge request timeout'));
+    req.setTimeout(timeoutMs, () => {
+      req.destroy(new Error(`HTTP Bridge request timeout (${timeoutMs}ms)`));
     });
   });
+}
+
+/**
+ * Synthesizes audio using Cloudflare Edge-TTS Bridge Worker via HTTPS.
+ * Solves datacenter IP blocks and WebSocket restrictions on cPanel/LiteSpeed hosts.
+ */
+export async function fetchEdgeTtsBridge(
+  text: string,
+  voice = 'en-US-EmmaNeural',
+  rate = '+0%',
+  pitch = '+0Hz'
+): Promise<Buffer | null> {
+  const bridgeEndpoint = process.env.EDGE_TTS_BRIDGE_URL || 'https://cloudflare-edge-tts.kelasbahasadotid.workers.dev/tts';
+  const cleanText = (text || '').trim();
+  if (!cleanText) return null;
+
+  try {
+    const url = new URL(bridgeEndpoint);
+    url.searchParams.set('text', cleanText);
+    url.searchParams.set('voice', voice);
+    if (rate && rate !== '+0%') url.searchParams.set('rate', rate);
+    if (pitch && pitch !== '+0Hz') url.searchParams.set('pitch', pitch);
+
+    const buf = await fetchHttpBuffer(url.toString(), 12000);
+    if (buf && buf.length > 0) {
+      return buf;
+    }
+  } catch (err: any) {
+    console.warn('[TTS Bridge] Cloudflare Edge-TTS Worker call error:', err?.message || err);
+  }
+  return null;
 }
 
 

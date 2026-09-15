@@ -1004,10 +1004,16 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
                                     },
                                     format: {
                                         type: 'string',
-                                        enum: ['aac', 'mp3', 'wav'],
-                                        default: 'aac',
-                                        example: 'aac',
-                                        description: 'Format output audio'
+                                        enum: ['mp3', 'aac', 'wav'],
+                                        default: 'mp3',
+                                        example: 'mp3',
+                                        description: 'Format output audio (mp3 paling kompatibel di browser/Swagger)'
+                                    },
+                                    nocache: {
+                                        type: 'boolean',
+                                        default: false,
+                                        example: false,
+                                        description: 'Set true untuk mengabaikan cache lama dan menghasilkan suara baru'
                                     }
                                 }
                             }
@@ -1016,10 +1022,10 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
                 },
                 responses: {
                     200: {
-                        description: 'Audio stream (audio/aac, audio/mpeg, audio/wav)',
+                        description: 'Audio stream (audio/mpeg, audio/aac, audio/wav)',
                         content: {
-                            'audio/aac': { schema: { type: 'string', format: 'binary' } },
                             'audio/mpeg': { schema: { type: 'string', format: 'binary' } },
+                            'audio/aac': { schema: { type: 'string', format: 'binary' } },
                             'audio/wav': { schema: { type: 'string', format: 'binary' } }
                         }
                     }
@@ -1071,21 +1077,51 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
                         required: false,
                         schema: {
                             type: 'string',
-                            enum: ['aac', 'mp3', 'wav'],
-                            default: 'aac'
+                            enum: ['mp3', 'aac', 'wav'],
+                            default: 'mp3'
                         },
-                        example: 'aac',
-                        description: 'Format audio output (aac, mp3, atau wav)'
+                        example: 'mp3',
+                        description: 'Format audio output (mp3, aac, atau wav)'
+                    },
+                    {
+                        name: 'nocache',
+                        in: 'query',
+                        required: false,
+                        schema: { type: 'boolean', default: false },
+                        example: false,
+                        description: 'Abaikan file cache lama dan paksa sintesis audio baru dari Edge-TTS'
                     }
                 ],
                 responses: {
                     200: {
-                        description: 'Audio stream (audio/aac, audio/mpeg, audio/wav)',
+                        description: 'Audio stream (audio/mpeg, audio/aac, audio/wav)',
                         content: {
-                            'audio/aac': { schema: { type: 'string', format: 'binary' } },
                             'audio/mpeg': { schema: { type: 'string', format: 'binary' } },
+                            'audio/aac': { schema: { type: 'string', format: 'binary' } },
                             'audio/wav': { schema: { type: 'string', format: 'binary' } }
                         }
+                    }
+                }
+            }
+        },
+        '/api/speaking/tts/cache/clear': {
+            get: {
+                tags: ['Speaking AI & Pronunciation'],
+                summary: 'Clear stale TTS audio cache',
+                description: 'Membersihkan seluruh file cache audio TTS lama di server agar suara yang dihasilkan benar-benar segar dari Edge-TTS Neural.',
+                responses: {
+                    200: {
+                        description: 'Berhasil membersihkan cache'
+                    }
+                }
+            },
+            post: {
+                tags: ['Speaking AI & Pronunciation'],
+                summary: 'Clear stale TTS audio cache (POST)',
+                description: 'Membersihkan seluruh file cache audio TTS lama di server.',
+                responses: {
+                    200: {
+                        description: 'Berhasil membersihkan cache'
                     }
                 }
             }

@@ -10,7 +10,7 @@ import { transcribeAndAnalyze } from '../utils/speechEngine';
 import { updateProgressHelper, checkSequentialLessonLock } from '../utils/progress';
 import { resolveVoice, CURATED_VOICES } from '../utils/voiceUtils';
 import { extractVocabFromSpeaking } from '../services/vocabularyService';
-import { convertMp3ToWav, fetchGoogleTts, fetchAzureTts, fetchHttpBuffer } from '../utils/audioUtils';
+import { convertMp3ToWav, fetchGoogleTts, fetchAzureTts, fetchHttpBuffer, fetchEdgeTtsBridge } from '../utils/audioUtils';
 
 
 const TTS_CACHE_DIR = path.join(process.cwd(), 'uploads', 'tts_cache');
@@ -425,36 +425,40 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
   const pitchRaw = isGet ? req.query.pitch : req.body.pitch;
   const formatRaw = isGet ? req.query.format : req.body.format;
 
+  const nocacheRaw = isGet ? (req.query.nocache || req.query.refresh) : (req.body.nocache || req.body.refresh);
+  const isNoCache = nocacheRaw === 'true' || nocacheRaw === '1' || nocacheRaw === true;
+
   const text = typeof textRaw === 'string' ? textRaw.trim() : '';
   const rawVoice = (typeof voiceRaw === 'string' && voiceRaw.trim()) ? voiceRaw.trim().replace(/^['"]|['"]$/g, '').trim() : 'en-US-AvaNeural';
   const voice = resolveVoice(rawVoice);
   const rate = (typeof rateRaw === 'string' && rateRaw.trim()) ? rateRaw.trim() : '+0%';
   const pitch = (typeof pitchRaw === 'string' && pitchRaw.trim()) ? pitchRaw.trim() : '+0Hz';
-  // Server only reads WAV/AAC, AAC is default to be lightweight and save 95% storage
-  let format = 'aac';
+  
+  let format = 'mp3';
   const requestedFormat = (typeof formatRaw === 'string') ? formatRaw.trim().toLowerCase() : '';
   if (requestedFormat === 'wav') {
     format = 'wav';
-  } else if (requestedFormat === 'mp3') {
-    format = 'mp3';
-  } else {
+  } else if (requestedFormat === 'aac') {
     format = 'aac';
+  } else {
+    format = 'mp3';
   }
 
-  let contentType = 'audio/aac';
+  let contentType = 'audio/mpeg';
   if (format === 'wav') contentType = 'audio/wav';
-  else if (format === 'mp3') contentType = 'audio/mpeg';
+  else if (format === 'aac') contentType = 'audio/aac';
+  else contentType = 'audio/mpeg';
 
   if (!text) {
     res.status(400).json({ error: 'Text string is required' });
     return;
   }
 
-  // 1. Check Server Disk Cache for Instant (< 5ms) Response
+  // 1. Check Server Disk Cache for Instant (< 5ms) Response (bypassed if nocache/refresh is true)
   const cacheKey = crypto.createHash('md5').update(`${voice}__${rate}__${pitch}__${text}__${format}`).digest('hex');
   const cacheFile = path.join(TTS_CACHE_DIR, `${cacheKey}.${format}`);
 
-  if (fs.existsSync(cacheFile)) {
+  if (!isNoCache && fs.existsSync(cacheFile)) {
     try {
       const stats = fs.statSync(cacheFile);
       if (stats.size > 0) {
@@ -463,7 +467,8 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
           'Content-Length': stats.size,
           'Accept-Ranges': 'bytes',
           'Cache-Control': 'public, max-age=604800, immutable',
-          'X-Cache': 'HIT'
+          'X-Cache': 'HIT',
+          'X-Selected-Voice': voice
         });
         const readStream = fs.createReadStream(cacheFile);
         readStream.pipe(res);
@@ -483,22 +488,18 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
   let cacheHitTag = 'MISS';
   let edgeErrMsg = '';
 
-  // Tier 0.5: If EDGE_TTS_BRIDGE_URL is configured (e.g. Cloudflare Worker Edge-TTS Bridge), use pure HTTPS with 0 WebSocket restrictions!
-  if (process.env.EDGE_TTS_BRIDGE_URL) {
-    try {
-      const bridgeBase = process.env.EDGE_TTS_BRIDGE_URL.replace(/\/$/, '');
-      const bridgeUrl = `${bridgeBase}?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(voice)}&rate=${encodeURIComponent(rate)}&pitch=${encodeURIComponent(pitch)}&format=${format}`;
-      const bridgeAudio = await fetchHttpBuffer(bridgeUrl);
-      if (bridgeAudio && bridgeAudio.length > 0) {
-        finalAudioBuffer = format === 'wav' ? await convertMp3ToWav(bridgeAudio) : bridgeAudio;
-        cacheHitTag = 'MISS-EDGE-BRIDGE';
-      }
-    } catch (bridgeErr: any) {
-      console.warn('[TTS] Edge-TTS HTTPS Bridge error:', bridgeErr.message);
+  // Tier 1: Cloudflare Worker Edge-TTS Bridge (Pure HTTPS — zero WebSocket restrictions, 100% works on cPanel / LiteSpeed datacenter IPs)
+  try {
+    const bridgeAudio = await fetchEdgeTtsBridge(text, voice, rate, pitch);
+    if (bridgeAudio && bridgeAudio.length > 0) {
+      finalAudioBuffer = format === 'wav' ? await convertMp3ToWav(bridgeAudio) : bridgeAudio;
+      cacheHitTag = 'MISS-EDGE-BRIDGE';
     }
+  } catch (bridgeErr: any) {
+    console.warn('[TTS] Edge-TTS Cloudflare Bridge error:', bridgeErr.message);
   }
 
-  // Tier 1: Try High-Quality Neural Edge-TTS (Fast on unrestricted connections)
+  // Tier 1.5: Direct Edge-TTS WebSocket (for local dev / unrestricted servers)
   if (!finalAudioBuffer) {
     try {
       const { Communicate } = require('edge-tts-universal');
@@ -589,9 +590,12 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
   }
 
   // Save generated audio to cache for all subsequent clicks/students (< 5ms response time)
-  try {
-    await fs.promises.writeFile(cacheFile, finalAudioBuffer);
-  } catch (_) {}
+  // CRITICAL: Only cache authentic high-quality Edge-TTS audio (NEVER cache generic Google fallback!)
+  if (cacheHitTag !== 'MISS-FALLBACK') {
+    try {
+      await fs.promises.writeFile(cacheFile, finalAudioBuffer);
+    } catch (_) {}
+  }
 
   if (!res.headersSent) {
     res.writeHead(200, {
@@ -604,6 +608,32 @@ export const synthesizeTts = async (req: AuthRequest, res: Response) => {
       'X-Edge-Status': edgeErrMsg ? `Fallback (${edgeErrMsg})` : 'OK'
     });
     res.end(finalAudioBuffer);
+  }
+};
+
+/**
+ * Endpoint to clear stale TTS audio cache from disk.
+ * Allows instant refresh of all voices if any legacy fallback files were cached.
+ */
+export const clearTtsCache = async (_req: AuthRequest, res: Response) => {
+  try {
+    let deletedCount = 0;
+    if (fs.existsSync(TTS_CACHE_DIR)) {
+      const files = await fs.promises.readdir(TTS_CACHE_DIR);
+      for (const file of files) {
+        if (file.endsWith('.aac') || file.endsWith('.mp3') || file.endsWith('.wav')) {
+          await fs.promises.unlink(path.join(TTS_CACHE_DIR, file)).catch(() => {});
+          deletedCount++;
+        }
+      }
+    }
+    res.json({
+      success: true,
+      message: `Berhasil membersihkan ${deletedCount} file cache TTS lama di server`,
+      deletedCount
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || 'Gagal membersihkan cache TTS' });
   }
 };
 

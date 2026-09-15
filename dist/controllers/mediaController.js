@@ -291,17 +291,14 @@ const generateAiAudio = async (req, res) => {
             pitch: pitch
         });
         const chunks = [];
-        if (process.env.EDGE_TTS_BRIDGE_URL) {
-            try {
-                const bridgeBase = process.env.EDGE_TTS_BRIDGE_URL.replace(/\/$/, '');
-                const bridgeUrl = `${bridgeBase}?text=${encodeURIComponent(cleanText)}&voice=${encodeURIComponent(targetVoice)}&rate=${encodeURIComponent(rateStr)}&pitch=${encodeURIComponent(pitch)}&format=aac`;
-                const bridgeBuf = await (0, audioUtils_1.fetchHttpBuffer)(bridgeUrl);
-                if (bridgeBuf && bridgeBuf.length > 0)
-                    chunks.push(bridgeBuf);
-            }
-            catch (bridgeErr) {
-                console.warn('[MediaController] Edge-TTS Bridge error:', bridgeErr.message);
-            }
+        // Tier 1: Cloudflare Worker Edge-TTS Bridge (Pure HTTPS, works on all hosting/cPanel)
+        try {
+            const bridgeBuf = await (0, audioUtils_1.fetchEdgeTtsBridge)(cleanText, targetVoice, rateStr, pitch);
+            if (bridgeBuf && bridgeBuf.length > 0)
+                chunks.push(bridgeBuf);
+        }
+        catch (bridgeErr) {
+            console.warn('[MediaController] Edge-TTS Bridge error:', bridgeErr.message);
         }
         if (chunks.length === 0) {
             try {
@@ -407,7 +404,6 @@ const generateAiDialogue = async (req, res) => {
             res.status(400).json({ error: 'Daftar baris dialog wajib diisi (minimal 1 baris)' });
             return;
         }
-        const { Communicate } = require('edge-tts-universal');
         const audioSegments = [];
         const fullTranscriptLines = [];
         for (let i = 0; i < dialogue_lines.length; i++) {
@@ -421,19 +417,44 @@ const generateAiDialogue = async (req, res) => {
                 continue;
             fullTranscriptLines.push(`[${speakerName}]: "${lineText}"`);
             const { pitch, rateStr } = getEmotionPitchAndRate(lineEmotion, lineSpeed);
-            const communicate = new Communicate(lineText, {
-                voice: lineVoice,
-                rate: rateStr,
-                pitch: pitch
-            });
-            const lineChunks = [];
-            for await (const chunk of communicate.stream()) {
-                if (chunk.type === 'audio') {
-                    lineChunks.push(chunk.data);
-                }
+            // 1. Try Cloudflare Worker Bridge first (works on datacenter/hosting IP)
+            let lineBuf = null;
+            try {
+                lineBuf = await (0, audioUtils_1.fetchEdgeTtsBridge)(lineText, lineVoice, rateStr, pitch);
             }
-            if (lineChunks.length > 0) {
-                audioSegments.push(Buffer.concat(lineChunks));
+            catch (bridgeErr) {
+                console.warn('[MediaController] Dialogue line bridge error:', bridgeErr.message);
+            }
+            // 2. Try direct Edge-TTS Communicate
+            if (!lineBuf) {
+                try {
+                    const { Communicate } = require('edge-tts-universal');
+                    const communicate = new Communicate(lineText, {
+                        voice: lineVoice,
+                        rate: rateStr,
+                        pitch: pitch
+                    });
+                    const lineChunks = [];
+                    for await (const chunk of communicate.stream()) {
+                        if (chunk.type === 'audio') {
+                            lineChunks.push(chunk.data);
+                        }
+                    }
+                    if (lineChunks.length > 0) {
+                        lineBuf = Buffer.concat(lineChunks);
+                    }
+                }
+                catch (_) { }
+            }
+            // 3. Fallback to Google TTS
+            if (!lineBuf) {
+                try {
+                    lineBuf = await (0, audioUtils_1.fetchGoogleTts)(lineText, 'en');
+                }
+                catch (_) { }
+            }
+            if (lineBuf && lineBuf.length > 0) {
+                audioSegments.push(lineBuf);
             }
         }
         if (audioSegments.length === 0) {
@@ -520,17 +541,26 @@ const synthesizeMediaPreview = async (req, res) => {
                 const lineSpeed = Number(line.speed) || 1.0;
                 const lineEmotion = line.emotion || 'neutral';
                 const { pitch, rateStr } = getEmotionPitchAndRate(lineEmotion, lineSpeed);
-                const comm = new Communicate(lineText, {
-                    voice: lineVoice,
-                    rate: rateStr,
-                    pitch: pitch
-                });
-                for await (const chunk of comm.stream()) {
-                    if (!isClientConnected)
-                        break;
-                    if (chunk.type === 'audio' && chunk.data) {
-                        collectedChunks.push(chunk.data);
+                let lineBuf = await (0, audioUtils_1.fetchEdgeTtsBridge)(lineText, lineVoice, rateStr, pitch);
+                if (!lineBuf) {
+                    try {
+                        const comm = new Communicate(lineText, {
+                            voice: lineVoice,
+                            rate: rateStr,
+                            pitch: pitch
+                        });
+                        for await (const chunk of comm.stream()) {
+                            if (!isClientConnected)
+                                break;
+                            if (chunk.type === 'audio' && chunk.data) {
+                                collectedChunks.push(chunk.data);
+                            }
+                        }
                     }
+                    catch (_) { }
+                }
+                else {
+                    collectedChunks.push(lineBuf);
                 }
             }
         }
@@ -542,21 +572,19 @@ const synthesizeMediaPreview = async (req, res) => {
                 return;
             }
             const { pitch, rateStr } = getEmotionPitchAndRate(emotion, speed);
-            if (process.env.EDGE_TTS_BRIDGE_URL) {
-                try {
-                    const bridgeBase = process.env.EDGE_TTS_BRIDGE_URL.replace(/\/$/, '');
-                    const bridgeUrl = `${bridgeBase}?text=${encodeURIComponent(cleanText)}&voice=${encodeURIComponent(voice)}&rate=${encodeURIComponent(rateStr)}&pitch=${encodeURIComponent(pitch)}&format=aac`;
-                    const bridgeBuf = await (0, audioUtils_1.fetchHttpBuffer)(bridgeUrl);
-                    if (bridgeBuf && bridgeBuf.length > 0)
-                        collectedChunks.push(bridgeBuf);
-                }
-                catch (bridgeErr) {
-                    console.warn('[MediaController] Edge-TTS Bridge preview error:', bridgeErr.message);
-                }
+            const targetVoice = (0, voiceUtils_1.resolveVoice)(voice || 'en-US-EmmaNeural');
+            // 1. Cloudflare Bridge first
+            try {
+                const bridgeBuf = await (0, audioUtils_1.fetchEdgeTtsBridge)(cleanText, targetVoice, rateStr, pitch);
+                if (bridgeBuf && bridgeBuf.length > 0)
+                    collectedChunks.push(bridgeBuf);
+            }
+            catch (bridgeErr) {
+                console.warn('[MediaController] Edge-TTS Bridge preview error:', bridgeErr.message);
             }
             if (collectedChunks.length === 0) {
                 const comm = new Communicate(cleanText, {
-                    voice,
+                    voice: targetVoice,
                     rate: rateStr,
                     pitch
                 });

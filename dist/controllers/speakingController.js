@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.transcribeAudio = exports.synthesizeTts = exports.getTtsVoices = exports.getSpeakingAttemptsHistory = exports.submitAttempt = exports.getPrompts = void 0;
+exports.transcribeAudio = exports.clearTtsCache = exports.synthesizeTts = exports.getTtsVoices = exports.getSpeakingAttemptsHistory = exports.submitAttempt = exports.getPrompts = void 0;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const crypto_1 = __importDefault(require("crypto"));
@@ -325,36 +325,39 @@ const synthesizeTts = async (req, res) => {
     const rateRaw = isGet ? req.query.rate : req.body.rate;
     const pitchRaw = isGet ? req.query.pitch : req.body.pitch;
     const formatRaw = isGet ? req.query.format : req.body.format;
+    const nocacheRaw = isGet ? (req.query.nocache || req.query.refresh) : (req.body.nocache || req.body.refresh);
+    const isNoCache = nocacheRaw === 'true' || nocacheRaw === '1' || nocacheRaw === true;
     const text = typeof textRaw === 'string' ? textRaw.trim() : '';
     const rawVoice = (typeof voiceRaw === 'string' && voiceRaw.trim()) ? voiceRaw.trim().replace(/^['"]|['"]$/g, '').trim() : 'en-US-AvaNeural';
     const voice = (0, voiceUtils_1.resolveVoice)(rawVoice);
     const rate = (typeof rateRaw === 'string' && rateRaw.trim()) ? rateRaw.trim() : '+0%';
     const pitch = (typeof pitchRaw === 'string' && pitchRaw.trim()) ? pitchRaw.trim() : '+0Hz';
-    // Server only reads WAV/AAC, AAC is default to be lightweight and save 95% storage
-    let format = 'aac';
+    let format = 'mp3';
     const requestedFormat = (typeof formatRaw === 'string') ? formatRaw.trim().toLowerCase() : '';
     if (requestedFormat === 'wav') {
         format = 'wav';
     }
-    else if (requestedFormat === 'mp3') {
-        format = 'mp3';
-    }
-    else {
+    else if (requestedFormat === 'aac') {
         format = 'aac';
     }
-    let contentType = 'audio/aac';
+    else {
+        format = 'mp3';
+    }
+    let contentType = 'audio/mpeg';
     if (format === 'wav')
         contentType = 'audio/wav';
-    else if (format === 'mp3')
+    else if (format === 'aac')
+        contentType = 'audio/aac';
+    else
         contentType = 'audio/mpeg';
     if (!text) {
         res.status(400).json({ error: 'Text string is required' });
         return;
     }
-    // 1. Check Server Disk Cache for Instant (< 5ms) Response
+    // 1. Check Server Disk Cache for Instant (< 5ms) Response (bypassed if nocache/refresh is true)
     const cacheKey = crypto_1.default.createHash('md5').update(`${voice}__${rate}__${pitch}__${text}__${format}`).digest('hex');
     const cacheFile = path_1.default.join(TTS_CACHE_DIR, `${cacheKey}.${format}`);
-    if (fs_1.default.existsSync(cacheFile)) {
+    if (!isNoCache && fs_1.default.existsSync(cacheFile)) {
         try {
             const stats = fs_1.default.statSync(cacheFile);
             if (stats.size > 0) {
@@ -363,7 +366,8 @@ const synthesizeTts = async (req, res) => {
                     'Content-Length': stats.size,
                     'Accept-Ranges': 'bytes',
                     'Cache-Control': 'public, max-age=604800, immutable',
-                    'X-Cache': 'HIT'
+                    'X-Cache': 'HIT',
+                    'X-Selected-Voice': voice
                 });
                 const readStream = fs_1.default.createReadStream(cacheFile);
                 readStream.pipe(res);
@@ -381,22 +385,18 @@ const synthesizeTts = async (req, res) => {
     let finalAudioBuffer = null;
     let cacheHitTag = 'MISS';
     let edgeErrMsg = '';
-    // Tier 0.5: If EDGE_TTS_BRIDGE_URL is configured (e.g. Cloudflare Worker Edge-TTS Bridge), use pure HTTPS with 0 WebSocket restrictions!
-    if (process.env.EDGE_TTS_BRIDGE_URL) {
-        try {
-            const bridgeBase = process.env.EDGE_TTS_BRIDGE_URL.replace(/\/$/, '');
-            const bridgeUrl = `${bridgeBase}?text=${encodeURIComponent(text)}&voice=${encodeURIComponent(voice)}&rate=${encodeURIComponent(rate)}&pitch=${encodeURIComponent(pitch)}&format=${format}`;
-            const bridgeAudio = await (0, audioUtils_1.fetchHttpBuffer)(bridgeUrl);
-            if (bridgeAudio && bridgeAudio.length > 0) {
-                finalAudioBuffer = format === 'wav' ? await (0, audioUtils_1.convertMp3ToWav)(bridgeAudio) : bridgeAudio;
-                cacheHitTag = 'MISS-EDGE-BRIDGE';
-            }
-        }
-        catch (bridgeErr) {
-            console.warn('[TTS] Edge-TTS HTTPS Bridge error:', bridgeErr.message);
+    // Tier 1: Cloudflare Worker Edge-TTS Bridge (Pure HTTPS — zero WebSocket restrictions, 100% works on cPanel / LiteSpeed datacenter IPs)
+    try {
+        const bridgeAudio = await (0, audioUtils_1.fetchEdgeTtsBridge)(text, voice, rate, pitch);
+        if (bridgeAudio && bridgeAudio.length > 0) {
+            finalAudioBuffer = format === 'wav' ? await (0, audioUtils_1.convertMp3ToWav)(bridgeAudio) : bridgeAudio;
+            cacheHitTag = 'MISS-EDGE-BRIDGE';
         }
     }
-    // Tier 1: Try High-Quality Neural Edge-TTS (Fast on unrestricted connections)
+    catch (bridgeErr) {
+        console.warn('[TTS] Edge-TTS Cloudflare Bridge error:', bridgeErr.message);
+    }
+    // Tier 1.5: Direct Edge-TTS WebSocket (for local dev / unrestricted servers)
     if (!finalAudioBuffer) {
         try {
             const { Communicate } = require('edge-tts-universal');
@@ -483,10 +483,13 @@ const synthesizeTts = async (req, res) => {
         return;
     }
     // Save generated audio to cache for all subsequent clicks/students (< 5ms response time)
-    try {
-        await fs_1.default.promises.writeFile(cacheFile, finalAudioBuffer);
+    // CRITICAL: Only cache authentic high-quality Edge-TTS audio (NEVER cache generic Google fallback!)
+    if (cacheHitTag !== 'MISS-FALLBACK') {
+        try {
+            await fs_1.default.promises.writeFile(cacheFile, finalAudioBuffer);
+        }
+        catch (_) { }
     }
-    catch (_) { }
     if (!res.headersSent) {
         res.writeHead(200, {
             'Content-Type': contentType,
@@ -501,6 +504,33 @@ const synthesizeTts = async (req, res) => {
     }
 };
 exports.synthesizeTts = synthesizeTts;
+/**
+ * Endpoint to clear stale TTS audio cache from disk.
+ * Allows instant refresh of all voices if any legacy fallback files were cached.
+ */
+const clearTtsCache = async (_req, res) => {
+    try {
+        let deletedCount = 0;
+        if (fs_1.default.existsSync(TTS_CACHE_DIR)) {
+            const files = await fs_1.default.promises.readdir(TTS_CACHE_DIR);
+            for (const file of files) {
+                if (file.endsWith('.aac') || file.endsWith('.mp3') || file.endsWith('.wav')) {
+                    await fs_1.default.promises.unlink(path_1.default.join(TTS_CACHE_DIR, file)).catch(() => { });
+                    deletedCount++;
+                }
+            }
+        }
+        res.json({
+            success: true,
+            message: `Berhasil membersihkan ${deletedCount} file cache TTS lama di server`,
+            deletedCount
+        });
+    }
+    catch (err) {
+        res.status(500).json({ error: err.message || 'Gagal membersihkan cache TTS' });
+    }
+};
+exports.clearTtsCache = clearTtsCache;
 const transcribeAudio = async (req, res) => {
     const audioFile = req.file;
     const promptText = (req.body.promptText || '').toString();

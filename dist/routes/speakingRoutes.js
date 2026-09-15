@@ -11,6 +11,9 @@ router.get('/tts/voices', speakingController_1.getTtsVoices);
 router.post('/tts/synthesize', speakingController_1.synthesizeTts);
 router.get('/tts/synthesize', speakingController_1.synthesizeTts);
 router.get('/tts/stream', speakingController_1.synthesizeTts);
+router.get('/tts/cache/clear', speakingController_1.clearTtsCache);
+router.post('/tts/cache/clear', speakingController_1.clearTtsCache);
+router.delete('/tts/cache', speakingController_1.clearTtsCache);
 // Public Detailed Diagnostic Endpoint
 router.get('/tts/diagnostic', async (req, res) => {
     const https = require('https');
@@ -23,6 +26,27 @@ router.get('/tts/diagnostic', async (req, res) => {
         platform: process.platform,
         env: process.env.NODE_ENV || 'production'
     };
+    // 0. Cloudflare Worker Bridge check
+    const bridgeUrl = process.env.EDGE_TTS_BRIDGE_URL || 'https://cloudflare-edge-tts.kelasbahasadotid.workers.dev/tts';
+    const startBridge = Date.now();
+    try {
+        const { fetchHttpBuffer } = require('../utils/audioUtils');
+        const testBuffer = await fetchHttpBuffer(`${bridgeUrl}?text=ping&voice=en-US-EmmaNeural`, 6000);
+        report.cloudflareBridge = {
+            success: true,
+            url: bridgeUrl,
+            latencyMs: Date.now() - startBridge,
+            bytesReceived: testBuffer.length
+        };
+    }
+    catch (bridgeErr) {
+        report.cloudflareBridge = {
+            success: false,
+            url: bridgeUrl,
+            latencyMs: Date.now() - startBridge,
+            error: bridgeErr.message
+        };
+    }
     // 1. DNS check
     try {
         const ip = await new Promise((resolve, reject) => {
