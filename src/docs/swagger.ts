@@ -79,6 +79,7 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
         properties: {
           title: { type: 'string', example: 'Mastering English Grammar & Speaking' },
           slug: { type: 'string', example: 'mastering-english-grammar-speaking' },
+          code: { type: 'string', example: 'ENG-BEGINNER' },
           shortDescription: { type: 'string', example: 'Master tenses and speak fluently.' },
           description: { type: 'string', example: 'Full in-depth English curriculum with AI pronunciation scoring.' },
           price: { type: 'number', example: 299000 },
@@ -89,6 +90,35 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
           thumbnailUrl: { type: 'string', example: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d' },
           certificateEnabled: { type: 'boolean', example: true },
           speakingAiEnabled: { type: 'boolean', example: true },
+          enforceLessonOrder: {
+            type: 'boolean',
+            default: true,
+            example: true,
+            description: 'Kunci urutan materi per kelas. Default true (1) = materi wajib selesai berurutan. Jika false (0) = kelas bebas urutan, siswa dapat membuka materi, kuis, dan tes speaking mana pun tanpa gembok.'
+          },
+          status: { type: 'string', enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED'], example: 'PUBLISHED' }
+        }
+      },
+      CourseUpdateDto: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', example: 'Mastering English Grammar & Speaking (Updated)' },
+          code: { type: 'string', example: 'ENG-BEGINNER' },
+          shortDescription: { type: 'string', example: 'Master tenses and speak fluently.' },
+          description: { type: 'string', example: 'Full in-depth English curriculum with AI pronunciation scoring.' },
+          price: { type: 'number', example: 299000 },
+          discountPrice: { type: 'number', example: 199000 },
+          categoryId: { type: 'integer', example: 1 },
+          levelId: { type: 'integer', example: 1 },
+          cefrLevel: { type: 'string', example: 'A1' },
+          thumbnail: { type: 'string', example: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d' },
+          banner: { type: 'string', example: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d' },
+          enforceLessonOrder: {
+            type: 'boolean',
+            default: true,
+            example: false,
+            description: 'Kunci urutan materi per kelas. True (1) = materi wajib berurutan. False (0) = bebas urutan materi (menonaktifkan gembok sekuensial).'
+          },
           status: { type: 'string', enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED'], example: 'PUBLISHED' }
         }
       },
@@ -111,8 +141,85 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
           title: { type: 'string', example: 'Module 1: Everyday Greetings' },
           description: { type: 'string', example: 'Basic self introduction and greetings.' },
           moduleOrder: { type: 'integer', example: 1 },
+          unitId: { type: 'integer', nullable: true, example: 1, description: 'ID Unit induk (opsional)' },
           estimatedMinutes: { type: 'integer', example: 60 },
           status: { type: 'string', enum: ['DRAFT', 'PUBLISHED'], example: 'PUBLISHED' }
+        }
+      },
+      UnitCreateDto: {
+        type: 'object',
+        required: ['title'],
+        properties: {
+          courseVersionId: { type: 'integer', example: 1 },
+          title: { type: 'string', example: 'Unit 1: Introduction to Daily Speaking' },
+          slug: { type: 'string', example: 'unit-1-introduction-to-daily-speaking' },
+          description: { type: 'string', example: 'Fondasi percakapan dan kosakata harian.' },
+          unitOrder: { type: 'integer', example: 1 },
+          status: { type: 'string', enum: ['PUBLISHED', 'DRAFT', 'ARCHIVED'], example: 'PUBLISHED' }
+        }
+      },
+      UnitUpdateDto: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', example: 'Unit 1: Introduction to Daily Speaking (Updated)' },
+          slug: { type: 'string', example: 'unit-1-introduction-to-daily-speaking' },
+          description: { type: 'string', example: 'Deskripsi unit pembelajaran baru.' },
+          unitOrder: { type: 'integer', example: 1 },
+          status: { type: 'string', enum: ['PUBLISHED', 'DRAFT', 'ARCHIVED'], example: 'PUBLISHED' }
+        }
+      },
+      UnitReorderDto: {
+        type: 'object',
+        required: ['units'],
+        properties: {
+          units: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'integer', example: 1 },
+                unitOrder: { type: 'integer', example: 1 }
+              }
+            }
+          }
+        }
+      },
+      ModuleMoveUnitDto: {
+        type: 'object',
+        properties: {
+          unitId: { type: 'integer', nullable: true, example: 1, description: 'ID Unit tujuan, atau null untuk melepas modul menjadi modul bebas' }
+        }
+      },
+      QuizImportDto: {
+        type: 'object',
+        properties: {
+          questions: {
+            type: 'array',
+            description: 'Daftar soal kuis yang telah diparsing untuk diimpor langsung',
+            items: {
+              type: 'object',
+              properties: {
+                questionTypeId: { type: 'integer', example: 1, description: '1: MCQ, 2: Multi-select, 3: True/False, 4: Fill blank, 5: Matching, 6: Ordering' },
+                questionCode: { type: 'string', example: 'MCQ-01' },
+                questionText: { type: 'string', example: 'What is the simple past tense of the verb "eat"?' },
+                explanation: { type: 'string', example: '"Ate" adalah bentuk past tense (V2) dari "eat".' },
+                point: { type: 'number', example: 10 },
+                options: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      optionLabel: { type: 'string', example: 'A' },
+                      optionText: { type: 'string', example: 'Ate' },
+                      isCorrect: { type: 'boolean', example: true },
+                      score: { type: 'number', example: 10 },
+                      optionOrder: { type: 'integer', example: 1 }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       },
       LessonCreateDto: {
@@ -476,9 +583,74 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
     '/api/courses/{slug}': {
       get: {
         tags: ['Courses'],
-        summary: 'Get course curriculum and details by slug',
-        parameters: [{ name: 'slug', in: 'path', required: true, schema: { type: 'string' } }],
-        responses: { 200: { description: 'Course curriculum details' }, 404: { description: 'Course not found' } }
+        summary: 'Get course curriculum and details by slug or numeric ID',
+        description: `Mengambil kurikulum lengkap kelas (unit, modul, materi/lessons, kuis, tes speaking, review, dsb).
+- **enforce_lesson_order**: bernilai \`1\` (urutan wajib terkunci) atau \`0\` (urutan bebas).
+- **is_locked**: bernilai \`false\` jika materi sudah selesai, materi aktif, atau jika kelas memiliki \`enforce_lesson_order = 0\`.
+- **is_required**: bernilai \`1\` jika materi ini wajib diselesaikan untuk progres kelas, atau \`0\` jika materi opsional/bonus.`,
+        parameters: [{ name: 'slug', in: 'path', required: true, description: 'Slug kursus atau numeric course ID', schema: { type: 'string' } }],
+        responses: {
+          200: {
+            description: 'Course curriculum and learning details',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    course: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'integer', example: 7 },
+                        title: { type: 'string', example: '[Bonus] English Beginner - 88 Video & 33 PPT' },
+                        slug: { type: 'string', example: 'bonus-english-beginner' },
+                        enforce_lesson_order: {
+                          type: 'integer',
+                          example: 0,
+                          description: '1 = Berurutan sekuensial (default), 0 = Bebas urutan materi'
+                        },
+                        status: { type: 'string', example: 'PUBLISHED' }
+                      }
+                    },
+                    enrolled: { type: 'boolean', example: true },
+                    modules: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'integer' },
+                          title: { type: 'string' },
+                          lessons: {
+                            type: 'array',
+                            items: {
+                              type: 'object',
+                              properties: {
+                                id: { type: 'integer', example: 393 },
+                                title: { type: 'string', example: 'Topic 5: Restaurant' },
+                                lesson_type: { type: 'string', example: 'VIDEO' },
+                                is_locked: {
+                                  type: 'boolean',
+                                  example: false,
+                                  description: 'Status gembok materi. Otomatis false jika enforce_lesson_order = 0'
+                                },
+                                is_required: {
+                                  type: 'integer',
+                                  example: 1,
+                                  description: '1 = Wajib diselesaikan, 0 = Materi opsional'
+                                },
+                                completed: { type: 'boolean', example: false }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          404: { description: 'Course not found' }
+        }
       }
     },
     '/api/courses/{id}/reviews': {
@@ -624,9 +796,47 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
       get: {
         tags: ['Study & Learning'],
         summary: 'Get lesson study materials (Video, slides, text, H5P, quiz)',
+        description: `Mengambil detail materi beserta seluruh blok konten pembelajaran untuk siswa yang terdaftar.
+- **Urutan Sekuensial & Gembok**: Jika kelas mengatur \`enforce_lesson_order = 1\` (default), materi hanya bisa dibuka jika materi sebelumnya sudah selesai. Jika mencoba melompati materi yang masih terkunci, server mengembalikan **403 Forbidden** beserta field \`isLocked: true\`, \`requiredLessonId\`, dan \`requiredLessonTitle\`.
+- **Kelas Bebas Urutan**: Jika kelas mengatur \`enforce_lesson_order = 0\` (seperti kelas Bonus), siswa bebas membuka materi mana saja tanpa ada gembok.
+- **Blok Konten & is_required**: Setiap objek di array \`contents\` menyertakan field \`is_required\` (\`1\` = blok konten wajib diselesaikan siswa sesuai saklar admin, \`0\` = opsional).`,
         security: [{ bearerAuth: [] }],
-        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
-        responses: { 200: { description: 'Lesson study details' } }
+        parameters: [{ name: 'id', in: 'path', required: true, description: 'ID Materi (Lesson ID)', schema: { type: 'integer' } }],
+        responses: {
+          200: {
+            description: 'Lesson study details & content blocks',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    lesson: { type: 'object' },
+                    contents: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'integer', example: 837 },
+                          content_type: { type: 'string', example: 'VIDEO' },
+                          title: { type: 'string', example: 'Video Materi' },
+                          is_required: {
+                            type: 'integer',
+                            example: 1,
+                            description: '1 = Wajib diselesaikan (Required for students to complete), 0 = Opsional'
+                          },
+                          attachments: { type: 'array', items: { type: 'object' } }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          403: {
+            description: 'Forbidden - Siswa belum terdaftar atau materi masih terkunci karena sequential order'
+          }
+        }
       }
     },
     '/api/study/my-progress': {
@@ -716,11 +926,24 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
     '/api/study/progress': {
       post: {
         tags: ['Study & Learning'],
-        summary: 'Mark lesson completion status',
+        summary: 'Mark lesson completion status and recalculate course progress',
+        description: 'Menandai materi selesai, menghitung modul & kursus progress, serta menganugerahkan XP reward.',
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: { type: 'object', properties: { lessonId: { type: 'integer' }, status: { type: 'string' } } } } }
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['lessonId'],
+                properties: {
+                  lessonId: { type: 'integer', example: 392 },
+                  completed: { type: 'boolean', default: true, example: true, description: 'True jika materi selesai' },
+                  progressPercent: { type: 'number', example: 100, description: 'Persentase progres materi (0 - 100)' }
+                }
+              }
+            }
+          }
         },
         responses: { 200: { description: 'Lesson status updated' } }
       }
@@ -2130,7 +2353,7 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
         summary: 'Update course details',
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'integer' } }],
-        requestBody: { required: true, content: { 'application/json': { schema: { type: 'object' } } } },
+        requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/CourseUpdateDto' } } } },
         responses: { 200: { description: 'Course updated' } }
       },
       delete: {
@@ -3547,6 +3770,171 @@ Platform backend untuk LMS Kelas Bahasa Inggris dengan dukungan AI Pronunciation
           { name: 'userId', in: 'path', required: true, schema: { type: 'integer' } }
         ],
         responses: { 200: { description: 'Log riwayat transaksi XP siswa' } }
+      }
+    },
+
+    // ----------------------------------------------------
+    // UNITS & SYLLABUS STRUCTURE (ADMIN)
+    // ----------------------------------------------------
+    '/api/admin/units': {
+      get: {
+        tags: ['Units & Syllabus', 'Admin Panel'],
+        summary: 'Get All Units (Filtered by Course/Version)',
+        description: 'Mendapatkan daftar unit dalam silabus kursus. Dapat difilter menggunakan query parameter courseId atau courseVersionId.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'courseId', in: 'query', required: false, schema: { type: 'integer' }, description: 'Filter berdasarkan ID Kursus' },
+          { name: 'courseVersionId', in: 'query', required: false, schema: { type: 'integer' }, description: 'Filter berdasarkan ID Versi Kursus' }
+        ],
+        responses: {
+          200: { description: 'Daftar unit kursus' }
+        }
+      },
+      post: {
+        tags: ['Units & Syllabus', 'Admin Panel'],
+        summary: 'Create New Unit',
+        description: 'Membuat unit silabus baru di bawah versi kursus untuk mengelompokkan modul-modul materi.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/UnitCreateDto' } } }
+        },
+        responses: {
+          201: { description: 'Unit berhasil dibuat' }
+        }
+      }
+    },
+    '/api/admin/units/{id}': {
+      put: {
+        tags: ['Units & Syllabus', 'Admin Panel'],
+        summary: 'Update Unit',
+        description: 'Memperbarui nama, deskripsi, urutan, atau status dari sebuah unit.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID Unit' }
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/UnitUpdateDto' } } }
+        },
+        responses: {
+          200: { description: 'Unit berhasil diperbarui' }
+        }
+      },
+      delete: {
+        tags: ['Units & Syllabus', 'Admin Panel'],
+        summary: 'Delete Unit',
+        description: 'Menghapus unit. Modul di dalamnya otomatis dilepas menjadi modul bebas (unassigned) tanpa terhapus.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID Unit' }
+        ],
+        responses: {
+          200: { description: 'Unit berhasil dihapus' }
+        }
+      }
+    },
+    '/api/admin/units/reorder': {
+      post: {
+        tags: ['Units & Syllabus', 'Admin Panel'],
+        summary: 'Reorder Units',
+        description: 'Mengatur urutan tampilan unit-unit dalam kursus secara bersamaan.',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/UnitReorderDto' } } }
+        },
+        responses: {
+          200: { description: 'Urutan unit berhasil diperbarui' }
+        }
+      }
+    },
+    '/api/admin/modules/{id}/move-unit': {
+      put: {
+        tags: ['Units & Syllabus', 'Admin Panel'],
+        summary: 'Move Module to Unit (Drag & Drop)',
+        description: 'Memindahkan modul ke dalam Unit tertentu (fitur drag-and-drop) atau melepas modul dari Unit (set unitId = null).',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID Modul' }
+        ],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/ModuleMoveUnitDto' } } }
+        },
+        responses: {
+          200: { description: 'Modul berhasil dipindahkan' }
+        }
+      }
+    },
+
+    // ----------------------------------------------------
+    // QUIZ IMPORT & TEMPLATES (ADMIN)
+    // ----------------------------------------------------
+    '/api/admin/quizzes/template/download': {
+      get: {
+        tags: ['Quizzes & Assessments', 'Admin Panel'],
+        summary: 'Download Quiz Import Template (Multi-Sheet Excel / CSV)',
+        description: 'Mengunduh file template resmi impor soal kuis berformat Excel Multi-Sheet (.xlsx) atau CSV (.csv). Mendukung filter tipe soal (ALL, MULTIPLE_CHOICE, MULTIPLE_SELECT, TRUE_FALSE, FILL_BLANK, MATCHING, WORD_ORDERING).',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'format', in: 'query', required: false, schema: { type: 'string', enum: ['xlsx', 'csv'], default: 'xlsx' }, description: 'Format file yang ingin diunduh' },
+          { name: 'type', in: 'query', required: false, schema: { type: 'string', default: 'ALL' }, description: 'Filter tipe soal (ALL, MULTIPLE_CHOICE, MATCHING, dll)' }
+        ],
+        responses: {
+          200: {
+            description: 'File template kuis spreadsheet (.xlsx / .csv)',
+            content: {
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': { schema: { type: 'string', format: 'binary' } },
+              'text/csv': { schema: { type: 'string' } }
+            }
+          }
+        }
+      }
+    },
+    '/api/admin/quizzes/{quizId}/import': {
+      post: {
+        tags: ['Quizzes & Assessments', 'Admin Panel'],
+        summary: 'Import Quiz Questions from Excel / CSV or JSON Payload',
+        description: 'Mengimpor puluhan soal kuis sekaligus ke database secara otomatis. Mendukung upload file spreadsheet Excel Multi-Sheet (.xlsx, .xls) / CSV (.csv) via multipart/form-data ("file") ATAU pengiriman JSON parsed questions pada request body. Secara otomatis membuat section kuis jika belum ada, menyimpan seluruh opsi & pasangan, serta memperbarui total skor kuis dalam 1 transaksi DB ACID.',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          { name: 'quizId', in: 'path', required: true, schema: { type: 'integer' }, description: 'ID Kuis / Assessment' }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'multipart/form-data': {
+              schema: {
+                type: 'object',
+                properties: {
+                  file: { type: 'string', format: 'binary', description: 'File spreadsheet Excel (.xlsx, .xls) atau CSV (.csv)' }
+                }
+              }
+            },
+            'application/json': {
+              schema: { $ref: '#/components/schemas/QuizImportDto' }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Soal berhasil diimpor',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    message: { type: 'string', example: 'Berhasil mengimpor 12 soal ke dalam kuis!' },
+                    importedCount: { type: 'integer', example: 12 }
+                  }
+                }
+              }
+            }
+          },
+          400: { description: 'Format file tidak valid atau data kosong' }
+        }
       }
     }
   }

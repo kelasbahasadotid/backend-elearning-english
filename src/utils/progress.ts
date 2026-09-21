@@ -184,12 +184,13 @@ export const checkSequentialLessonLock = async (
   lessonId: number
 ): Promise<{ isLocked: boolean; requiredLessonId?: number; requiredLessonTitle?: string; currentLessonTitle?: string }> => {
   try {
-    // 1. Fetch lesson and module info
+    // 1. Fetch lesson and module info, along with course enforce_lesson_order
     const [lessonRows]: any = await poolOrConn.query(
-      `SELECT l.id, l.title, l.module_id, cv.id as course_version_id
+      `SELECT l.id, l.title, l.module_id, cv.id as course_version_id, c.enforce_lesson_order
        FROM lessons l
        JOIN modules m ON l.module_id = m.id
        JOIN course_versions cv ON m.course_version_id = cv.id
+       JOIN courses c ON cv.course_id = c.id
        WHERE l.id = ?`,
       [lessonId]
     );
@@ -198,7 +199,12 @@ export const checkSequentialLessonLock = async (
       return { isLocked: false };
     }
 
-    const { title: currentLessonTitle, course_version_id } = lessonRows[0];
+    const { title: currentLessonTitle, course_version_id, enforce_lesson_order } = lessonRows[0];
+
+    // If course does not enforce sequential order (enforce_lesson_order = 0), allow free access!
+    if (enforce_lesson_order !== undefined && enforce_lesson_order !== null && (enforce_lesson_order === 0 || enforce_lesson_order === false || Number(enforce_lesson_order) === 0)) {
+      return { isLocked: false, currentLessonTitle };
+    }
 
     // 2. Fetch all published lessons in this course version in chronological order
     const [allLessons]: any = await poolOrConn.query(

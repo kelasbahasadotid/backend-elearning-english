@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadLibraryMedia = exports.uploadMedia = exports.uploadAudio = void 0;
+exports.uploadMemory = exports.uploadLibraryMedia = exports.uploadMedia = exports.uploadAudio = void 0;
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
@@ -70,5 +70,11 @@ exports.uploadLibraryMedia = (0, multer_1.default)({
     storage: libraryMediaStorage,
     limits: {
         fileSize: 100 * 1024 * 1024 // 100MB max
+    }
+});
+exports.uploadMemory = (0, multer_1.default)({
+    storage: multer_1.default.memoryStorage(),
+    limits: {
+        fileSize: 20 * 1024 * 1024 // 20MB max
     }
 });

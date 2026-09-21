@@ -4,6 +4,7 @@ const express_1 = require("express");
 const adminController_1 = require("../controllers/adminController");
 const paymentController_1 = require("../controllers/paymentController");
 const auth_1 = require("../middleware/auth");
+const upload_1 = require("../middleware/upload");
 const router = (0, express_1.Router)();
 // Public Settings route (unauthenticated)
 router.get('/settings/public', adminController_1.getPublicSettings);
@@ -76,10 +77,17 @@ router.get('/categories', contentCreator, adminController_1.getAllCategories);
 router.post('/categories', contentCreator, adminController_1.createCategory);
 router.put('/categories/:id', contentCreator, adminController_1.updateCategory);
 router.delete('/categories/:id', contentCreator, adminController_1.deleteCategory);
+// Units (Admin & Content Manager)
+router.get('/units', contentCreator, adminController_1.getAllUnits);
+router.post('/units', contentCreator, adminController_1.createUnit);
+router.post('/units/reorder', contentCreator, adminController_1.reorderUnits);
+router.put('/units/:id', contentCreator, adminController_1.updateUnit);
+router.delete('/units/:id', contentCreator, adminController_1.deleteUnit);
 // Modules (Admin & Content Manager)
 router.get('/modules', contentCreator, adminController_1.getAllModules);
 router.post('/modules', contentCreator, adminController_1.createModule);
 router.put('/modules/:id', contentCreator, adminController_1.updateModule);
+router.put('/modules/:id/move-unit', contentCreator, adminController_1.moveModuleUnit);
 router.delete('/modules/:id', contentCreator, adminController_1.deleteModule);
 // Lessons (Admin & Content Manager)
 router.get('/lessons', contentCreator, adminController_1.getAllLessons);
@@ -92,6 +100,8 @@ router.post('/quizzes', contentCreator, adminController_1.createQuiz);
 router.put('/quizzes/:id', contentCreator, adminController_1.updateQuiz);
 router.delete('/quizzes/:id', contentCreator, adminController_1.deleteQuiz);
 // Quiz Questions (Admin & Content Manager)
+router.get('/quizzes/template/download', contentCreator, adminController_1.downloadQuizTemplate);
+router.post('/quizzes/:quizId/import', contentCreator, upload_1.uploadMemory.single('file'), adminController_1.importQuizQuestions);
 router.get('/quizzes/:quizId/questions', contentCreator, adminController_1.getQuizQuestions);
 router.post('/quizzes/:quizId/questions', contentCreator, adminController_1.createQuizQuestion);
 router.put('/quizzes/questions/:questionId', contentCreator, adminController_1.updateQuizQuestion);

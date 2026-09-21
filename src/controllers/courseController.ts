@@ -47,7 +47,7 @@ export const getCourses = async (req: Request, res: Response) => {
 
   try {
     const sql = `
-      SELECT c.id, c.code, c.title, c.slug, c.short_description, c.description, c.thumbnail, c.price, c.discount_price, c.cefr_level, c.duration_minutes, c.status, cat.name as category_name,
+      SELECT c.id, c.code, c.title, c.slug, c.short_description, c.description, c.thumbnail, c.price, c.discount_price, c.cefr_level, c.duration_minutes, c.status, c.enforce_lesson_order, cat.name as category_name,
              COALESCE((SELECT AVG(rating) FROM course_reviews WHERE course_id = c.id), 4.8) as rating,
              (SELECT COUNT(*) FROM course_reviews WHERE course_id = c.id) as reviewsCount,
              (SELECT COUNT(*) FROM enrollments WHERE course_id = c.id AND status = 'ACTIVE') as studentCount
@@ -132,12 +132,19 @@ export const getCourseDetails = async (req: Request, res: Response) => {
     }
 
     const versionId = versions[0].id;
+
+    // 2.5 Fetch units in this version
+    const unitsQuery = isAdminOrTutor
+      ? 'SELECT id, course_version_id, title, description, unit_order, status FROM units WHERE course_version_id = ? ORDER BY unit_order ASC'
+      : 'SELECT id, course_version_id, title, description, unit_order, status FROM units WHERE course_version_id = ? AND status = "PUBLISHED" ORDER BY unit_order ASC';
+    const [units] = await pool.query<RowDataPacket[]>(unitsQuery, [versionId]);
+
     let modules: any[] = [];
 
     // 3. Fetch modules in this version
     const modulesQuery = isAdminOrTutor
-      ? 'SELECT id, title, description, module_order, estimated_minutes, status FROM modules WHERE course_version_id = ? ORDER BY module_order ASC'
-      : 'SELECT id, title, description, module_order, estimated_minutes, status FROM modules WHERE course_version_id = ? AND status = "PUBLISHED" ORDER BY module_order ASC';
+      ? 'SELECT id, unit_id, title, description, module_order, estimated_minutes, status FROM modules WHERE course_version_id = ? ORDER BY module_order ASC'
+      : 'SELECT id, unit_id, title, description, module_order, estimated_minutes, status FROM modules WHERE course_version_id = ? AND status = "PUBLISHED" ORDER BY module_order ASC';
 
     const [moduleRows] = await pool.query<RowDataPacket[]>(modulesQuery, [versionId]);
 
@@ -146,7 +153,7 @@ export const getCourseDetails = async (req: Request, res: Response) => {
     // 4. Fetch lessons for each module (including completed progress if user logged in)
     for (const mod of modules) {
       const lessonsQuery = isAdminOrTutor
-        ? `SELECT l.id, l.title, l.slug, l.lesson_type, l.lesson_order, l.duration_minutes, l.is_preview, l.xp_reward, l.status,
+        ? `SELECT l.id, l.title, l.slug, l.lesson_type, l.lesson_order, l.duration_minutes, l.is_preview, l.is_required, l.xp_reward, l.status,
                   COALESCE(a.max_attempt, l.max_attempt) as max_attempt,
                   COALESCE(lp.completed, 0) as completed
            FROM lessons l
@@ -154,7 +161,7 @@ export const getCourseDetails = async (req: Request, res: Response) => {
            LEFT JOIN lesson_progress lp ON l.id = lp.lesson_id AND lp.user_id = ?
            WHERE l.module_id = ? AND l.deleted_at IS NULL
            ORDER BY l.lesson_order ASC`
-        : `SELECT l.id, l.title, l.slug, l.lesson_type, l.lesson_order, l.duration_minutes, l.is_preview, l.xp_reward, l.status,
+        : `SELECT l.id, l.title, l.slug, l.lesson_type, l.lesson_order, l.duration_minutes, l.is_preview, l.is_required, l.xp_reward, l.status,
                   COALESCE(a.max_attempt, l.max_attempt) as max_attempt,
                   COALESCE(lp.completed, 0) as completed
            FROM lessons l
@@ -172,11 +179,15 @@ export const getCourseDetails = async (req: Request, res: Response) => {
     }
 
     // 4.5 Compute sequential is_locked flag across all lessons for enrolled student
+    const isEnforceLessonOrder = course.enforce_lesson_order === undefined || course.enforce_lesson_order === null
+      ? true
+      : (course.enforce_lesson_order !== 0 && course.enforce_lesson_order !== false && Number(course.enforce_lesson_order) !== 0);
+
     let foundActiveIncomplete = false;
     for (const mod of modules) {
       if (Array.isArray(mod.lessons)) {
         for (const les of mod.lessons) {
-          if (isAdminOrTutor || !userId) {
+          if (!isEnforceLessonOrder || isAdminOrTutor || !userId) {
             les.is_locked = false;
           } else if (les.completed) {
             // Already completed lessons are ALWAYS unlocked
@@ -268,11 +279,13 @@ export const getCourseDetails = async (req: Request, res: Response) => {
     res.json({
       course: {
         ...course,
+        enforce_lesson_order: course.enforce_lesson_order !== undefined && course.enforce_lesson_order !== null ? Number(course.enforce_lesson_order) : 1,
         course_version_id: versionId
       },
       enrolled: isEnrolled || isAdminOrTutor,
       isEnrolled: isEnrolled || isAdminOrTutor,
       enrollment: enrollmentData,
+      units,
       modules,
       quizScores,
       speakingScores,

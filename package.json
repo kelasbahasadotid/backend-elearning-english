@@ -37,7 +37,8 @@
     "sherpa-onnx-node": "^1.13.4",
     "socket.io": "^4.8.3",
     "swagger-ui-express": "^5.0.1",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

@@ -3,6 +3,8 @@ import pool from '../config/db';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import bcrypt from 'bcryptjs';
 import { AuthRequest } from '../middleware/auth';
+import * as XLSX from 'xlsx';
+import { parseQuizRows, parseQuizWorkbook, createExcelTemplateBuffer, createCsvTemplateString, ParsedQuestion } from '../utils/quizImportHelper';
 
 // Helper to slugify strings (e.g. "English Beginner" -> "english-beginner")
 const slugify = (text: string) => {
@@ -79,7 +81,7 @@ export const deleteBanner = async (req: Request, res: Response) => {
 export const getAllAdminCourses = async (req: Request, res: Response) => {
   try {
     const [courses] = await pool.query<RowDataPacket[]>(
-      `SELECT id, title, code, cefr_level, status, price, slug
+      `SELECT id, title, code, cefr_level, status, price, slug, enforce_lesson_order
        FROM courses
        ORDER BY id DESC`
     );
@@ -139,6 +141,7 @@ export const createCourse = async (req: Request, res: Response) => {
     cefrLevel, cefr_level,
     price,
     discountPrice, discount_price,
+    enforceLessonOrder, enforce_lesson_order,
     status
   } = req.body;
 
@@ -151,12 +154,15 @@ export const createCourse = async (req: Request, res: Response) => {
   const finalCefrLevel = cefrLevel ?? cefr_level ?? 'A1';
   const finalPrice = price !== undefined ? price : 0;
   const finalDiscountPrice = discountPrice !== undefined ? discountPrice : (discount_price !== undefined ? discount_price : 0);
+  const finalEnforceLessonOrder = enforceLessonOrder !== undefined
+    ? (enforceLessonOrder ? 1 : 0)
+    : (enforce_lesson_order !== undefined ? (enforce_lesson_order ? 1 : 0) : 1);
 
   try {
     const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO courses (category_id, level_id, created_by, code, title, slug, short_description, description, thumbnail, banner, cefr_level, price, discount_price, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [finalCategoryId, finalLevelId, finalCreatedBy, code, title, slug, finalShortDescription, finalDescription, thumbnail || null, banner || null, finalCefrLevel, finalPrice, finalDiscountPrice, status || 'DRAFT']
+      `INSERT INTO courses (category_id, level_id, created_by, code, title, slug, short_description, description, thumbnail, banner, cefr_level, price, discount_price, enforce_lesson_order, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [finalCategoryId, finalLevelId, finalCreatedBy, code, title, slug, finalShortDescription, finalDescription, thumbnail || null, banner || null, finalCefrLevel, finalPrice, finalDiscountPrice, finalEnforceLessonOrder, status || 'DRAFT']
     );
     res.status(201).json({ message: 'Course created successfully', courseId: result.insertId, slug });
   } catch (error: any) {
@@ -179,6 +185,7 @@ export const updateCourse = async (req: Request, res: Response) => {
     cefrLevel, cefr_level,
     price,
     discountPrice, discount_price,
+    enforceLessonOrder, enforce_lesson_order,
     status
   } = req.body;
   
@@ -208,6 +215,12 @@ export const updateCourse = async (req: Request, res: Response) => {
     addUpdate('cefr_level', cefrLevel ?? cefr_level);
     addUpdate('price', price);
     addUpdate('discount_price', discountPrice ?? discount_price);
+    const finalEnforceLessonOrder = enforceLessonOrder !== undefined
+      ? (enforceLessonOrder ? 1 : 0)
+      : (enforce_lesson_order !== undefined ? (enforce_lesson_order ? 1 : 0) : undefined);
+    if (finalEnforceLessonOrder !== undefined) {
+      addUpdate('enforce_lesson_order', finalEnforceLessonOrder);
+    }
     addUpdate('status', status);
 
     if (updates.length === 0) {
@@ -323,15 +336,205 @@ export const deleteCategory = async (req: Request, res: Response) => {
 };
 
 // ==========================================
+// UNITS CRUD
+// ==========================================
+export const getAllUnits = async (req: Request, res: Response) => {
+  try {
+    const { courseVersionId, courseId } = req.query;
+    let query = `
+      SELECT u.*, 
+             COUNT(m.id) as total_modules
+      FROM units u
+      LEFT JOIN modules m ON u.id = m.unit_id
+    `;
+    const params: any[] = [];
+
+    if (courseVersionId) {
+      query += ' WHERE u.course_version_id = ? GROUP BY u.id ORDER BY u.unit_order ASC';
+      params.push(courseVersionId);
+    } else if (courseId) {
+      query += `
+        JOIN course_versions cv ON u.course_version_id = cv.id
+        WHERE cv.course_id = ?
+        GROUP BY u.id
+        ORDER BY u.unit_order ASC
+      `;
+      params.push(courseId);
+    } else {
+      query += ' GROUP BY u.id ORDER BY u.unit_order ASC';
+    }
+
+    const [units] = await pool.query<RowDataPacket[]>(query, params);
+    res.json(units);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const createUnit = async (req: Request, res: Response) => {
+  const { courseVersionId, courseId, title, description, unitOrder, status } = req.body;
+  const slug = slugify(title || 'unit');
+  try {
+    let finalVersionId = courseVersionId;
+    if (!finalVersionId && courseId) {
+      const [versions] = await pool.query<RowDataPacket[]>(
+        'SELECT id FROM course_versions WHERE course_id = ? AND is_current = 1 LIMIT 1',
+        [courseId]
+      );
+      if (versions.length > 0) {
+        finalVersionId = versions[0].id;
+      } else {
+        const [vRes] = await pool.query<ResultSetHeader>(
+          'INSERT INTO course_versions (course_id, version, is_current, created_by) VALUES (?, ?, ?, ?)',
+          [courseId, 'v1.0.0', 1, 1]
+        );
+        finalVersionId = vRes.insertId;
+      }
+    }
+
+    if (!finalVersionId) {
+      res.status(400).json({ error: 'courseVersionId or courseId is required' });
+      return;
+    }
+
+    const [result] = await pool.query<ResultSetHeader>(
+      'INSERT INTO units (course_version_id, title, slug, description, unit_order, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [finalVersionId, title, slug, description || '', unitOrder || 1, status || 'PUBLISHED']
+    );
+    res.status(201).json({ message: 'Unit created successfully', unitId: result.insertId, slug });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateUnit = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { title, description, unitOrder, status } = req.body;
+  try {
+    const updates: string[] = [];
+    const values: any[] = [];
+
+    const addUpdate = (col: string, val: any) => {
+      if (val !== undefined) {
+        updates.push(`${col} = ?`);
+        values.push(val);
+      }
+    };
+
+    addUpdate('title', title);
+    if (title) {
+      updates.push('slug = ?');
+      values.push(slugify(title));
+    }
+    addUpdate('description', description);
+    addUpdate('unit_order', unitOrder);
+    addUpdate('status', status);
+
+    if (updates.length === 0) {
+      res.status(400).json({ error: 'No fields provided for update' });
+      return;
+    }
+
+    values.push(id);
+    const [result] = await pool.query<ResultSetHeader>(
+      `UPDATE units SET ${updates.join(', ')} WHERE id = ?`,
+      values
+    );
+    if (result.affectedRows === 0) {
+      res.status(404).json({ error: 'Unit not found' });
+      return;
+    }
+    res.json({ message: 'Unit updated successfully' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const deleteUnit = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  try {
+    // Unassign modules in this unit before deleting
+    await pool.query('UPDATE modules SET unit_id = NULL WHERE unit_id = ?', [id]);
+
+    const [result] = await pool.query<ResultSetHeader>('DELETE FROM units WHERE id = ?', [id]);
+    if (result.affectedRows === 0) {
+      res.status(404).json({ error: 'Unit not found' });
+      return;
+    }
+    res.json({ message: 'Unit deleted successfully' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const reorderUnits = async (req: Request, res: Response) => {
+  const { units } = req.body; // Array of { id, unitOrder }
+  if (!Array.isArray(units)) {
+    res.status(400).json({ error: 'units array is required' });
+    return;
+  }
+  try {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      for (const item of units) {
+        await connection.query('UPDATE units SET unit_order = ? WHERE id = ?', [item.unitOrder || item.unit_order, item.id]);
+      }
+      await connection.commit();
+      res.json({ message: 'Units reordered successfully' });
+    } catch (e) {
+      await connection.rollback();
+      throw e;
+    } finally {
+      connection.release();
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const moveModuleUnit = async (req: Request, res: Response) => {
+  const { id } = req.params; // moduleId
+  const { unitId, unit_id, moduleOrder, module_order } = req.body;
+  try {
+    const targetUnitId = unitId !== undefined ? unitId : (unit_id !== undefined ? unit_id : null);
+    const targetOrder = moduleOrder !== undefined ? moduleOrder : module_order;
+
+    const updates: string[] = ['unit_id = ?'];
+    const values: any[] = [targetUnitId];
+
+    if (targetOrder !== undefined) {
+      updates.push('module_order = ?');
+      values.push(targetOrder);
+    }
+
+    values.push(id);
+    const [result] = await pool.query<ResultSetHeader>(
+      `UPDATE modules SET ${updates.join(', ')} WHERE id = ?`,
+      values
+    );
+
+    if (result.affectedRows === 0) {
+      res.status(404).json({ error: 'Module not found' });
+      return;
+    }
+    res.json({ message: 'Module moved successfully' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// ==========================================
 // MODULES CRUD
 // ==========================================
 export const createModule = async (req: Request, res: Response) => {
-  const { courseVersionId, title, description, moduleOrder, estimatedMinutes, status } = req.body;
+  const { courseVersionId, unitId, unit_id, title, description, moduleOrder, estimatedMinutes, status } = req.body;
   const slug = slugify(title);
+  const finalUnitId = unitId !== undefined ? unitId : (unit_id !== undefined ? unit_id : null);
   try {
     const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO modules (course_version_id, title, slug, description, module_order, estimated_minutes, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [courseVersionId || 1, title, slug, description, moduleOrder || 1, estimatedMinutes || 30, status || 'DRAFT']
+      'INSERT INTO modules (course_version_id, unit_id, title, slug, description, module_order, estimated_minutes, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [courseVersionId || 1, finalUnitId, title, slug, description, moduleOrder || 1, estimatedMinutes || 30, status || 'DRAFT']
     );
     res.status(201).json({ message: 'Module created successfully', moduleId: result.insertId, slug });
   } catch (error: any) {
@@ -341,7 +544,7 @@ export const createModule = async (req: Request, res: Response) => {
 
 export const updateModule = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { title, description, moduleOrder, estimatedMinutes, status } = req.body;
+  const { title, description, moduleOrder, estimatedMinutes, status, unitId, unit_id } = req.body;
   try {
     const updates: string[] = [];
     const values: any[] = [];
@@ -362,6 +565,11 @@ export const updateModule = async (req: Request, res: Response) => {
     addUpdate('module_order', moduleOrder);
     addUpdate('estimated_minutes', estimatedMinutes);
     addUpdate('status', status);
+
+    const targetUnitId = unitId !== undefined ? unitId : unit_id;
+    if (targetUnitId !== undefined) {
+      addUpdate('unit_id', targetUnitId);
+    }
 
     if (updates.length === 0) {
        res.status(400).json({ error: 'No fields provided for update' });
@@ -1300,6 +1508,142 @@ export const createQuizQuestion = async (req: Request, res: Response) => {
     res.status(500).json({ error: error.message });
   } finally {
     connection.release();
+  }
+};
+
+export const importQuizQuestions = async (req: Request, res: Response) => {
+  const { quizId } = req.params;
+  const { questions: bodyQuestions } = req.body;
+  const reqFile = (req as any).file;
+
+  let questionsToImport: ParsedQuestion[] = [];
+
+  if (Array.isArray(bodyQuestions) && bodyQuestions.length > 0) {
+    questionsToImport = bodyQuestions;
+  } else if (reqFile && reqFile.buffer) {
+    try {
+      const wb = XLSX.read(reqFile.buffer, { type: 'buffer' });
+      questionsToImport = parseQuizWorkbook(wb);
+    } catch (e: any) {
+      res.status(400).json({ error: 'Gagal membaca file Excel/CSV: ' + e.message });
+      return;
+    }
+  }
+
+  if (!questionsToImport || questionsToImport.length === 0) {
+    res.status(400).json({ error: 'Tidak ada data soal valid yang ditemukan untuk diimpor.' });
+    return;
+  }
+
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // Check if assessment section exists for this quiz, otherwise create default section
+    let [sections] = await connection.query<RowDataPacket[]>(
+      'SELECT id FROM assessment_sections WHERE assessment_id = ? LIMIT 1',
+      [quizId]
+    );
+    let sectionId: number;
+    if (sections.length > 0) {
+      sectionId = sections[0].id;
+    } else {
+      const [secRes] = await connection.query<ResultSetHeader>(
+        'INSERT INTO assessment_sections (assessment_id, title, section_order) VALUES (?, "Default Section", 1)',
+        [quizId]
+      );
+      sectionId = secRes.insertId;
+    }
+
+    // Get current max question_order in section
+    const [orderRows] = await connection.query<RowDataPacket[]>(
+      'SELECT COALESCE(MAX(question_order), 0) as max_order FROM questions WHERE assessment_section_id = ?',
+      [sectionId]
+    );
+    let currentOrder = orderRows[0]?.max_order || 0;
+
+    let importedCount = 0;
+    for (const q of questionsToImport) {
+      if (!q.questionText || !q.questionText.trim()) continue;
+
+      currentOrder += 1;
+      const qTypeId = q.questionTypeId || 1;
+      const qCode = q.questionCode || `Q-${currentOrder}`;
+      const qText = q.questionText.trim();
+      const qExpl = q.explanation || '';
+      const qPoint = Number(q.point) || 10.0;
+
+      const [qResult] = await connection.query<ResultSetHeader>(
+        `INSERT INTO questions (assessment_section_id, question_type_id, question_code, question_text, explanation, point, question_order, shuffle_option, status) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, 1, 'ACTIVE')`,
+        [sectionId, qTypeId, qCode, qText, qExpl, qPoint, currentOrder]
+      );
+      const questionId = qResult.insertId;
+
+      if (Array.isArray(q.options) && q.options.length > 0) {
+        for (let i = 0; i < q.options.length; i++) {
+          const opt = q.options[i];
+          const optLabel = opt.optionLabel || String.fromCharCode(65 + i);
+          const optText = opt.optionText || '';
+          const isCorr = opt.isCorrect ? 1 : 0;
+          const optScore = opt.score !== undefined ? Number(opt.score) : 0;
+          const optOrder = opt.optionOrder || (i + 1);
+
+          await connection.query(
+            `INSERT INTO question_options (question_id, option_label, option_text, is_correct, score, option_order) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [questionId, optLabel, optText, isCorr, optScore, optOrder]
+          );
+        }
+      }
+
+      importedCount++;
+    }
+
+    // Update assessment total questions and total score
+    await connection.query(
+      `UPDATE assessments a 
+       SET a.total_question = (
+         SELECT COUNT(*) FROM questions q WHERE q.assessment_section_id = ?
+       ),
+       a.total_score = (
+         SELECT COALESCE(SUM(point), 100) FROM questions q WHERE q.assessment_section_id = ?
+       )
+       WHERE a.id = ?`,
+      [sectionId, sectionId, quizId]
+    );
+
+    await connection.commit();
+    res.json({
+      success: true,
+      message: `Berhasil mengimpor ${importedCount} soal ke dalam kuis!`,
+      importedCount
+    });
+  } catch (error: any) {
+    await connection.rollback();
+    res.status(500).json({ error: error.message });
+  } finally {
+    connection.release();
+  }
+};
+
+export const downloadQuizTemplate = async (req: Request, res: Response) => {
+  try {
+    const { format = 'xlsx', type = 'ALL' } = req.query;
+
+    if (String(format).toLowerCase() === 'csv') {
+      const csvStr = createCsvTemplateString(String(type));
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="template_quiz_import.csv"');
+      res.send(csvStr);
+    } else {
+      const buffer = createExcelTemplateBuffer(String(type));
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename="template_quiz_import.xlsx"');
+      res.send(buffer);
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
 };
 

@@ -4,6 +4,7 @@ import {
   getAllAdminCourses, getLessonsByCourse,
   createCourse, updateCourse, deleteCourse,
   createCategory, updateCategory, deleteCategory, getAllCategories,
+  createUnit, updateUnit, deleteUnit, getAllUnits, reorderUnits, moveModuleUnit,
   createModule, updateModule, deleteModule, getAllModules,
   createLesson, updateLesson, deleteLesson, getAllLessons,
   createQuiz, updateQuiz, deleteQuiz, getAllQuizzes,
@@ -17,6 +18,7 @@ import {
   createQuestionOption, updateQuestionOption, deleteQuestionOption,
   bulkSetMatchingPairs, bulkSetQuestionOptions,
   updateQuestionImage, updateQuestionOptionImage,
+  importQuizQuestions, downloadQuizTemplate,
   
   // Lesson Content Management
   getLessonContents, getLessonContentAttachments,
@@ -41,6 +43,7 @@ import {
 } from '../controllers/adminController';
 import { getPaymentSettings, updatePaymentSettings } from '../controllers/paymentController';
 import { authenticateToken, requireRole } from '../middleware/auth';
+import { uploadMemory } from '../middleware/upload';
 
 const router = ExpressRouter();
 
@@ -152,10 +155,18 @@ router.post('/categories', contentCreator, createCategory);
 router.put('/categories/:id', contentCreator, updateCategory);
 router.delete('/categories/:id', contentCreator, deleteCategory);
 
+// Units (Admin & Content Manager)
+router.get('/units', contentCreator, getAllUnits);
+router.post('/units', contentCreator, createUnit);
+router.post('/units/reorder', contentCreator, reorderUnits);
+router.put('/units/:id', contentCreator, updateUnit);
+router.delete('/units/:id', contentCreator, deleteUnit);
+
 // Modules (Admin & Content Manager)
 router.get('/modules', contentCreator, getAllModules);
 router.post('/modules', contentCreator, createModule);
 router.put('/modules/:id', contentCreator, updateModule);
+router.put('/modules/:id/move-unit', contentCreator, moveModuleUnit);
 router.delete('/modules/:id', contentCreator, deleteModule);
 
 // Lessons (Admin & Content Manager)
@@ -171,6 +182,8 @@ router.put('/quizzes/:id', contentCreator, updateQuiz);
 router.delete('/quizzes/:id', contentCreator, deleteQuiz);
 
 // Quiz Questions (Admin & Content Manager)
+router.get('/quizzes/template/download', contentCreator, downloadQuizTemplate);
+router.post('/quizzes/:quizId/import', contentCreator, uploadMemory.single('file'), importQuizQuestions);
 router.get('/quizzes/:quizId/questions', contentCreator, getQuizQuestions);
 router.post('/quizzes/:quizId/questions', contentCreator, createQuizQuestion);
 router.put('/quizzes/questions/:questionId', contentCreator, updateQuizQuestion);

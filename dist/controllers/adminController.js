@@ -1,12 +1,47 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateSpeakingPrompt = exports.createSpeakingPrompt = exports.deleteSpeakingTest = exports.updateSpeakingTest = exports.createSpeakingTest = exports.getAllSpeakingTests = exports.bulkSetQuestionOptions = exports.bulkSetMatchingPairs = exports.deleteQuestionOption = exports.updateQuestionOption = exports.createQuestionOption = exports.deleteQuizQuestion = exports.updateQuizQuestion = exports.createQuizQuestion = exports.getQuizQuestions = exports.resetUserLessonProgress = exports.getUserProgressSummary = exports.deleteUser = exports.updateUser = exports.createUser = exports.getAllUsers = exports.getAllCertificateTemplates = exports.getAllQuizzes = exports.getAllLessons = exports.getAllModules = exports.getAllCategories = exports.deleteCertificateTemplate = exports.updateCertificateTemplate = exports.createCertificateTemplate = exports.deleteQuiz = exports.updateQuiz = exports.createQuiz = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.deleteModule = exports.updateModule = exports.createModule = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.deleteCourse = exports.updateCourse = exports.createCourse = exports.getLessonsByCourse = exports.getAllAdminCourses = exports.deleteBanner = exports.updateBanner = exports.createBanner = exports.getAllBanners = void 0;
-exports.deleteEnrollment = exports.getAllEnrollments = exports.directManualEnroll = exports.verifyManualPaymentProof = exports.getManualPaymentProofs = exports.convertPptxToPdf = exports.updateQuestionOptionImage = exports.updateQuestionImage = exports.reorderLessonContents = exports.deleteLessonContent = exports.updateLessonContent = exports.createLessonContent = exports.getLessonContentAttachments = exports.getLessonContents = exports.getAdminAnalytics = exports.bulkUserAction = exports.updateSettings = exports.getSettings = exports.getPublicSettings = exports.deleteTag = exports.updateTag = exports.createTag = exports.getAllTags = exports.updateCourseStatus = exports.deleteScalevPackage = exports.updateScalevPackage = exports.createScalevPackage = exports.getScalevPackages = exports.ensureScalevPackagesTable = exports.importScalevOrders = exports.updateOrderStatus = exports.getAllOrders = exports.deleteSpeakingPrompt = void 0;
+exports.deleteQuestionOption = exports.updateQuestionOption = exports.createQuestionOption = exports.deleteQuizQuestion = exports.updateQuizQuestion = exports.downloadQuizTemplate = exports.importQuizQuestions = exports.createQuizQuestion = exports.getQuizQuestions = exports.resetUserLessonProgress = exports.getUserProgressSummary = exports.deleteUser = exports.updateUser = exports.createUser = exports.getAllUsers = exports.getAllCertificateTemplates = exports.getAllQuizzes = exports.getAllLessons = exports.getAllModules = exports.getAllCategories = exports.deleteCertificateTemplate = exports.updateCertificateTemplate = exports.createCertificateTemplate = exports.deleteQuiz = exports.updateQuiz = exports.createQuiz = exports.deleteLesson = exports.updateLesson = exports.createLesson = exports.deleteModule = exports.updateModule = exports.createModule = exports.moveModuleUnit = exports.reorderUnits = exports.deleteUnit = exports.updateUnit = exports.createUnit = exports.getAllUnits = exports.deleteCategory = exports.updateCategory = exports.createCategory = exports.deleteCourse = exports.updateCourse = exports.createCourse = exports.getLessonsByCourse = exports.getAllAdminCourses = exports.deleteBanner = exports.updateBanner = exports.createBanner = exports.getAllBanners = void 0;
+exports.deleteEnrollment = exports.getAllEnrollments = exports.directManualEnroll = exports.verifyManualPaymentProof = exports.getManualPaymentProofs = exports.convertPptxToPdf = exports.updateQuestionOptionImage = exports.updateQuestionImage = exports.reorderLessonContents = exports.deleteLessonContent = exports.updateLessonContent = exports.createLessonContent = exports.getLessonContentAttachments = exports.getLessonContents = exports.getAdminAnalytics = exports.bulkUserAction = exports.updateSettings = exports.getSettings = exports.getPublicSettings = exports.deleteTag = exports.updateTag = exports.createTag = exports.getAllTags = exports.updateCourseStatus = exports.deleteScalevPackage = exports.updateScalevPackage = exports.createScalevPackage = exports.getScalevPackages = exports.ensureScalevPackagesTable = exports.importScalevOrders = exports.updateOrderStatus = exports.getAllOrders = exports.deleteSpeakingPrompt = exports.updateSpeakingPrompt = exports.createSpeakingPrompt = exports.deleteSpeakingTest = exports.updateSpeakingTest = exports.createSpeakingTest = exports.getAllSpeakingTests = exports.bulkSetQuestionOptions = exports.bulkSetMatchingPairs = void 0;
 const db_1 = __importDefault(require("../config/db"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const XLSX = __importStar(require("xlsx"));
+const quizImportHelper_1 = require("../utils/quizImportHelper");
 // Helper to slugify strings (e.g. "English Beginner" -> "english-beginner")
 const slugify = (text) => {
     return text
@@ -78,7 +113,7 @@ exports.deleteBanner = deleteBanner;
 // ==========================================
 const getAllAdminCourses = async (req, res) => {
     try {
-        const [courses] = await db_1.default.query(`SELECT id, title, code, cefr_level, status, price, slug
+        const [courses] = await db_1.default.query(`SELECT id, title, code, cefr_level, status, price, slug, enforce_lesson_order
        FROM courses
        ORDER BY id DESC`);
         res.json(courses);
@@ -117,7 +152,7 @@ const getLessonsByCourse = async (req, res) => {
 };
 exports.getLessonsByCourse = getLessonsByCourse;
 const createCourse = async (req, res) => {
-    const { categoryId, category_id, levelId, level_id, createdBy, created_by, code, title, shortDescription, short_description, description, thumbnail, banner, cefrLevel, cefr_level, price, discountPrice, discount_price, status } = req.body;
+    const { categoryId, category_id, levelId, level_id, createdBy, created_by, code, title, shortDescription, short_description, description, thumbnail, banner, cefrLevel, cefr_level, price, discountPrice, discount_price, enforceLessonOrder, enforce_lesson_order, status } = req.body;
     const slug = slugify(title);
     const finalCategoryId = categoryId ?? category_id ?? 1;
     const finalLevelId = levelId ?? level_id ?? 1;
@@ -127,9 +162,12 @@ const createCourse = async (req, res) => {
     const finalCefrLevel = cefrLevel ?? cefr_level ?? 'A1';
     const finalPrice = price !== undefined ? price : 0;
     const finalDiscountPrice = discountPrice !== undefined ? discountPrice : (discount_price !== undefined ? discount_price : 0);
+    const finalEnforceLessonOrder = enforceLessonOrder !== undefined
+        ? (enforceLessonOrder ? 1 : 0)
+        : (enforce_lesson_order !== undefined ? (enforce_lesson_order ? 1 : 0) : 1);
     try {
-        const [result] = await db_1.default.query(`INSERT INTO courses (category_id, level_id, created_by, code, title, slug, short_description, description, thumbnail, banner, cefr_level, price, discount_price, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [finalCategoryId, finalLevelId, finalCreatedBy, code, title, slug, finalShortDescription, finalDescription, thumbnail || null, banner || null, finalCefrLevel, finalPrice, finalDiscountPrice, status || 'DRAFT']);
+        const [result] = await db_1.default.query(`INSERT INTO courses (category_id, level_id, created_by, code, title, slug, short_description, description, thumbnail, banner, cefr_level, price, discount_price, enforce_lesson_order, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [finalCategoryId, finalLevelId, finalCreatedBy, code, title, slug, finalShortDescription, finalDescription, thumbnail || null, banner || null, finalCefrLevel, finalPrice, finalDiscountPrice, finalEnforceLessonOrder, status || 'DRAFT']);
         res.status(201).json({ message: 'Course created successfully', courseId: result.insertId, slug });
     }
     catch (error) {
@@ -140,7 +178,7 @@ const createCourse = async (req, res) => {
 exports.createCourse = createCourse;
 const updateCourse = async (req, res) => {
     const { id } = req.params;
-    const { categoryId, category_id, levelId, level_id, code, title, shortDescription, short_description, description, thumbnail, banner, cefrLevel, cefr_level, price, discountPrice, discount_price, status } = req.body;
+    const { categoryId, category_id, levelId, level_id, code, title, shortDescription, short_description, description, thumbnail, banner, cefrLevel, cefr_level, price, discountPrice, discount_price, enforceLessonOrder, enforce_lesson_order, status } = req.body;
     try {
         const updates = [];
         const values = [];
@@ -165,6 +203,12 @@ const updateCourse = async (req, res) => {
         addUpdate('cefr_level', cefrLevel ?? cefr_level);
         addUpdate('price', price);
         addUpdate('discount_price', discountPrice ?? discount_price);
+        const finalEnforceLessonOrder = enforceLessonOrder !== undefined
+            ? (enforceLessonOrder ? 1 : 0)
+            : (enforce_lesson_order !== undefined ? (enforce_lesson_order ? 1 : 0) : undefined);
+        if (finalEnforceLessonOrder !== undefined) {
+            addUpdate('enforce_lesson_order', finalEnforceLessonOrder);
+        }
         addUpdate('status', status);
         if (updates.length === 0) {
             res.status(400).json({ error: 'No fields provided for update' });
@@ -269,13 +313,186 @@ const deleteCategory = async (req, res) => {
 };
 exports.deleteCategory = deleteCategory;
 // ==========================================
+// UNITS CRUD
+// ==========================================
+const getAllUnits = async (req, res) => {
+    try {
+        const { courseVersionId, courseId } = req.query;
+        let query = `
+      SELECT u.*, 
+             COUNT(m.id) as total_modules
+      FROM units u
+      LEFT JOIN modules m ON u.id = m.unit_id
+    `;
+        const params = [];
+        if (courseVersionId) {
+            query += ' WHERE u.course_version_id = ? GROUP BY u.id ORDER BY u.unit_order ASC';
+            params.push(courseVersionId);
+        }
+        else if (courseId) {
+            query += `
+        JOIN course_versions cv ON u.course_version_id = cv.id
+        WHERE cv.course_id = ?
+        GROUP BY u.id
+        ORDER BY u.unit_order ASC
+      `;
+            params.push(courseId);
+        }
+        else {
+            query += ' GROUP BY u.id ORDER BY u.unit_order ASC';
+        }
+        const [units] = await db_1.default.query(query, params);
+        res.json(units);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+exports.getAllUnits = getAllUnits;
+const createUnit = async (req, res) => {
+    const { courseVersionId, courseId, title, description, unitOrder, status } = req.body;
+    const slug = slugify(title || 'unit');
+    try {
+        let finalVersionId = courseVersionId;
+        if (!finalVersionId && courseId) {
+            const [versions] = await db_1.default.query('SELECT id FROM course_versions WHERE course_id = ? AND is_current = 1 LIMIT 1', [courseId]);
+            if (versions.length > 0) {
+                finalVersionId = versions[0].id;
+            }
+            else {
+                const [vRes] = await db_1.default.query('INSERT INTO course_versions (course_id, version, is_current, created_by) VALUES (?, ?, ?, ?)', [courseId, 'v1.0.0', 1, 1]);
+                finalVersionId = vRes.insertId;
+            }
+        }
+        if (!finalVersionId) {
+            res.status(400).json({ error: 'courseVersionId or courseId is required' });
+            return;
+        }
+        const [result] = await db_1.default.query('INSERT INTO units (course_version_id, title, slug, description, unit_order, status) VALUES (?, ?, ?, ?, ?, ?)', [finalVersionId, title, slug, description || '', unitOrder || 1, status || 'PUBLISHED']);
+        res.status(201).json({ message: 'Unit created successfully', unitId: result.insertId, slug });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+exports.createUnit = createUnit;
+const updateUnit = async (req, res) => {
+    const { id } = req.params;
+    const { title, description, unitOrder, status } = req.body;
+    try {
+        const updates = [];
+        const values = [];
+        const addUpdate = (col, val) => {
+            if (val !== undefined) {
+                updates.push(`${col} = ?`);
+                values.push(val);
+            }
+        };
+        addUpdate('title', title);
+        if (title) {
+            updates.push('slug = ?');
+            values.push(slugify(title));
+        }
+        addUpdate('description', description);
+        addUpdate('unit_order', unitOrder);
+        addUpdate('status', status);
+        if (updates.length === 0) {
+            res.status(400).json({ error: 'No fields provided for update' });
+            return;
+        }
+        values.push(id);
+        const [result] = await db_1.default.query(`UPDATE units SET ${updates.join(', ')} WHERE id = ?`, values);
+        if (result.affectedRows === 0) {
+            res.status(404).json({ error: 'Unit not found' });
+            return;
+        }
+        res.json({ message: 'Unit updated successfully' });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+exports.updateUnit = updateUnit;
+const deleteUnit = async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Unassign modules in this unit before deleting
+        await db_1.default.query('UPDATE modules SET unit_id = NULL WHERE unit_id = ?', [id]);
+        const [result] = await db_1.default.query('DELETE FROM units WHERE id = ?', [id]);
+        if (result.affectedRows === 0) {
+            res.status(404).json({ error: 'Unit not found' });
+            return;
+        }
+        res.json({ message: 'Unit deleted successfully' });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+exports.deleteUnit = deleteUnit;
+const reorderUnits = async (req, res) => {
+    const { units } = req.body; // Array of { id, unitOrder }
+    if (!Array.isArray(units)) {
+        res.status(400).json({ error: 'units array is required' });
+        return;
+    }
+    try {
+        const connection = await db_1.default.getConnection();
+        try {
+            await connection.beginTransaction();
+            for (const item of units) {
+                await connection.query('UPDATE units SET unit_order = ? WHERE id = ?', [item.unitOrder || item.unit_order, item.id]);
+            }
+            await connection.commit();
+            res.json({ message: 'Units reordered successfully' });
+        }
+        catch (e) {
+            await connection.rollback();
+            throw e;
+        }
+        finally {
+            connection.release();
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+exports.reorderUnits = reorderUnits;
+const moveModuleUnit = async (req, res) => {
+    const { id } = req.params; // moduleId
+    const { unitId, unit_id, moduleOrder, module_order } = req.body;
+    try {
+        const targetUnitId = unitId !== undefined ? unitId : (unit_id !== undefined ? unit_id : null);
+        const targetOrder = moduleOrder !== undefined ? moduleOrder : module_order;
+        const updates = ['unit_id = ?'];
+        const values = [targetUnitId];
+        if (targetOrder !== undefined) {
+            updates.push('module_order = ?');
+            values.push(targetOrder);
+        }
+        values.push(id);
+        const [result] = await db_1.default.query(`UPDATE modules SET ${updates.join(', ')} WHERE id = ?`, values);
+        if (result.affectedRows === 0) {
+            res.status(404).json({ error: 'Module not found' });
+            return;
+        }
+        res.json({ message: 'Module moved successfully' });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+exports.moveModuleUnit = moveModuleUnit;
+// ==========================================
 // MODULES CRUD
 // ==========================================
 const createModule = async (req, res) => {
-    const { courseVersionId, title, description, moduleOrder, estimatedMinutes, status } = req.body;
+    const { courseVersionId, unitId, unit_id, title, description, moduleOrder, estimatedMinutes, status } = req.body;
     const slug = slugify(title);
+    const finalUnitId = unitId !== undefined ? unitId : (unit_id !== undefined ? unit_id : null);
     try {
-        const [result] = await db_1.default.query('INSERT INTO modules (course_version_id, title, slug, description, module_order, estimated_minutes, status) VALUES (?, ?, ?, ?, ?, ?, ?)', [courseVersionId || 1, title, slug, description, moduleOrder || 1, estimatedMinutes || 30, status || 'DRAFT']);
+        const [result] = await db_1.default.query('INSERT INTO modules (course_version_id, unit_id, title, slug, description, module_order, estimated_minutes, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [courseVersionId || 1, finalUnitId, title, slug, description, moduleOrder || 1, estimatedMinutes || 30, status || 'DRAFT']);
         res.status(201).json({ message: 'Module created successfully', moduleId: result.insertId, slug });
     }
     catch (error) {
@@ -285,7 +502,7 @@ const createModule = async (req, res) => {
 exports.createModule = createModule;
 const updateModule = async (req, res) => {
     const { id } = req.params;
-    const { title, description, moduleOrder, estimatedMinutes, status } = req.body;
+    const { title, description, moduleOrder, estimatedMinutes, status, unitId, unit_id } = req.body;
     try {
         const updates = [];
         const values = [];
@@ -304,6 +521,10 @@ const updateModule = async (req, res) => {
         addUpdate('module_order', moduleOrder);
         addUpdate('estimated_minutes', estimatedMinutes);
         addUpdate('status', status);
+        const targetUnitId = unitId !== undefined ? unitId : unit_id;
+        if (targetUnitId !== undefined) {
+            addUpdate('unit_id', targetUnitId);
+        }
         if (updates.length === 0) {
             res.status(400).json({ error: 'No fields provided for update' });
             return;
@@ -1042,6 +1263,117 @@ const createQuizQuestion = async (req, res) => {
     }
 };
 exports.createQuizQuestion = createQuizQuestion;
+const importQuizQuestions = async (req, res) => {
+    const { quizId } = req.params;
+    const { questions: bodyQuestions } = req.body;
+    const reqFile = req.file;
+    let questionsToImport = [];
+    if (Array.isArray(bodyQuestions) && bodyQuestions.length > 0) {
+        questionsToImport = bodyQuestions;
+    }
+    else if (reqFile && reqFile.buffer) {
+        try {
+            const wb = XLSX.read(reqFile.buffer, { type: 'buffer' });
+            questionsToImport = (0, quizImportHelper_1.parseQuizWorkbook)(wb);
+        }
+        catch (e) {
+            res.status(400).json({ error: 'Gagal membaca file Excel/CSV: ' + e.message });
+            return;
+        }
+    }
+    if (!questionsToImport || questionsToImport.length === 0) {
+        res.status(400).json({ error: 'Tidak ada data soal valid yang ditemukan untuk diimpor.' });
+        return;
+    }
+    const connection = await db_1.default.getConnection();
+    try {
+        await connection.beginTransaction();
+        // Check if assessment section exists for this quiz, otherwise create default section
+        let [sections] = await connection.query('SELECT id FROM assessment_sections WHERE assessment_id = ? LIMIT 1', [quizId]);
+        let sectionId;
+        if (sections.length > 0) {
+            sectionId = sections[0].id;
+        }
+        else {
+            const [secRes] = await connection.query('INSERT INTO assessment_sections (assessment_id, title, section_order) VALUES (?, "Default Section", 1)', [quizId]);
+            sectionId = secRes.insertId;
+        }
+        // Get current max question_order in section
+        const [orderRows] = await connection.query('SELECT COALESCE(MAX(question_order), 0) as max_order FROM questions WHERE assessment_section_id = ?', [sectionId]);
+        let currentOrder = orderRows[0]?.max_order || 0;
+        let importedCount = 0;
+        for (const q of questionsToImport) {
+            if (!q.questionText || !q.questionText.trim())
+                continue;
+            currentOrder += 1;
+            const qTypeId = q.questionTypeId || 1;
+            const qCode = q.questionCode || `Q-${currentOrder}`;
+            const qText = q.questionText.trim();
+            const qExpl = q.explanation || '';
+            const qPoint = Number(q.point) || 10.0;
+            const [qResult] = await connection.query(`INSERT INTO questions (assessment_section_id, question_type_id, question_code, question_text, explanation, point, question_order, shuffle_option, status) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, 1, 'ACTIVE')`, [sectionId, qTypeId, qCode, qText, qExpl, qPoint, currentOrder]);
+            const questionId = qResult.insertId;
+            if (Array.isArray(q.options) && q.options.length > 0) {
+                for (let i = 0; i < q.options.length; i++) {
+                    const opt = q.options[i];
+                    const optLabel = opt.optionLabel || String.fromCharCode(65 + i);
+                    const optText = opt.optionText || '';
+                    const isCorr = opt.isCorrect ? 1 : 0;
+                    const optScore = opt.score !== undefined ? Number(opt.score) : 0;
+                    const optOrder = opt.optionOrder || (i + 1);
+                    await connection.query(`INSERT INTO question_options (question_id, option_label, option_text, is_correct, score, option_order) 
+             VALUES (?, ?, ?, ?, ?, ?)`, [questionId, optLabel, optText, isCorr, optScore, optOrder]);
+                }
+            }
+            importedCount++;
+        }
+        // Update assessment total questions and total score
+        await connection.query(`UPDATE assessments a 
+       SET a.total_question = (
+         SELECT COUNT(*) FROM questions q WHERE q.assessment_section_id = ?
+       ),
+       a.total_score = (
+         SELECT COALESCE(SUM(point), 100) FROM questions q WHERE q.assessment_section_id = ?
+       )
+       WHERE a.id = ?`, [sectionId, sectionId, quizId]);
+        await connection.commit();
+        res.json({
+            success: true,
+            message: `Berhasil mengimpor ${importedCount} soal ke dalam kuis!`,
+            importedCount
+        });
+    }
+    catch (error) {
+        await connection.rollback();
+        res.status(500).json({ error: error.message });
+    }
+    finally {
+        connection.release();
+    }
+};
+exports.importQuizQuestions = importQuizQuestions;
+const downloadQuizTemplate = async (req, res) => {
+    try {
+        const { format = 'xlsx', type = 'ALL' } = req.query;
+        if (String(format).toLowerCase() === 'csv') {
+            const csvStr = (0, quizImportHelper_1.createCsvTemplateString)(String(type));
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', 'attachment; filename="template_quiz_import.csv"');
+            res.send(csvStr);
+        }
+        else {
+            const buffer = (0, quizImportHelper_1.createExcelTemplateBuffer)(String(type));
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'attachment; filename="template_quiz_import.xlsx"');
+            res.send(buffer);
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+exports.downloadQuizTemplate = downloadQuizTemplate;
 const updateQuizQuestion = async (req, res) => {
     const { questionId } = req.params;
     const { questionTypeId, question_type_id, questionCode, question_code, questionText, question_text, explanation, point, questionOrder, question_order, status, questionImage, question_image, shuffleOption, shuffle_option, options, pairs, matchingPairs, matching_pairs } = req.body;

@@ -66,7 +66,7 @@ export const getLesson = async (req: AuthRequest, res: Response) => {
 
     // 2. Fetch lesson contents (including parsed attachments for student view)
     const [contentsRaw] = await pool.query<RowDataPacket[]>(
-      'SELECT id, content_type, title, description, content_order, estimated_minutes, attachments FROM lesson_contents WHERE lesson_id = ? AND (status IS NULL OR status = "" OR status IN ("ACTIVE", "PUBLISHED")) ORDER BY content_order ASC',
+      'SELECT id, content_type, title, description, content_order, is_required, estimated_minutes, attachments FROM lesson_contents WHERE lesson_id = ? AND (status IS NULL OR status = "" OR status IN ("ACTIVE", "PUBLISHED")) ORDER BY content_order ASC',
       [lesson.id]
     );
     // Parse attachments JSON; strip raw base64 data (send full data for inline view)
